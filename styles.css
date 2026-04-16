@@ -875,3 +875,96 @@ select {
 .site-footer {
   border-top: 1px solid rgba(138, 99, 48, 0.16);
 }
+
+/* Professional cleanup pass */
+:root {
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --space-1: 8px;
+  --space-2: 12px;
+  --space-3: 16px;
+  --space-4: 24px;
+}
+
+h2 {
+  font-size: 1.06rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.panel {
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+
+.panel-header {
+  margin-bottom: 10px;
+}
+
+.panel-note {
+  font-size: 0.78rem;
+}
+
+.top-dashboard,
+.board-grid,
+.gamify-grid,
+.learning-grid {
+  gap: var(--space-3);
+}
+
+.mvp-card::before,
+.mvp-sparkles {
+  display: none;
+}
+
+.mvp-card {
+  box-shadow: 0 10px 22px rgba(90, 68, 36, 0.12);
+}
+
+.mvp-message {
+  margin-top: 8px;
+}
+
+.ticker-item,
+.quest-item,
+.badge-item,
+.reward-item,
+.ranking-row,
+.lecture-card,
+.stat-card {
+  border-radius: var(--radius-md);
+}
+
+.ranking-row {
+  padding: 10px 11px;
+}
+
+.ranking-position {
+  width: 30px;
+  height: 30px;
+  font-size: 0.8rem;
+}
+
+.button {
+  border-radius: 10px;
+  box-shadow: 0 6px 14px rgba(90, 68, 36, 0.15);
+}
+
+.button:hover {
+  transform: translateY(-0.5px);
+}
+
+.quest-meta,
+.reward-meta,
+.lecture-card-meta,
+.lecture-status {
+  font-size: 0.76rem;
+}
+
+.badge-list {
+  gap: var(--space-1);
+}
+
+.reward-list {
+  gap: var(--space-1);
+}
