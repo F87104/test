@@ -104,6 +104,47 @@
         </article>
       </section>
 
+      <section class="game-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>プレイヤーステータス</h2>
+            <p class="panel-note">行動するとXPが増えてレベルアップ</p>
+          </div>
+          <div class="status-grid">
+            <div class="status-card">
+              <p class="status-label">レベル</p>
+              <p id="playerLevel" class="status-value">Lv.1</p>
+            </div>
+            <div class="status-card">
+              <p class="status-label">ストリーク</p>
+              <p id="streakDays" class="status-value">0日</p>
+            </div>
+          </div>
+          <p id="xpSummary" class="panel-note xp-summary"></p>
+          <div class="progress-wrap" aria-label="経験値バー">
+            <div id="xpProgressBar" class="progress-bar xp-bar"></div>
+          </div>
+          <div class="daily-actions">
+            <button id="claimDailyBonusButton" class="button button-small" type="button">
+              デイリーボーナスを受け取る
+            </button>
+            <p id="dailyBonusNote" class="panel-note"></p>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel-header">
+            <h2>デイリークエスト</h2>
+            <p class="panel-note">毎日クリアで追加ポイント</p>
+          </div>
+          <ul id="questList" class="quest-list"></ul>
+          <div class="panel-header badge-header">
+            <h2>バッジ</h2>
+            <p class="panel-note">達成条件を満たすと解放</p>
+          </div>
+          <ul id="badgeList" class="badge-list"></ul>
+        </article>
+      </section>
+
       <section class="learning-grid">
         <article class="panel">
           <div class="panel-header">

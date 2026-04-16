@@ -168,6 +168,139 @@ h1 span {
   margin-bottom: 16px;
 }
 
+.gamify-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stat-card {
+  border: 1px solid rgba(79, 140, 255, 0.24);
+  border-radius: 10px;
+  background: rgba(79, 140, 255, 0.08);
+  padding: 10px;
+}
+
+.stat-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.stat-value {
+  margin: 4px 0 0;
+  font-weight: 900;
+  font-size: 1.2rem;
+}
+
+.xp-wrap {
+  margin-top: 12px;
+  border: 1px solid rgba(79, 140, 255, 0.28);
+  background: rgba(8, 16, 36, 0.85);
+  border-radius: 999px;
+  overflow: hidden;
+  height: 12px;
+}
+
+.xp-bar {
+  height: 100%;
+  width: 0%;
+  transition: width 0.28s ease;
+  background: linear-gradient(90deg, #a78bfa, #22d3ee);
+}
+
+.quest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.quest-item {
+  border: 1px solid rgba(79, 140, 255, 0.26);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(79, 140, 255, 0.06);
+}
+
+.quest-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.quest-name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.quest-reward {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.quest-progress {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.badge-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.badge-item {
+  border: 1px solid rgba(79, 140, 255, 0.24);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(79, 140, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge-item.locked {
+  opacity: 0.55;
+}
+
+.badge-name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.badge-condition {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.badge-state {
+  font-size: 0.74rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 4px 8px;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: var(--success);
+}
+
 .learning-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -423,7 +556,8 @@ button:focus {
 
 @media (max-width: 960px) {
   .board-grid,
-  .learning-grid {
+  .learning-grid,
+  .gamify-grid {
     grid-template-columns: 1fr;
   }
 
@@ -447,5 +581,9 @@ button:focus {
     width: 30px;
     height: 30px;
     font-size: 0.82rem;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
   }
 }

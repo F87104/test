@@ -93,6 +93,12 @@ const learningSummary = document.getElementById("learningSummary");
 const learningProgressBar = document.getElementById("learningProgressBar");
 const learningPoints = document.getElementById("learningPoints");
 const lectureList = document.getElementById("lectureList");
+const playerLevel = document.getElementById("playerLevel");
+const playerXp = document.getElementById("playerXp");
+const playerStreak = document.getElementById("playerStreak");
+const playerXpBar = document.getElementById("playerXpBar");
+const questList = document.getElementById("questList");
+const badgeList = document.getElementById("badgeList");
 const learnerForm = document.getElementById("learnerForm");
 const learnerNameInput = document.getElementById("learnerNameInput");
 const resetLearningButton = document.getElementById("resetLearningButton");
@@ -138,6 +144,11 @@ function migrateState(baseState) {
     updatedAt: baseState.updatedAt ?? Date.now(),
     learnerName: baseState.learnerName ?? DEFAULT_LEARNER_NAME,
     learningProgress: mergedProgress,
+    gamification: {
+      streak: baseState.gamification?.streak ?? 0,
+      lastActivityDate: baseState.gamification?.lastActivityDate ?? null,
+      completedQuests: baseState.gamification?.completedQuests ?? {},
+    },
   };
 }
 
@@ -226,6 +237,7 @@ function render() {
   renderTicker();
   renderUpdatedAt();
   renderLearning();
+  renderGamification();
 }
 
 function getCompletedLectureCount() {
@@ -293,6 +305,142 @@ function renderLearning() {
   updateLearningCards();
 }
 
+function getTotalPointsByLearner(name) {
+  const found = state.members.find((member) => member.name === name);
+  return found ? found.points : 0;
+}
+
+function calculateLevel(points) {
+  const level = Math.floor(points / 100) + 1;
+  const currentLevelBase = (level - 1) * 100;
+  const nextLevelBase = level * 100;
+  const progress = points - currentLevelBase;
+  const required = nextLevelBase - currentLevelBase;
+  return { level, progress, required };
+}
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getYesterdayKey() {
+  const date = new Date();
+  date.setDate(date.getDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function getQuestDefinitions() {
+  const watchedCount = getCompletedLectureCount();
+  const quests = [
+    {
+      id: "watch-1",
+      title: "講座を1本視聴完了",
+      progress: Math.min(watchedCount, 1),
+      target: 1,
+      reward: 5,
+    },
+    {
+      id: "earn-30",
+      title: "本日30pt獲得",
+      progress: Math.min(getTodayEarnedPoints(), 30),
+      target: 30,
+      reward: 8,
+    },
+    {
+      id: "submit-once",
+      title: "ポイント投稿を1回実行",
+      progress: getTodayActionCount("manual-submit") > 0 ? 1 : 0,
+      target: 1,
+      reward: 5,
+    },
+  ];
+  return quests;
+}
+
+function getTodayEarnedPoints() {
+  const today = getTodayKey();
+  return state.tickerEvents
+    .filter((event) => {
+      const key = new Date(event.timestamp).toISOString().slice(0, 10);
+      return key === today && event.name === state.learnerName;
+    })
+    .reduce((sum, event) => sum + event.points, 0);
+}
+
+function getTodayActionCount(actionType) {
+  const today = getTodayKey();
+  return state.tickerEvents.filter((event) => {
+    const key = new Date(event.timestamp).toISOString().slice(0, 10);
+    return key === today && event.reason === actionType;
+  }).length;
+}
+
+function updateStreak() {
+  const today = getTodayKey();
+  const yesterday = getYesterdayKey();
+  const last = state.gamification.lastActivityDate;
+  if (last === today) {
+    return;
+  }
+  if (last === yesterday) {
+    state.gamification.streak += 1;
+  } else {
+    state.gamification.streak = 1;
+  }
+  state.gamification.lastActivityDate = today;
+}
+
+function grantQuestRewards() {
+  const quests = getQuestDefinitions();
+  quests.forEach((quest) => {
+    const done = quest.progress >= quest.target;
+    if (!done || state.gamification.completedQuests[quest.id]) {
+      return;
+    }
+    state.gamification.completedQuests[quest.id] = true;
+    addPoints(state.learnerName, quest.reward, `クエスト達成:${quest.title}`);
+  });
+}
+
+function renderGamification() {
+  const totalPoints = getTotalPointsByLearner(state.learnerName);
+  const levelState = calculateLevel(totalPoints);
+  playerLevel.textContent = `Lv.${levelState.level}`;
+  playerXp.textContent = `${levelState.progress} / ${levelState.required} XP`;
+  playerStreak.textContent = `${state.gamification.streak} 日`;
+  playerXpBar.style.width = `${Math.round((levelState.progress / levelState.required) * 100)}%`;
+
+  const quests = getQuestDefinitions();
+  questList.innerHTML = "";
+  quests.forEach((quest) => {
+    const done = quest.progress >= quest.target;
+    const item = document.createElement("li");
+    item.className = `quest-item ${done ? "done" : ""}`;
+    item.innerHTML = `
+      <div>
+        <p class="quest-title">${quest.title}</p>
+        <p class="quest-meta">${quest.progress}/${quest.target} ・報酬 ${quest.reward}pt</p>
+      </div>
+      <span class="quest-state">${done ? "達成" : "進行中"}</span>
+    `;
+    questList.appendChild(item);
+  });
+
+  const badges = [
+    { id: "first-lecture", title: "First Clear", unlocked: getCompletedLectureCount() >= 1 },
+    { id: "three-lecture", title: "Learning Runner", unlocked: getCompletedLectureCount() >= 3 },
+    { id: "streak-3", title: "3 Days Streak", unlocked: state.gamification.streak >= 3 },
+    { id: "xp-300", title: "XP 300+", unlocked: totalPoints >= 300 },
+  ];
+  badgeList.innerHTML = "";
+  badges.forEach((badge) => {
+    const item = document.createElement("li");
+    item.className = `badge-item ${badge.unlocked ? "unlocked" : ""}`;
+    item.textContent = badge.title;
+    badgeList.appendChild(item);
+  });
+}
+
 function updateLearningCards() {
   lectureCatalog.forEach((lecture) => {
     const card = lectureList.querySelector(`[data-lecture-card-id="${lecture.id}"]`);
@@ -332,7 +480,11 @@ awardForm.addEventListener("submit", (event) => {
     return;
   }
 
+  updateStreak();
   addPoints(name, points, reason);
+  addPoints("システム", 0, "manual-submit");
+  grantQuestRewards();
+  persistState();
   awardForm.reset();
   pointsInput.value = "10";
   nameInput.focus();
@@ -442,7 +594,10 @@ function maybeAwardLectureCompletion(lecture, playback, duration, currentSeconds
   }
 
   state.learningProgress[lecture.id] = true;
+  updateStreak();
   addPoints(state.learnerName, lecture.points, `${lecture.title}を視聴完了`);
+  grantQuestRewards();
+  persistState();
 }
 
 learnerForm.addEventListener("submit", (event) => {
@@ -471,6 +626,9 @@ resetLearningButton.addEventListener("click", () => {
   vimeoPlayers.clear();
   learningViewInitialized = false;
   lectureList.innerHTML = "";
+  state.gamification.completedQuests = {};
+  state.gamification.streak = 0;
+  state.gamification.lastActivityDate = null;
   state.updatedAt = Date.now();
   state.tickerEvents.unshift(createEvent("システム", 0, "学習進捗をリセット"));
   state.tickerEvents = state.tickerEvents.slice(0, MAX_TICKER_ITEMS);
