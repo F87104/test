@@ -142,6 +142,9 @@ const awardForm = document.getElementById("awardForm");
 const nameInput = document.getElementById("nameInput");
 const pointsInput = document.getElementById("pointsInput");
 const reasonInput = document.getElementById("reasonInput");
+const awardQuickPointChips = document.querySelectorAll("[data-quick-point]");
+const awardPreview = document.getElementById("awardPreview");
+const awardToast = document.getElementById("awardToast");
 const resetButton = document.getElementById("resetButton");
 const autoFeedButton = document.getElementById("toggleAutoFeedButton");
 const lastUpdated = document.getElementById("lastUpdated");
@@ -1164,14 +1167,47 @@ function updateLearningCards() {
   });
 }
 
+function renderAwardPreview() {
+  if (!awardPreview || !nameInput || !pointsInput || !reasonInput) {
+    return;
+  }
+  const previewName = nameInput.value.trim() || "だれか";
+  const previewPoints = Number(pointsInput.value);
+  const safePoints = Number.isFinite(previewPoints) && previewPoints > 0 ? previewPoints : 0;
+  const previewReason = reasonInput.value || "投稿";
+  awardPreview.textContent = `送信プレビュー: ${previewName} が ${previewReason} で ${safePoints}pt獲得`;
+}
+
+let awardToastTimer = null;
+
+function showAwardToast(message) {
+  if (!awardToast) {
+    return;
+  }
+  awardToast.textContent = message;
+  awardToast.classList.add("show");
+  if (awardToastTimer) {
+    window.clearTimeout(awardToastTimer);
+  }
+  awardToastTimer = window.setTimeout(() => {
+    awardToast.classList.remove("show");
+  }, 1800);
+}
+
 awardForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const name = nameInput.value.trim();
   const points = Number(pointsInput.value);
   const reason = reasonInput.value;
+  const submitButton = awardForm.querySelector(".award-submit-button");
 
   if (!name || !Number.isFinite(points) || points < 1) {
     return;
+  }
+
+  if (submitButton instanceof HTMLButtonElement) {
+    submitButton.classList.add("is-loading");
+    submitButton.disabled = true;
   }
 
   updateStreak();
@@ -1181,6 +1217,19 @@ awardForm.addEventListener("submit", (event) => {
   persistState();
   awardForm.reset();
   pointsInput.value = "10";
+  if (awardQuickPointChips.length > 0) {
+    awardQuickPointChips.forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.quickPoint === "10");
+    });
+  }
+  renderAwardPreview();
+  showAwardToast(`${name}に${points}ptを反映しました`);
+  if (submitButton instanceof HTMLButtonElement) {
+    window.setTimeout(() => {
+      submitButton.classList.remove("is-loading");
+      submitButton.disabled = false;
+    }, 450);
+  }
   nameInput.focus();
 });
 
@@ -1233,6 +1282,36 @@ if (reactivationActionButton) {
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
+
+if (awardQuickPointChips.length > 0) {
+  awardQuickPointChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const point = Number(chip.dataset.quickPoint);
+      if (!Number.isFinite(point) || point < 1) {
+        return;
+      }
+      pointsInput.value = String(point);
+      awardQuickPointChips.forEach((button) => {
+        button.classList.toggle("active", button === chip);
+      });
+      renderAwardPreview();
+    });
+  });
+}
+
+if (nameInput) {
+  nameInput.addEventListener("input", renderAwardPreview);
+}
+
+if (pointsInput) {
+  pointsInput.addEventListener("input", renderAwardPreview);
+}
+
+if (reasonInput) {
+  reasonInput.addEventListener("change", renderAwardPreview);
+}
+
+renderAwardPreview();
 
 function getOrCreatePlayback(lectureId) {
   if (!playbackState.has(lectureId)) {

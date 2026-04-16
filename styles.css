@@ -867,6 +867,36 @@ h2 {
   gap: 12px;
 }
 
+.quick-points {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: -2px;
+}
+
+.quick-point-chip {
+  border: 1px solid rgba(138, 99, 48, 0.28);
+  background: rgba(255, 251, 244, 0.86);
+  color: #7a5324;
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-point-chip:hover {
+  border-color: rgba(138, 99, 48, 0.45);
+  background: rgba(193, 154, 90, 0.16);
+}
+
+.quick-point-chip.active {
+  background: linear-gradient(135deg, #8a6330, #b48a4f);
+  border-color: transparent;
+  color: #fffaf2;
+}
+
 .award-form-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 140px;
@@ -926,6 +956,12 @@ h2 {
   gap: 12px;
 }
 
+.award-preview {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #7a5a35;
+}
+
 .award-helper {
   margin: 0;
   font-size: 0.78rem;
@@ -935,6 +971,31 @@ h2 {
 .award-submit-button {
   min-height: 46px;
   padding-inline: 18px;
+}
+
+.award-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 80;
+  max-width: 320px;
+  border-radius: 12px;
+  border: 1px solid rgba(69, 111, 79, 0.35);
+  background: rgba(245, 255, 247, 0.96);
+  color: #365f40;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 10px 12px;
+  box-shadow: 0 10px 24px rgba(41, 84, 51, 0.18);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.award-toast.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 input,
@@ -1180,8 +1241,19 @@ button:focus {
     align-items: stretch;
   }
 
+  .quick-points {
+    gap: 6px;
+  }
+
   .award-submit-button {
     width: 100%;
+  }
+
+  .award-toast {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    max-width: none;
   }
 
   .site-footer {

@@ -210,6 +210,12 @@
                 />
               </label>
             </div>
+            <div class="quick-points" aria-label="クイックポイント選択">
+              <button class="quick-point-chip active" type="button" data-quick-point="10">+10</button>
+              <button class="quick-point-chip" type="button" data-quick-point="20">+20</button>
+              <button class="quick-point-chip" type="button" data-quick-point="50">+50</button>
+              <button class="quick-point-chip" type="button" data-quick-point="100">+100</button>
+            </div>
             <label class="field">
               <span class="field-label">理由</span>
               <select id="reasonInput" name="reason">
@@ -220,10 +226,12 @@
                 <option value="公開フィードバック登壇">公開フィードバック登壇</option>
               </select>
             </label>
+            <p id="awardPreview" class="award-preview">送信プレビュー: 田中さん が デイリー報告 で 10pt獲得</p>
             <div class="award-submit-row">
               <p class="award-helper">入力後すぐにランキングと速報へ反映されます</p>
               <button class="button award-submit-button" type="submit">速報を投稿する</button>
             </div>
+            <div id="awardToast" class="award-toast" role="status" aria-live="polite"></div>
           </form>
         </article>
       </section>
