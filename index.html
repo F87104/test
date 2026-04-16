@@ -47,7 +47,7 @@
           <div class="award-form-grid auth-grid">
             <label class="field">
               <span class="field-label">メール</span>
-              <input id="authEmail" type="email" placeholder="admin@example.com" required />
+              <input id="authEmail" type="email" placeholder="member@example.com" required />
             </label>
             <label class="field">
               <span class="field-label">パスワード</span>
@@ -59,7 +59,7 @@
             <button id="logoutButton" class="button button-small button-ghost" type="button">ログアウト</button>
           </div>
           <p class="panel-note">
-            サンプル: admin@example.com / admin1234 ・ mentor@example.com / mentor1234 ・ member@example.com / member1234
+            サンプル: member@example.com / member1234
           </p>
         </form>
       </section>
@@ -163,35 +163,6 @@
           </article>
         </div>
         <p id="insightNarrative" class="insight-narrative">解析中...</p>
-      </section>
-
-      <section id="opsDashboard" class="panel ops-panel" hidden>
-        <div class="panel-header">
-          <h2>運用ダッシュボード</h2>
-          <p id="opsUpdatedAt" class="panel-note">更新: -</p>
-        </div>
-        <div class="ops-grid">
-          <article class="ops-card">
-            <p class="ops-label">週間ポイント</p>
-            <p id="opsWeekPoints" class="ops-value">-</p>
-          </article>
-          <article class="ops-card">
-            <p class="ops-label">先週比</p>
-            <p id="opsWeekDiff" class="ops-value">-</p>
-          </article>
-          <article class="ops-card">
-            <p class="ops-label">週間アクティブ人数</p>
-            <p id="opsActiveMembers" class="ops-value">-</p>
-          </article>
-          <article class="ops-card">
-            <p class="ops-label">平均レビュー</p>
-            <p id="opsReviewScore" class="ops-value">-</p>
-          </article>
-        </div>
-        <div class="panel-header">
-          <h2>監査ログ（最新）</h2>
-        </div>
-        <ul id="opsAuditList" class="ranking-list"></ul>
       </section>
 
       <section class="panel review-panel">
@@ -377,35 +348,6 @@
             </button>
           </form>
         </article>
-      </section>
-
-      <section id="opsDashboard" class="rules panel" hidden>
-        <div class="panel-header">
-          <h2>運用ダッシュボード（管理者/メンター）</h2>
-          <p class="panel-note">運用KPIと監査ログを表示</p>
-        </div>
-        <div class="review-kpi-grid">
-          <article class="review-kpi">
-            <p class="review-label">今週ポイント</p>
-            <p id="opsThisWeekPoints" class="review-kpi-value">-</p>
-            <p id="opsWoWDiff" class="review-kpi-sub">-</p>
-          </article>
-          <article class="review-kpi">
-            <p class="review-label">アクティブ会員</p>
-            <p id="opsActiveMembers" class="review-kpi-value">-</p>
-            <p id="opsMembersCount" class="review-kpi-sub">-</p>
-          </article>
-          <article class="review-kpi">
-            <p class="review-label">講座完了数</p>
-            <p id="opsLectureCompletions" class="review-kpi-value">-</p>
-            <p id="opsManualPosts" class="review-kpi-sub">-</p>
-          </article>
-          <article class="review-kpi">
-            <p class="review-label">平均レビュー</p>
-            <p id="opsAverageScore" class="review-kpi-value">-</p>
-            <p id="opsSupportActions" class="review-kpi-sub">-</p>
-          </article>
-        </div>
       </section>
 
       <section class="rules panel">

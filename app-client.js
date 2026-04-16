@@ -2,8 +2,6 @@ import {
   awardPoints,
   clearAuthToken,
   fetchMe,
-  fetchOpsAudit,
-  fetchOpsMetrics,
   fetchReview,
   fetchState,
   getAuthToken,
@@ -74,15 +72,6 @@ const els = {
   awardPreview: document.getElementById("awardPreview"),
   awardToast: document.getElementById("awardToast"),
   awardHelper: document.querySelector(".award-helper"),
-  opsDashboard: document.getElementById("opsDashboard"),
-  opsThisWeekPoints: document.getElementById("opsThisWeekPoints"),
-  opsWoWDiff: document.getElementById("opsWoWDiff"),
-  opsActiveMembers: document.getElementById("opsActiveMembers"),
-  opsMembersCount: document.getElementById("opsMembersCount"),
-  opsLectureCompletions: document.getElementById("opsLectureCompletions"),
-  opsManualPosts: document.getElementById("opsManualPosts"),
-  opsAverageScore: document.getElementById("opsAverageScore"),
-  opsSupportActions: document.getElementById("opsSupportActions"),
   playerLevel: document.getElementById("playerLevel"),
   playerXp: document.getElementById("playerXp"),
   playerStreak: document.getElementById("playerStreak"),
@@ -102,8 +91,6 @@ const localUi = {
 
 let authToken = getAuthToken();
 let me = null;
-let opsMetrics = null;
-let opsAudit = null;
 let currentRankingTab = "overall";
 let currentState = {
   members: [],
@@ -141,10 +128,6 @@ function getDisplayName(realName) {
 }
 
 function roleCanAward(role) {
-  return role === "admin" || role === "mentor";
-}
-
-function roleCanViewOps(role) {
   return role === "admin" || role === "mentor";
 }
 
@@ -279,21 +262,6 @@ function renderDailyFocus() {
   els.dailyFocusStatus.textContent = "進捗: 推奨";
 }
 
-function renderOpsDashboard() {
-  if (!els.opsDashboard) return;
-  const canView = roleCanViewOps(me?.role);
-  els.opsDashboard.hidden = !canView;
-  if (!canView || !opsMetrics) return;
-  els.opsThisWeekPoints.textContent = `${opsMetrics.thisWeekPoints}pt`;
-  els.opsWoWDiff.textContent = `先週比 ${opsMetrics.weekOverWeekDiff >= 0 ? "+" : ""}${opsMetrics.weekOverWeekDiff}pt`;
-  els.opsActiveMembers.textContent = `${opsMetrics.activeMembersThisWeek}名`;
-  els.opsMembersCount.textContent = `総会員 ${opsMetrics.membersCount}名`;
-  els.opsLectureCompletions.textContent = `${opsMetrics.lectureCompletions}本`;
-  els.opsManualPosts.textContent = `手動投稿 ${opsMetrics.manualPosts}件`;
-  els.opsAverageScore.textContent = `${opsMetrics.averageReviewScore} / 100`;
-  els.opsSupportActions.textContent = `支援行動 ${opsMetrics.supportActions}件`;
-}
-
 function renderUpdatedAt() {
   if (!els.lastUpdated) return;
   els.lastUpdated.textContent = `最終更新: ${formatTimestamp(currentState.updatedAt)}`;
@@ -306,7 +274,6 @@ function render() {
   renderLeagueAndRewards();
   renderGamification();
   renderDailyFocus();
-  renderOpsDashboard();
   renderUpdatedAt();
 }
 
@@ -340,17 +307,13 @@ function syncPermissions() {
 
 async function refreshState() {
   if (!authToken) return;
-  const [apiState, review, metrics, audit] = await Promise.all([
+  const [apiState, review] = await Promise.all([
     fetchState(),
     fetchReview(localUi.learnerName),
-    roleCanViewOps(me?.role) ? fetchOpsMetrics() : Promise.resolve(null),
-    me?.role === "admin" ? fetchOpsAudit().catch(() => null) : Promise.resolve(null),
   ]);
   currentState = mapApiStateToUiState(apiState, currentState);
   currentState.learnerName = localUi.learnerName;
   currentState.updatedAt = Date.now();
-  opsMetrics = metrics;
-  opsAudit = audit;
   if (review?.review) {
     mergeWeeklyReviewToDom(review.review);
   }
@@ -364,10 +327,6 @@ function connectRealtimeBridge() {
       currentState = mapApiStateToUiState(payload, currentState);
       currentState.updatedAt = Date.now();
       render();
-    },
-    onMetrics: (payload) => {
-      opsMetrics = payload;
-      renderOpsDashboard();
     },
     onAward: (payload) => {
       showAwardToast(`${getDisplayName(payload.member.name)}に${payload.event.points}ptを反映`);
@@ -394,7 +353,6 @@ async function bootstrap() {
     clearAuthToken();
     authToken = "";
     me = null;
-    opsMetrics = null;
     setAuthStatus(`認証エラー: ${error.message}`);
     syncPermissions();
   }
