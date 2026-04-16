@@ -156,6 +156,14 @@ const mvpNickname = document.getElementById("mvpNickname");
 const mvpPoints = document.getElementById("mvpPoints");
 const mvpTitle = document.getElementById("mvpTitle");
 const mvpMessage = document.getElementById("mvpMessage");
+const dailyFocusTitle = document.getElementById("dailyFocusTitle");
+const dailyFocusDescription = document.getElementById("dailyFocusDescription");
+const dailyFocusStatus = document.getElementById("dailyFocusStatus");
+const dailyFocusAction = document.getElementById("dailyFocusAction");
+const weeklyReviewSummary = document.getElementById("weeklyReviewSummary");
+const weeklyMetricProgress = document.getElementById("weeklyMetricProgress");
+const weeklyMetricConsistency = document.getElementById("weeklyMetricConsistency");
+const weeklyMetricNext = document.getElementById("weeklyMetricNext");
 const learnerForm = document.getElementById("learnerForm");
 const learnerNameInput = document.getElementById("learnerNameInput");
 const resetLearningButton = document.getElementById("resetLearningButton");
@@ -350,6 +358,8 @@ function render() {
   renderMvpCard();
   renderTicker();
   renderUpdatedAt();
+  renderDailyFocus();
+  renderWeeklyReview();
   renderLearning();
   renderGamification();
   renderLeagueAndRewards();
@@ -556,6 +566,127 @@ function getTodayEarnedPoints() {
       return key === today && event.name === state.learnerName;
     })
     .reduce((sum, event) => sum + event.points, 0);
+}
+
+function getTodayCompletedLectureCount() {
+  const today = getTodayKey();
+  return state.tickerEvents.filter((event) => {
+    const key = new Date(event.timestamp).toISOString().slice(0, 10);
+    return key === today && event.name === state.learnerName && event.reason.includes("視聴完了");
+  }).length;
+}
+
+function getFocusTask() {
+  const completedTotal = getCompletedLectureCount();
+  const todayPoints = getTodayEarnedPoints();
+  const hasManualSubmit = getTodayActionCount("manual-submit") > 0;
+  const userPoints = getTotalPointsByLearner(state.learnerName);
+  const cheapestReward = Math.min(...rewardCatalog.map((item) => item.cost));
+
+  if (completedTotal === 0) {
+    return {
+      title: "最初の講座を1本完了する",
+      description: "まずは講座を1本見終えて、初回ポイントを獲得しましょう。",
+      status: "未達成",
+      actionLabel: "学習進捗へ移動",
+      targetId: "learningSummary",
+    };
+  }
+
+  if (todayPoints < 30) {
+    return {
+      title: "今日30ptを達成する",
+      description: "視聴完了や投稿で、あとポイントを積み上げましょう。",
+      status: `${todayPoints}/30pt`,
+      actionLabel: "ポイントを積む",
+      targetId: "rankingList",
+    };
+  }
+
+  if (!hasManualSubmit) {
+    return {
+      title: "今日の投稿を1回実行する",
+      description: "ポイント付与フォームから1回投稿して、行動記録を残しましょう。",
+      status: "未投稿",
+      actionLabel: "投稿フォームへ",
+      targetId: "awardForm",
+    };
+  }
+
+  if (userPoints >= cheapestReward) {
+    return {
+      title: "報酬を1つ交換する",
+      description: "交換所で特典を受け取り、行動の報酬を体験しましょう。",
+      status: `所持 ${userPoints}pt`,
+      actionLabel: "交換所へ",
+      targetId: "rewardList",
+    };
+  }
+
+  return {
+    title: "明日に向けて講座を1本進める",
+    description: "明日のスタートを軽くするために、次の講座を先に視聴しましょう。",
+    status: "おすすめ",
+    actionLabel: "学習へ",
+    targetId: "lectureList",
+  };
+}
+
+function renderDailyFocus() {
+  if (!dailyFocusTitle || !dailyFocusDescription || !dailyFocusStatus || !dailyFocusAction) {
+    return;
+  }
+  const task = getFocusTask();
+  dailyFocusTitle.textContent = task.title;
+  dailyFocusDescription.textContent = task.description;
+  dailyFocusStatus.textContent = `進捗: ${task.status}`;
+  dailyFocusAction.textContent = task.actionLabel;
+  dailyFocusAction.dataset.targetId = task.targetId;
+}
+
+function getWeekRange(offsetWeeks = 0) {
+  const now = new Date();
+  const currentDay = now.getDay();
+  const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+  const monday = new Date(now);
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(monday.getDate() + diffToMonday + offsetWeeks * 7);
+  const sundayEnd = new Date(monday);
+  sundayEnd.setDate(sundayEnd.getDate() + 7);
+  sundayEnd.setMilliseconds(-1);
+  return { start: monday, end: sundayEnd };
+}
+
+function getPointsInRange(name, range) {
+  return state.tickerEvents
+    .filter((event) => event.name === name && event.timestamp >= range.start.getTime() && event.timestamp <= range.end.getTime())
+    .reduce((sum, event) => sum + event.points, 0);
+}
+
+function getRankPosition(name) {
+  const sorted = [...state.members].sort((a, b) => b.points - a.points);
+  const idx = sorted.findIndex((member) => member.name === name);
+  return idx >= 0 ? idx + 1 : null;
+}
+
+function renderWeeklyReview() {
+  if (!weeklyReviewSummary || !weeklyMetricProgress || !weeklyMetricConsistency || !weeklyMetricNext) {
+    return;
+  }
+  const currentWeek = getWeekRange(0);
+  const prevWeek = getWeekRange(-1);
+  const thisWeekPoints = getPointsInRange(state.learnerName, currentWeek);
+  const lastWeekPoints = getPointsInRange(state.learnerName, prevWeek);
+  const diff = thisWeekPoints - lastWeekPoints;
+  const rank = getRankPosition(state.learnerName);
+  const lectureDoneToday = getTodayCompletedLectureCount();
+
+  weeklyReviewSummary.textContent = `${state.learnerName}の今週サマリー: ${thisWeekPoints}pt（先週比 ${diff >= 0 ? "+" : ""}${diff}pt）`;
+  weeklyMetricProgress.textContent = `成長量: 今週 ${thisWeekPoints}pt / 先週 ${lastWeekPoints}pt`;
+  weeklyMetricConsistency.textContent = `継続: ${state.gamification.streak}日連続・本日講座完了 ${lectureDoneToday}本`;
+  weeklyMetricNext.textContent = `次の一手: ${
+    rank ? `現在${rank}位。` : ""
+  } 今日の最重要タスクを完了して、明日も継続しましょう。`;
 }
 
 function getTodayActionCount(actionType) {
@@ -945,6 +1076,20 @@ function setAutoFeed(enabled) {
 autoFeedButton.addEventListener("click", () => {
   setAutoFeed(!autoFeedEnabled);
 });
+
+if (dailyFocusAction) {
+  dailyFocusAction.addEventListener("click", () => {
+    const targetId = dailyFocusAction.dataset.targetId;
+    if (!targetId) {
+      return;
+    }
+    const target = document.getElementById(targetId);
+    if (!target) {
+      return;
+    }
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
 
 render();
 setAutoFeed(true);
