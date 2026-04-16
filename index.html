@@ -63,6 +63,19 @@
           </div>
         </article>
 
+        <article class="panel task-panel">
+          <div class="panel-header">
+            <h2>今日の最重要タスク</h2>
+            <p class="panel-note">迷わず、まず1つ実行</p>
+          </div>
+          <p id="dailyFocusTask" class="task-title">タスクを準備中...</p>
+          <p id="dailyFocusHint" class="task-hint"></p>
+          <div class="task-meta">
+            <span id="dailyFocusReward" class="task-chip">+0pt</span>
+            <span id="dailyFocusStatus" class="task-chip task-chip-muted">未着手</span>
+          </div>
+        </article>
+
         <article id="mvpCard" class="panel mvp-panel" aria-label="今週のMVP">
           <div class="panel-header">
             <h2>今週のMVP</h2>
@@ -95,6 +108,31 @@
           </div>
           <p id="leagueProgressText" class="panel-note"></p>
         </article>
+      </section>
+
+      <section class="panel review-panel">
+        <div class="panel-header">
+          <h2>週間レビュー（自動生成）</h2>
+          <p id="weeklyReviewUpdatedAt" class="panel-note"></p>
+        </div>
+        <div class="review-grid">
+          <div class="review-item">
+            <p class="review-label">今週の進捗</p>
+            <p id="weeklyReviewProgress" class="review-value">-</p>
+          </div>
+          <div class="review-item">
+            <p class="review-label">良かった点</p>
+            <p id="weeklyReviewGood" class="review-value">-</p>
+          </div>
+          <div class="review-item">
+            <p class="review-label">改善ポイント</p>
+            <p id="weeklyReviewImprove" class="review-value">-</p>
+          </div>
+          <div class="review-item">
+            <p class="review-label">来週の一手</p>
+            <p id="weeklyReviewNext" class="review-value">-</p>
+          </div>
+        </div>
       </section>
 
       <section class="ticker-section">
