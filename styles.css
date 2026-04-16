@@ -703,6 +703,10 @@ h2 {
   margin-bottom: 16px;
 }
 
+.board-grid {
+  align-items: start;
+}
+
 .gamify-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
