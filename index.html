@@ -142,7 +142,24 @@
       <section class="panel review-panel">
         <div class="panel-header">
           <h2>週間レビュー（自動生成）</h2>
-          <p class="panel-note">AI要約</p>
+          <div class="review-header-meta">
+            <p id="weeklyReviewUpdatedAt" class="panel-note">更新: -</p>
+            <span id="weeklyReviewGrade" class="review-grade">評価: -</span>
+          </div>
+        </div>
+        <div class="review-kpi-grid">
+          <article class="review-kpi">
+            <p class="review-label">総合スコア</p>
+            <p id="weeklyReviewScore" class="review-kpi-value">-</p>
+            <p id="weeklyReviewDelta" class="review-kpi-sub">-</p>
+          </article>
+          <article class="review-kpi">
+            <p class="review-label">目標達成率</p>
+            <div class="review-progress-track" aria-label="週間目標達成率">
+              <div id="weeklyReviewTargetBar" class="review-progress-fill"></div>
+            </div>
+            <p id="weeklyReviewTargetText" class="review-kpi-sub">-</p>
+          </article>
         </div>
         <div class="review-grid">
           <div class="review-item">

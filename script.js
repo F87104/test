@@ -181,6 +181,11 @@ const reactivationCard = document.getElementById("reactivationCard");
 const reactivationMessage = document.getElementById("reactivationMessage");
 const reactivationActionButton = document.getElementById("reactivationActionButton");
 const weeklyReviewUpdatedAt = document.getElementById("weeklyReviewUpdatedAt");
+const weeklyReviewGrade = document.getElementById("weeklyReviewGrade");
+const weeklyReviewScore = document.getElementById("weeklyReviewScore");
+const weeklyReviewDelta = document.getElementById("weeklyReviewDelta");
+const weeklyReviewTargetBar = document.getElementById("weeklyReviewTargetBar");
+const weeklyReviewTargetText = document.getElementById("weeklyReviewTargetText");
 const weeklyReviewSummary = document.getElementById("weeklyReviewSummary");
 const weeklyMetricProgress = document.getElementById("weeklyMetricProgress");
 const weeklyMetricConsistency = document.getElementById("weeklyMetricConsistency");
@@ -980,8 +985,37 @@ function getRankPosition(name) {
   return idx >= 0 ? idx + 1 : null;
 }
 
+function getLectureCompletionsInRange(name, range) {
+  return state.tickerEvents.filter((event) => {
+    if (event.name !== name) {
+      return false;
+    }
+    if (event.timestamp < range.start.getTime() || event.timestamp > range.end.getTime()) {
+      return false;
+    }
+    return event.reason.includes("視聴完了");
+  }).length;
+}
+
+function getReviewGrade(score) {
+  if (score >= 85) return { label: "S", tone: "is-strong" };
+  if (score >= 70) return { label: "A", tone: "is-strong" };
+  if (score >= 55) return { label: "B", tone: "is-mid" };
+  return { label: "C", tone: "is-alert" };
+}
+
 function renderWeeklyReview() {
-  if (!weeklyReviewSummary || !weeklyMetricProgress || !weeklyMetricConsistency || !weeklyMetricNext) {
+  if (
+    !weeklyReviewSummary ||
+    !weeklyMetricProgress ||
+    !weeklyMetricConsistency ||
+    !weeklyMetricNext ||
+    !weeklyReviewScore ||
+    !weeklyReviewDelta ||
+    !weeklyReviewTargetBar ||
+    !weeklyReviewTargetText ||
+    !weeklyReviewGrade
+  ) {
     return;
   }
   const currentWeek = getWeekRange(0);
@@ -991,13 +1025,40 @@ function renderWeeklyReview() {
   const diff = thisWeekPoints - lastWeekPoints;
   const rank = getRankPosition(state.learnerName);
   const lectureDoneToday = getTodayCompletedLectureCount();
+  const weeklyLectureCompletions = getLectureCompletionsInRange(state.learnerName, currentWeek);
+  const weeklyTargetPoints = 80;
+  const targetRate = Math.max(0, Math.min(100, Math.round((thisWeekPoints / weeklyTargetPoints) * 100)));
+  const score = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(
+        targetRate * 0.55 +
+          Math.min(100, weeklyLectureCompletions * 24) * 0.2 +
+          Math.min(100, state.gamification.streak * 12) * 0.15 +
+          Math.min(100, Math.max(0, diff + 20)) * 0.1
+      )
+    )
+  );
+  const grade = getReviewGrade(score);
 
-  weeklyReviewSummary.textContent = `${state.learnerName}の今週サマリー: ${thisWeekPoints}pt（先週比 ${diff >= 0 ? "+" : ""}${diff}pt）`;
-  weeklyMetricProgress.textContent = `成長量: 今週 ${thisWeekPoints}pt / 先週 ${lastWeekPoints}pt`;
-  weeklyMetricConsistency.textContent = `継続: ${state.gamification.streak}日連続・本日講座完了 ${lectureDoneToday}本`;
+  weeklyReviewScore.textContent = `${score} / 100`;
+  weeklyReviewDelta.textContent = `先週比 ${diff >= 0 ? "+" : ""}${diff}pt`;
+  weeklyReviewTargetBar.style.width = `${targetRate}%`;
+  weeklyReviewTargetText.textContent = `${thisWeekPoints} / ${weeklyTargetPoints}pt（達成率 ${targetRate}%）`;
+  weeklyReviewGrade.textContent = `評価: ${grade.label}`;
+  weeklyReviewGrade.classList.remove("is-strong", "is-mid", "is-alert");
+  weeklyReviewGrade.classList.add(grade.tone);
+
+  weeklyReviewSummary.textContent =
+    diff >= 0
+      ? `先週より行動量が増加。特に${weeklyLectureCompletions > 0 ? "講座完了" : "日次アクション"}が伸びています。`
+      : `先週よりペースが低下。まずは短い行動（+10pt投稿 or 講座1本）で流れを戻しましょう。`;
+  weeklyMetricProgress.textContent = `進捗: 今週 ${thisWeekPoints}pt / 先週 ${lastWeekPoints}pt / 目標 ${weeklyTargetPoints}pt`;
+  weeklyMetricConsistency.textContent = `継続: ${state.gamification.streak}日連続・週間講座完了 ${weeklyLectureCompletions}本・本日完了 ${lectureDoneToday}本`;
   weeklyMetricNext.textContent = `次の一手: ${
     rank ? `現在${rank}位。` : ""
-  } 今日の最重要タスクを完了して、明日も継続しましょう。`;
+  } ${targetRate < 70 ? "目標まで不足ptを優先回収" : "上位維持のため貢献アクションを追加"}。`;
   if (weeklyReviewUpdatedAt) {
     weeklyReviewUpdatedAt.textContent = `更新: ${formatTimestamp(state.updatedAt)}`;
   }

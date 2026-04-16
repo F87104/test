@@ -387,6 +387,110 @@ h2 {
   line-height: 1.5;
 }
 
+.review-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-grade {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(138, 99, 48, 0.26);
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #7a5a2b;
+  background: rgba(193, 154, 90, 0.14);
+}
+
+.review-grade.is-strong {
+  color: #345d3d;
+  border-color: rgba(69, 111, 79, 0.32);
+  background: rgba(69, 111, 79, 0.12);
+}
+
+.review-grade.is-mid {
+  color: #7d5d20;
+  border-color: rgba(184, 140, 58, 0.32);
+  background: rgba(184, 140, 58, 0.12);
+}
+
+.review-grade.is-alert {
+  color: #8a3030;
+  border-color: rgba(160, 67, 67, 0.34);
+  background: rgba(160, 67, 67, 0.12);
+}
+
+.review-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.review-kpi {
+  border-radius: 12px;
+  border: 1px solid rgba(138, 99, 48, 0.2);
+  background: rgba(255, 252, 246, 0.94);
+  padding: 10px 11px;
+}
+
+.review-kpi-value {
+  margin: 6px 0 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.review-kpi-sub {
+  margin: 4px 0 0;
+  font-size: 0.77rem;
+  color: var(--muted);
+}
+
+.review-progress-track {
+  margin-top: 8px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(193, 154, 90, 0.18);
+  overflow: hidden;
+}
+
+.review-progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c79a55, #e2be7f);
+  transition: width 0.3s ease;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.review-item {
+  border-radius: 12px;
+  border: 1px solid rgba(138, 99, 48, 0.2);
+  background: rgba(255, 252, 246, 0.9);
+  padding: 10px 11px;
+}
+
+.review-label {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.review-value {
+  margin: 5px 0 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
 .reactivation-card {
   border-color: rgba(196, 123, 68, 0.35);
   background: rgba(255, 247, 236, 0.92);
@@ -1092,6 +1196,11 @@ button:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .review-kpi-grid,
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+
   .board-grid,
   .learning-grid,
   .gamify-grid {
@@ -1174,6 +1283,11 @@ button:focus {
 
   .header-actions {
     grid-template-columns: 1fr;
+  }
+
+  .review-header-meta {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .ticker-label {
