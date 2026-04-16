@@ -114,8 +114,20 @@ const nicknamePool = [
 
 const rewardCatalog = [
   { id: "priority-review", title: "優先レビュー権", cost: 40, description: "次回レビューの優先枠" },
-  { id: "special-template", title: "限定テンプレ解放", cost: 70, description: "上位会員向けテンプレを開放" },
-  { id: "mentor-qa", title: "メンターQ&Aチケット", cost: 120, description: "個別質問を1回送信可能" },
+  {
+    id: "special-template",
+    title: "限定テンプレ解放",
+    cost: 70,
+    description: "上位会員向けテンプレを開放",
+    requiredLeagues: ["silver", "gold"],
+  },
+  {
+    id: "mentor-qa",
+    title: "メンターQ&Aチケット",
+    cost: 120,
+    description: "個別質問を1回送信可能",
+    requiredLeagues: ["gold"],
+  },
 ];
 
 const leagueTable = [
@@ -160,10 +172,14 @@ const dailyFocusTitle = document.getElementById("dailyFocusTitle");
 const dailyFocusDescription = document.getElementById("dailyFocusDescription");
 const dailyFocusStatus = document.getElementById("dailyFocusStatus");
 const dailyFocusAction = document.getElementById("dailyFocusAction");
+const reactivationCard = document.getElementById("reactivationCard");
+const reactivationMessage = document.getElementById("reactivationMessage");
+const reactivationActionButton = document.getElementById("reactivationActionButton");
 const weeklyReviewSummary = document.getElementById("weeklyReviewSummary");
 const weeklyMetricProgress = document.getElementById("weeklyMetricProgress");
 const weeklyMetricConsistency = document.getElementById("weeklyMetricConsistency");
 const weeklyMetricNext = document.getElementById("weeklyMetricNext");
+const rankingTabButtons = document.querySelectorAll("[data-ranking-tab]");
 const learnerForm = document.getElementById("learnerForm");
 const learnerNameInput = document.getElementById("learnerNameInput");
 const resetLearningButton = document.getElementById("resetLearningButton");
@@ -174,6 +190,7 @@ let autoFeedTimer = null;
 const playbackState = new Map();
 let learningViewInitialized = false;
 const vimeoPlayers = new Map();
+let currentRankingTab = "overall";
 
 function loadState() {
   try {
@@ -214,8 +231,10 @@ function migrateState(baseState) {
     gamification: {
       streak: baseState.gamification?.streak ?? 0,
       lastActivityDate: baseState.gamification?.lastActivityDate ?? null,
+      lastActivityTimestamp: baseState.gamification?.lastActivityTimestamp ?? null,
       completedQuests: baseState.gamification?.completedQuests ?? {},
     },
+    joinedAtMap: baseState.joinedAtMap ?? {},
   };
 }
 
@@ -251,6 +270,9 @@ function addPoints(name, points, reason) {
 
   state.tickerEvents.unshift(createEvent(normalizedName, points, reason));
   state.tickerEvents = state.tickerEvents.slice(0, MAX_TICKER_ITEMS);
+  if (normalizedName === state.learnerName) {
+    state.gamification.lastActivityTimestamp = Date.now();
+  }
   state.updatedAt = Date.now();
   persistState();
   render();
@@ -279,6 +301,9 @@ function ensureNickname(realName) {
   if (!realName) {
     return "Player";
   }
+  if (!state.joinedAtMap[realName]) {
+    state.joinedAtMap[realName] = Date.now();
+  }
   if (!state.nicknameMap[realName]) {
     state.nicknameMap[realName] = getRandomNickname();
   }
@@ -305,21 +330,99 @@ function getLeagueByPoints(points) {
   return leagueTable.find((league) => points >= league.min && (league.max === null || points <= league.max));
 }
 
+function getCurrentLeagueId() {
+  const userPoints = getTotalPointsByLearner(state.learnerName);
+  const league = getLeagueByPoints(userPoints);
+  return league?.id ?? "bronze";
+}
+
+function getLeagueOrder(leagueId) {
+  const map = { bronze: 1, silver: 2, gold: 3 };
+  return map[leagueId] ?? 1;
+}
+
+function isRewardUnlockedForLeague(reward, leagueId) {
+  if (!reward.requiredLeagues || reward.requiredLeagues.length === 0) {
+    return true;
+  }
+  return reward.requiredLeagues.includes(leagueId);
+}
+
+function getCurrentWeekRange() {
+  return getWeekRange(0);
+}
+
+function getMemberPointsInRange(memberName, range) {
+  return state.tickerEvents
+    .filter((event) => event.name === memberName && event.timestamp >= range.start.getTime() && event.timestamp <= range.end.getTime())
+    .reduce((sum, event) => sum + event.points, 0);
+}
+
+function getGrowthRate(memberName) {
+  const thisWeek = getPointsInRange(memberName, getWeekRange(0));
+  const prevWeek = getPointsInRange(memberName, getWeekRange(-1));
+  if (prevWeek <= 0) {
+    return thisWeek > 0 ? 999 : 0;
+  }
+  return ((thisWeek - prevWeek) / prevWeek) * 100;
+}
+
+function getContributionScore(memberName) {
+  const range = getCurrentWeekRange();
+  return state.tickerEvents
+    .filter(
+      (event) =>
+        event.name === memberName &&
+        event.timestamp >= range.start.getTime() &&
+        event.timestamp <= range.end.getTime() &&
+        (event.reason.includes("支援") || event.reason.includes("クエスト達成"))
+    )
+    .reduce((sum, event) => sum + event.points, 0);
+}
+
+function getSortedMembersByTab(tabId) {
+  const members = [...state.members];
+  if (tabId === "rookie" || tabId === "newcomer") {
+    const now = Date.now();
+    const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+    const newcomers = members.filter((member) => now - (state.joinedAtMap[member.name] ?? now) <= fourteenDaysMs);
+    return newcomers.sort((a, b) => b.points - a.points);
+  }
+  if (tabId === "growth") {
+    return members.sort((a, b) => getGrowthRate(b.name) - getGrowthRate(a.name));
+  }
+  if (tabId === "contribution") {
+    return members.sort((a, b) => getContributionScore(b.name) - getContributionScore(a.name));
+  }
+  return members.sort((a, b) => b.points - a.points);
+}
+
 function renderRanking() {
   rankingList.innerHTML = "";
 
-  const sorted = [...state.members].sort((a, b) => b.points - a.points);
+  const sorted = getSortedMembersByTab(currentRankingTab);
 
   sorted.forEach((member, index) => {
     const nickname = getDisplayName(member.name);
+    let scoreLabel = `${member.points} pt`;
+    if (currentRankingTab === "growth") {
+      const rate = getGrowthRate(member.name);
+      scoreLabel = `${rate >= 0 ? "+" : ""}${Math.round(rate)}%`;
+    } else if (currentRankingTab === "contribution") {
+      scoreLabel = `${getContributionScore(member.name)} pt`;
+    }
     const row = document.createElement("li");
     row.className = `ranking-row ${index < 3 ? "top3" : ""}`;
     row.innerHTML = `
       <span class="ranking-position">${index + 1}</span>
       <span class="ranking-name">${nickname}</span>
-      <span class="ranking-points">${member.points} pt</span>
+      <span class="ranking-points">${scoreLabel}</span>
     `;
     rankingList.appendChild(row);
+  });
+
+  rankingTabButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.rankingTab === currentRankingTab);
   });
 }
 
@@ -360,6 +463,7 @@ function render() {
   renderUpdatedAt();
   renderDailyFocus();
   renderWeeklyReview();
+  renderReactivation();
   renderLearning();
   renderGamification();
   renderLeagueAndRewards();
@@ -576,6 +680,59 @@ function getTodayCompletedLectureCount() {
   }).length;
 }
 
+function getMemberGrowthMap() {
+  const thisWeek = getWeekRange(0);
+  const prevWeek = getWeekRange(-1);
+  const map = {};
+  state.members.forEach((member) => {
+    const current = getPointsInRange(member.name, thisWeek);
+    const previous = getPointsInRange(member.name, prevWeek);
+    map[member.name] = current - previous;
+  });
+  return map;
+}
+
+function getContributionScoreMap() {
+  const thisWeek = getWeekRange(0);
+  const map = {};
+  state.members.forEach((member) => {
+    const supportCount = state.tickerEvents.filter((event) => {
+      if (event.name !== member.name) return false;
+      if (event.timestamp < thisWeek.start.getTime() || event.timestamp > thisWeek.end.getTime()) return false;
+      return event.reason.includes("支援");
+    }).length;
+    map[member.name] = supportCount * 10 + getPointsInRange(member.name, thisWeek);
+  });
+  return map;
+}
+
+function getRankingViewMembers() {
+  const all = [...state.members];
+  if (currentRankingTab === "all") {
+    return all.sort((a, b) => b.points - a.points);
+  }
+  if (currentRankingTab === "rookie") {
+    const thisWeek = getWeekRange(0);
+    return all
+      .filter((member) => {
+        const firstEvent = state.tickerEvents
+          .filter((event) => event.name === member.name)
+          .sort((a, b) => a.timestamp - b.timestamp)[0];
+        return firstEvent ? firstEvent.timestamp >= thisWeek.start.getTime() : false;
+      })
+      .sort((a, b) => b.points - a.points);
+  }
+  if (currentRankingTab === "growth") {
+    const growthMap = getMemberGrowthMap();
+    return all.sort((a, b) => (growthMap[b.name] ?? -9999) - (growthMap[a.name] ?? -9999));
+  }
+  if (currentRankingTab === "contribution") {
+    const contributionMap = getContributionScoreMap();
+    return all.sort((a, b) => (contributionMap[b.name] ?? -9999) - (contributionMap[a.name] ?? -9999));
+  }
+  return all.sort((a, b) => b.points - a.points);
+}
+
 function getFocusTask() {
   const completedTotal = getCompletedLectureCount();
   const todayPoints = getTodayEarnedPoints();
@@ -661,6 +818,37 @@ function getPointsInRange(name, range) {
   return state.tickerEvents
     .filter((event) => event.name === name && event.timestamp >= range.start.getTime() && event.timestamp <= range.end.getTime())
     .reduce((sum, event) => sum + event.points, 0);
+}
+
+function getLastActivityTimestamp() {
+  if (typeof state.gamification.lastActivityTimestamp === "number") {
+    return state.gamification.lastActivityTimestamp;
+  }
+  const memberEvents = state.tickerEvents
+    .filter((event) => event.name === state.learnerName)
+    .sort((a, b) => b.timestamp - a.timestamp);
+  return memberEvents[0]?.timestamp ?? null;
+}
+
+function renderReactivation() {
+  if (!reactivationCard || !reactivationMessage || !reactivationActionButton) {
+    return;
+  }
+  const lastActivity = getLastActivityTimestamp();
+  if (!lastActivity) {
+    reactivationCard.hidden = true;
+    return;
+  }
+  const now = Date.now();
+  const daysInactive = Math.floor((now - lastActivity) / (24 * 60 * 60 * 1000));
+  if (daysInactive < 3) {
+    reactivationCard.hidden = true;
+    return;
+  }
+
+  reactivationCard.hidden = false;
+  reactivationMessage.textContent = `${daysInactive}日ぶりです。復帰ミッション（講座1本＋10pt投稿）で流れを取り戻しましょう。`;
+  reactivationActionButton.dataset.targetId = "lectureList";
 }
 
 function getRankPosition(name) {
@@ -766,6 +954,7 @@ function renderGamification() {
 function renderLeagueAndRewards() {
   const userPoints = getTotalPointsByLearner(state.learnerName);
   const league = getLeagueByPoints(userPoints) ?? leagueTable[0];
+  const currentLeagueId = league.id;
   currentLeagueLabel.textContent = `${league.title} (${userPoints}pt)`;
 
   badgeBronze.classList.toggle("active", league.id === "bronze");
@@ -787,13 +976,18 @@ function renderLeagueAndRewards() {
   rewardList.innerHTML = "";
   rewardCatalog.forEach((reward) => {
     const claimed = state.rewardInventory[reward.id] ?? 0;
-    const canBuy = userPoints >= reward.cost;
+    const unlocked = isRewardUnlockedForLeague(reward, currentLeagueId);
+    const canBuy = unlocked && userPoints >= reward.cost;
+    const requiredText = reward.requiredLeagues?.length
+      ? ` / 条件: ${reward.requiredLeagues.map((id) => leagueTable.find((l) => l.id === id)?.title ?? id).join("・")}`
+      : "";
     const item = document.createElement("article");
-    item.className = "reward-item";
+    item.className = `reward-item ${unlocked ? "" : "locked"}`;
     item.innerHTML = `
       <div>
         <p class="reward-title">${reward.title}</p>
-        <p class="reward-meta">必要: ${reward.cost}pt / 所持: ${claimed}個</p>
+        <p class="reward-meta">必要: ${reward.cost}pt / 所持: ${claimed}個${requiredText}</p>
+        ${unlocked ? "" : `<p class="reward-lock">現在のリーグでは未解放</p>`}
       </div>
       <button class="button button-small" type="button" data-reward-id="${reward.id}" ${
         canBuy ? "" : "disabled"
@@ -878,6 +1072,10 @@ rewardList.addEventListener("click", (event) => {
   if (!reward) {
     return;
   }
+  const currentLeagueId = getCurrentLeagueId();
+  if (!isRewardUnlockedForLeague(reward, currentLeagueId)) {
+    return;
+  }
   const success = spendPoints(state.learnerName, reward.cost, `報酬交換:${reward.title}`);
   if (!success) {
     return;
@@ -886,6 +1084,33 @@ rewardList.addEventListener("click", (event) => {
   persistState();
   render();
 });
+
+if (rankingTabButtons.length > 0) {
+  rankingTabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const tabId = button.dataset.rankingTab;
+      if (!tabId || tabId === currentRankingTab) {
+        return;
+      }
+      currentRankingTab = tabId;
+      renderRanking();
+    });
+  });
+}
+
+if (reactivationActionButton) {
+  reactivationActionButton.addEventListener("click", () => {
+    const targetId = reactivationActionButton.dataset.targetId;
+    if (!targetId) {
+      return;
+    }
+    const target = document.getElementById(targetId);
+    if (!target) {
+      return;
+    }
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
 
 function getOrCreatePlayback(lectureId) {
   if (!playbackState.has(lectureId)) {
@@ -1026,6 +1251,7 @@ resetLearningButton.addEventListener("click", () => {
   state.gamification.completedQuests = {};
   state.gamification.streak = 0;
   state.gamification.lastActivityDate = null;
+  state.gamification.lastActivityTimestamp = null;
   state.updatedAt = Date.now();
   state.tickerEvents.unshift(createEvent("システム", 0, "学習進捗をリセット"));
   state.tickerEvents = state.tickerEvents.slice(0, MAX_TICKER_ITEMS);
@@ -1044,6 +1270,10 @@ resetButton.addEventListener("click", () => {
     updatedAt: Date.now(),
     learnerName: state.learnerName,
     learningProgress: state.learningProgress,
+    nicknameMap: state.nicknameMap,
+    rewardInventory: state.rewardInventory,
+    gamification: state.gamification,
+    joinedAtMap: state.joinedAtMap,
   };
   persistState();
   render();

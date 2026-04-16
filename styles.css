@@ -176,6 +176,11 @@ h2 {
   line-height: 1.5;
 }
 
+.reactivation-card {
+  border-color: rgba(196, 123, 68, 0.35);
+  background: rgba(255, 247, 236, 0.92);
+}
+
 .ranking-tabs {
   display: flex;
   gap: 8px;

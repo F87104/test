@@ -118,19 +118,19 @@
         <div class="review-grid">
           <div class="review-item">
             <p class="review-label">今週の進捗</p>
-            <p id="weeklyReviewProgress" class="review-value">-</p>
+            <p id="weeklyMetricProgress" class="review-value">-</p>
           </div>
           <div class="review-item">
             <p class="review-label">良かった点</p>
-            <p id="weeklyReviewGood" class="review-value">-</p>
+            <p id="weeklyReviewSummary" class="review-value">-</p>
           </div>
           <div class="review-item">
             <p class="review-label">改善ポイント</p>
-            <p id="weeklyReviewImprove" class="review-value">-</p>
+            <p id="weeklyMetricConsistency" class="review-value">-</p>
           </div>
           <div class="review-item">
             <p class="review-label">来週の一手</p>
-            <p id="weeklyReviewNext" class="review-value">-</p>
+            <p id="weeklyMetricNext" class="review-value">-</p>
           </div>
         </div>
       </section>
@@ -147,6 +147,12 @@
           <div class="panel-header">
             <h2>週間ランキング（ニックネーム）</h2>
             <p id="lastUpdated" class="panel-note"></p>
+          </div>
+          <div class="ranking-tabs">
+            <button class="ranking-tab active" type="button" data-ranking-tab="overall">総合</button>
+            <button class="ranking-tab" type="button" data-ranking-tab="rookie">新人</button>
+            <button class="ranking-tab" type="button" data-ranking-tab="growth">成長率</button>
+            <button class="ranking-tab" type="button" data-ranking-tab="contribution">貢献</button>
           </div>
           <ol id="rankingList" class="ranking-list"></ol>
         </article>
@@ -189,6 +195,18 @@
       </section>
 
       <section class="gamify-grid">
+        <article id="reactivationCard" class="panel reactivation-card" hidden>
+          <div class="panel-header">
+            <h2>復帰ミッション</h2>
+            <p class="panel-note">3日以上未活動の方向け</p>
+          </div>
+          <p id="reactivationMessage" class="focus-description">最近の活動が止まっています。まずは1つ再開しましょう。</p>
+          <ul class="weekly-review-list">
+            <li id="reactivationTask1">講座を1本視聴完了する</li>
+            <li id="reactivationTask2">ポイント投稿を1回実行する</li>
+          </ul>
+          <button id="reactivationActionButton" class="button button-small" type="button">再開ミッションを実行</button>
+        </article>
         <article class="panel">
           <div class="panel-header">
             <h2>デイリークエスト</h2>
