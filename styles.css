@@ -753,13 +753,13 @@ button:focus {
 
 /* Hotel Lounge Theme Overrides */
 :root {
-  --bg: #f4eee4;
-  --line: #cbb590;
-  --panel: #fbf6ed;
-  --text: #2e2418;
-  --muted: #7a6952;
-  --primary: #6f4f2b;
-  --accent: #b48b4e;
+  --bg: #f9f4eb;
+  --line: #d7c4a3;
+  --panel: #fffaf1;
+  --text: #33271a;
+  --muted: #8a775e;
+  --primary: #8a6330;
+  --accent: #c19a5a;
   --success: #456f4f;
   --danger: #9b4f45;
 }
@@ -768,14 +768,14 @@ html,
 body {
   color: var(--text);
   background:
-    radial-gradient(circle at 12% 0%, rgba(219, 199, 165, 0.52), transparent 40%),
-    radial-gradient(circle at 88% 6%, rgba(180, 139, 78, 0.2), transparent 35%),
-    linear-gradient(180deg, #f7f2ea 0%, #efe6d9 100%);
+    radial-gradient(circle at 10% 0%, rgba(235, 219, 190, 0.62), transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(210, 174, 115, 0.28), transparent 36%),
+    linear-gradient(180deg, #fcf7ef 0%, #f4eadb 100%);
 }
 
 .site-header {
-  background: rgba(251, 246, 237, 0.94);
-  border-bottom: 1px solid rgba(111, 79, 43, 0.2);
+  background: rgba(255, 250, 242, 0.95);
+  border-bottom: 1px solid rgba(138, 99, 48, 0.2);
 }
 
 .brand-sub,
@@ -795,55 +795,55 @@ body {
 .reward-item,
 .lecture-card,
 .ranking-row {
-  background: rgba(251, 246, 237, 0.9);
-  border-color: rgba(111, 79, 43, 0.2);
-  box-shadow: 0 10px 24px rgba(79, 59, 31, 0.08);
+  background: rgba(255, 251, 244, 0.93);
+  border-color: rgba(138, 99, 48, 0.18);
+  box-shadow: 0 10px 24px rgba(96, 71, 38, 0.08);
 }
 
 .ticker-section {
-  background: rgba(251, 246, 237, 0.96);
-  border: 1px solid rgba(111, 79, 43, 0.24);
+  background: rgba(255, 251, 244, 0.96);
+  border: 1px solid rgba(138, 99, 48, 0.24);
 }
 
 .ticker-label {
-  background: rgba(180, 139, 78, 0.16);
-  border-right: 1px solid rgba(111, 79, 43, 0.22);
-  color: #6b4a24;
+  background: rgba(193, 154, 90, 0.2);
+  border-right: 1px solid rgba(138, 99, 48, 0.2);
+  color: #7a5324;
 }
 
 .ticker-item {
-  background: rgba(180, 139, 78, 0.12);
-  border-color: rgba(111, 79, 43, 0.28);
-  color: #5a3f1f;
+  background: rgba(193, 154, 90, 0.12);
+  border-color: rgba(138, 99, 48, 0.22);
+  color: #664723;
 }
 
 .mvp-card {
-  border: 1px solid rgba(180, 139, 78, 0.44);
-  background: linear-gradient(145deg, rgba(252, 246, 234, 0.98), rgba(230, 206, 166, 0.58));
-  box-shadow: 0 18px 36px rgba(79, 59, 31, 0.15), 0 0 0 1px rgba(180, 139, 78, 0.25) inset;
+  border: 1px solid rgba(193, 154, 90, 0.44);
+  background: linear-gradient(145deg, rgba(255, 250, 241, 0.98), rgba(238, 216, 177, 0.64));
+  box-shadow: 0 18px 36px rgba(98, 72, 38, 0.14), 0 0 0 1px rgba(193, 154, 90, 0.24) inset;
 }
 
 .mvp-title {
-  color: #6a4721;
-  border-color: rgba(180, 139, 78, 0.55);
-  background: rgba(180, 139, 78, 0.16);
+  color: #7a5324;
+  border-color: rgba(193, 154, 90, 0.52);
+  background: rgba(193, 154, 90, 0.18);
 }
 
 .mvp-points,
 .mvp-message {
-  color: #564024;
+  color: #634726;
 }
 
 .button {
-  background: linear-gradient(135deg, #6f4f2b, #9d7441);
+  background: linear-gradient(135deg, #8a6330, #b48a4f);
   color: #fffaf2;
-  box-shadow: 0 10px 20px rgba(79, 59, 31, 0.22);
+  box-shadow: 0 10px 20px rgba(106, 77, 41, 0.2);
 }
 
 .button-ghost {
-  background: rgba(111, 79, 43, 0.08);
-  border-color: rgba(111, 79, 43, 0.34);
-  color: #634523;
+  background: rgba(138, 99, 48, 0.09);
+  border-color: rgba(138, 99, 48, 0.3);
+  color: #735027;
 }
 
 .button-danger {
@@ -853,25 +853,25 @@ body {
 
 input,
 select {
-  background: rgba(251, 246, 237, 0.95);
-  border-color: rgba(111, 79, 43, 0.28);
+  background: rgba(255, 251, 244, 0.96);
+  border-color: rgba(138, 99, 48, 0.26);
   color: var(--text);
 }
 
 .progress-wrap,
 .xp-wrap {
-  background: rgba(180, 139, 78, 0.12);
-  border-color: rgba(111, 79, 43, 0.24);
+  background: rgba(193, 154, 90, 0.14);
+  border-color: rgba(138, 99, 48, 0.22);
 }
 
 .xp-bar {
-  background: linear-gradient(90deg, #9d7441, #c29c61);
+  background: linear-gradient(90deg, #b58746, #d7b477);
 }
 
 .progress-bar {
-  background: linear-gradient(90deg, #b48b4e, #d5b178);
+  background: linear-gradient(90deg, #c79a55, #e2be7f);
 }
 
 .site-footer {
-  border-top: 1px solid rgba(111, 79, 43, 0.18);
+  border-top: 1px solid rgba(138, 99, 48, 0.16);
 }
