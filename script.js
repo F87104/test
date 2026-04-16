@@ -1,6 +1,16 @@
 const STORAGE_KEY = "story-stock-lab-weekly-state-v1";
 const AUTO_FEED_INTERVAL_MS = 6500;
 const MAX_TICKER_ITEMS = 20;
+const DEFAULT_LEARNER_NAME = "あなた";
+
+const lectureCatalog = [
+  { id: "lec-1", title: "講座1: 強みの棚卸し", points: 12 },
+  { id: "lec-2", title: "講座2: ターゲット設定", points: 15 },
+  { id: "lec-3", title: "講座3: オファー設計", points: 20 },
+  { id: "lec-4", title: "講座4: LP作成の基本", points: 18 },
+  { id: "lec-5", title: "講座5: 初提案の作り方", points: 22 },
+  { id: "lec-6", title: "講座6: 改善ループ運用", points: 25 },
+];
 
 const starterMembers = [
   { name: "田中さん", points: 64 },
@@ -40,6 +50,13 @@ const reasonInput = document.getElementById("reasonInput");
 const resetButton = document.getElementById("resetButton");
 const autoFeedButton = document.getElementById("toggleAutoFeedButton");
 const lastUpdated = document.getElementById("lastUpdated");
+const learningSummary = document.getElementById("learningSummary");
+const learningProgressBar = document.getElementById("learningProgressBar");
+const learningPoints = document.getElementById("learningPoints");
+const lectureList = document.getElementById("lectureList");
+const learnerForm = document.getElementById("learnerForm");
+const learnerNameInput = document.getElementById("learnerNameInput");
+const resetLearningButton = document.getElementById("resetLearningButton");
 
 let state = loadState();
 let autoFeedEnabled = true;
@@ -49,13 +66,14 @@ function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      return migrateState(parsed);
     }
   } catch (error) {
     console.warn("Failed to load saved state:", error);
   }
 
-  return {
+  return migrateState({
     members: starterMembers,
     tickerEvents: [
       createEvent("田中さん", 10, "週次課題提出"),
@@ -63,6 +81,21 @@ function loadState() {
       createEvent("中村さん", 20, "初案件獲得"),
     ],
     updatedAt: Date.now(),
+  });
+}
+
+function migrateState(baseState) {
+  const mergedProgress = {};
+  lectureCatalog.forEach((lecture) => {
+    mergedProgress[lecture.id] = Boolean(baseState.learningProgress?.[lecture.id]);
+  });
+
+  return {
+    members: baseState.members ?? starterMembers,
+    tickerEvents: baseState.tickerEvents ?? [],
+    updatedAt: baseState.updatedAt ?? Date.now(),
+    learnerName: baseState.learnerName ?? DEFAULT_LEARNER_NAME,
+    learningProgress: mergedProgress,
   };
 }
 
@@ -150,6 +183,50 @@ function render() {
   renderRanking();
   renderTicker();
   renderUpdatedAt();
+  renderLearning();
+}
+
+function getCompletedLectureCount() {
+  return lectureCatalog.filter((lecture) => state.learningProgress[lecture.id]).length;
+}
+
+function getLearningPointsTotal() {
+  return lectureCatalog
+    .filter((lecture) => state.learningProgress[lecture.id])
+    .reduce((sum, lecture) => sum + lecture.points, 0);
+}
+
+function renderLearning() {
+  learnerNameInput.value = state.learnerName;
+
+  const completed = getCompletedLectureCount();
+  const total = lectureCatalog.length;
+  const progressPercent = Math.round((completed / total) * 100);
+  const earnedPoints = getLearningPointsTotal();
+
+  learningSummary.textContent = `${completed}/${total} 講座を完了（${progressPercent}%）`;
+  learningProgressBar.style.width = `${progressPercent}%`;
+  learningPoints.textContent = `${state.learnerName}の講座視聴ポイント: ${earnedPoints} pt`;
+
+  lectureList.innerHTML = "";
+  lectureCatalog.forEach((lecture) => {
+    const done = state.learningProgress[lecture.id];
+    const card = document.createElement("article");
+    card.className = `lecture-card ${done ? "done" : ""}`;
+    card.innerHTML = `
+      <p class="lecture-card-title">${lecture.title}</p>
+      <p class="lecture-card-meta">完了で ${lecture.points}pt 獲得</p>
+      <button
+        class="button button-small ${done ? "button-ghost" : ""}"
+        type="button"
+        data-lecture-id="${lecture.id}"
+        ${done ? "disabled" : ""}
+      >
+        ${done ? "視聴完了済み" : "見終わった（ポイント獲得）"}
+      </button>
+    `;
+    lectureList.appendChild(card);
+  });
 }
 
 awardForm.addEventListener("submit", (event) => {
@@ -168,6 +245,55 @@ awardForm.addEventListener("submit", (event) => {
   nameInput.focus();
 });
 
+lectureList.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  const lectureId = target.dataset.lectureId;
+  if (!lectureId || state.learningProgress[lectureId]) {
+    return;
+  }
+
+  const lecture = lectureCatalog.find((item) => item.id === lectureId);
+  if (!lecture) {
+    return;
+  }
+
+  state.learningProgress[lectureId] = true;
+  addPoints(state.learnerName, lecture.points, `${lecture.title}を見終わった`);
+});
+
+learnerForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const candidate = learnerNameInput.value.trim();
+  if (!candidate) {
+    return;
+  }
+  state.learnerName = candidate;
+  state.updatedAt = Date.now();
+  persistState();
+  render();
+});
+
+resetLearningButton.addEventListener("click", () => {
+  if (!window.confirm("学習進捗をリセットしますか？")) {
+    return;
+  }
+
+  const emptyProgress = {};
+  lectureCatalog.forEach((lecture) => {
+    emptyProgress[lecture.id] = false;
+  });
+  state.learningProgress = emptyProgress;
+  state.updatedAt = Date.now();
+  state.tickerEvents.unshift(createEvent("システム", 0, "学習進捗をリセット"));
+  state.tickerEvents = state.tickerEvents.slice(0, MAX_TICKER_ITEMS);
+  persistState();
+  render();
+});
+
 resetButton.addEventListener("click", () => {
   if (!window.confirm("今週のランキングを本当にリセットしますか？")) {
     return;
@@ -177,6 +303,8 @@ resetButton.addEventListener("click", () => {
     members: starterMembers.map((member) => ({ ...member, points: 0 })),
     tickerEvents: [createEvent("システム", 0, "週間ランキングをリセット")],
     updatedAt: Date.now(),
+    learnerName: state.learnerName,
+    learningProgress: state.learningProgress,
   };
   persistState();
   render();
