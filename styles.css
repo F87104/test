@@ -168,6 +168,81 @@ h1 span {
   margin-bottom: 16px;
 }
 
+.mvp-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.mvp-card::before {
+  content: "";
+  position: absolute;
+  inset: -40% -10%;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.22), transparent 55%);
+  pointer-events: none;
+}
+
+.mvp-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mvp-crown {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 2px 4px rgba(250, 204, 21, 0.45));
+}
+
+.mvp-sub {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.mvp-name {
+  margin: 10px 0 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.mvp-title {
+  margin: 6px 0 0;
+  display: inline-block;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  color: #fde68a;
+  background: rgba(250, 204, 21, 0.14);
+}
+
+.mvp-score {
+  margin: 12px 0 0;
+  font-size: 0.92rem;
+  color: #fef3c7;
+}
+
+.mvp-sparkles {
+  margin: 12px 0 0;
+  min-height: 18px;
+  color: #facc15;
+  letter-spacing: 0.2em;
+  opacity: 0.85;
+  animation: twinkle 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
 .gamify-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

@@ -151,6 +151,11 @@ const badgeSilver = document.getElementById("badgeSilver");
 const badgeGold = document.getElementById("badgeGold");
 const rewardBalance = document.getElementById("rewardBalance");
 const rewardList = document.getElementById("rewardList");
+const mvpCard = document.getElementById("mvpCard");
+const mvpNickname = document.getElementById("mvpNickname");
+const mvpPoints = document.getElementById("mvpPoints");
+const mvpTitle = document.getElementById("mvpTitle");
+const mvpMessage = document.getElementById("mvpMessage");
 const learnerForm = document.getElementById("learnerForm");
 const learnerNameInput = document.getElementById("learnerNameInput");
 const resetLearningButton = document.getElementById("resetLearningButton");
@@ -342,11 +347,63 @@ function ensureNicknamesForMembers() {
 function render() {
   ensureNicknamesForMembers();
   renderRanking();
+  renderMvpCard();
   renderTicker();
   renderUpdatedAt();
   renderLearning();
   renderGamification();
   renderLeagueAndRewards();
+}
+
+function getTopMember() {
+  if (!state.members.length) {
+    return null;
+  }
+  const sorted = [...state.members].sort((a, b) => b.points - a.points);
+  return sorted[0] ?? null;
+}
+
+function getMvpTitle(points) {
+  if (points >= 300) {
+    return "レジェンド開拓者";
+  }
+  if (points >= 200) {
+    return "スターランナー";
+  }
+  if (points >= 100) {
+    return "今週の急成長株";
+  }
+  return "今週のファーストブースト";
+}
+
+function renderMvpCard() {
+  if (!mvpCard || !mvpNickname || !mvpPoints || !mvpTitle || !mvpMessage) {
+    return;
+  }
+  const topMember = getTopMember();
+  if (!topMember) {
+    mvpNickname.textContent = "未定";
+    mvpPoints.textContent = "0 pt";
+    mvpTitle.textContent = "MVP準備中";
+    mvpMessage.textContent = "今週の行動で最初のMVPを目指そう";
+    mvpCard.classList.remove("is-gold", "is-silver", "is-bronze");
+    return;
+  }
+
+  const nickname = getDisplayName(topMember.name);
+  mvpNickname.textContent = nickname;
+  mvpPoints.textContent = `${topMember.points} pt`;
+  mvpTitle.textContent = getMvpTitle(topMember.points);
+  mvpMessage.textContent = `${nickname}さんが今週トップを走っています。追い上げで逆転を狙おう。`;
+
+  mvpCard.classList.remove("is-gold", "is-silver", "is-bronze");
+  if (topMember.points >= 250) {
+    mvpCard.classList.add("is-gold");
+  } else if (topMember.points >= 100) {
+    mvpCard.classList.add("is-silver");
+  } else {
+    mvpCard.classList.add("is-bronze");
+  }
 }
 
 function getCompletedLectureCount() {
@@ -590,6 +647,28 @@ function renderLeagueAndRewards() {
     `;
     rewardList.appendChild(item);
   });
+}
+
+function getTopMember() {
+  const sorted = [...state.members].sort((a, b) => b.points - a.points);
+  return sorted[0] ?? null;
+}
+
+function renderMvpCard() {
+  const top = getTopMember();
+  if (!top) {
+    mvpName.textContent = "-";
+    mvpTitle.textContent = "MVP情報なし";
+    mvpPoints.textContent = "0 pt";
+    mvpCard.classList.remove("mvp-glow");
+    return;
+  }
+
+  const nickname = getDisplayName(top.name);
+  mvpName.textContent = nickname;
+  mvpTitle.textContent = "今週のスター";
+  mvpPoints.textContent = `${top.points} pt`;
+  mvpCard.classList.add("mvp-glow");
 }
 
 function spendPoints(name, points, reason) {
