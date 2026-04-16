@@ -68,12 +68,13 @@
             <h2>今日の最重要タスク</h2>
             <p class="panel-note">迷わず、まず1つ実行</p>
           </div>
-          <p id="dailyFocusTask" class="task-title">タスクを準備中...</p>
-          <p id="dailyFocusHint" class="task-hint"></p>
+          <p id="dailyFocusTitle" class="task-title">タスクを準備中...</p>
+          <p id="dailyFocusDescription" class="task-hint"></p>
           <div class="task-meta">
-            <span id="dailyFocusReward" class="task-chip">+0pt</span>
+            <span id="dailyFocusReward" class="task-chip">推奨報酬: +0pt</span>
             <span id="dailyFocusStatus" class="task-chip task-chip-muted">未着手</span>
           </div>
+          <button id="dailyFocusAction" class="button button-small" type="button">最短ルートで実行する</button>
         </article>
 
         <article id="mvpCard" class="panel mvp-panel" aria-label="今週のMVP">
@@ -110,10 +111,38 @@
         </article>
       </section>
 
+      <section class="panel insight-panel">
+        <div class="panel-header">
+          <h2>成果インサイト（4週トレンド）</h2>
+          <p id="weeklyReviewUpdatedAt" class="panel-note"></p>
+        </div>
+        <div class="insight-grid">
+          <article class="insight-card">
+            <p class="insight-label">成長速度</p>
+            <p id="insightVelocityValue" class="insight-value">-</p>
+            <p id="insightVelocityMeta" class="insight-meta">-</p>
+            <p id="insightVelocityTrend" class="insight-trend">-</p>
+          </article>
+          <article class="insight-card">
+            <p class="insight-label">継続信頼度</p>
+            <p id="insightConsistencyValue" class="insight-value">-</p>
+            <p id="insightConsistencyMeta" class="insight-meta">-</p>
+            <p id="insightConsistencyTrend" class="insight-trend">-</p>
+          </article>
+          <article class="insight-card">
+            <p class="insight-label">コミュニティ健全性</p>
+            <p id="insightHealthValue" class="insight-value">-</p>
+            <p id="insightHealthMeta" class="insight-meta">-</p>
+            <p id="insightHealthTrend" class="insight-trend">-</p>
+          </article>
+        </div>
+        <p id="insightNarrative" class="insight-narrative">解析中...</p>
+      </section>
+
       <section class="panel review-panel">
         <div class="panel-header">
           <h2>週間レビュー（自動生成）</h2>
-          <p id="weeklyReviewUpdatedAt" class="panel-note"></p>
+          <p class="panel-note">AI要約</p>
         </div>
         <div class="review-grid">
           <div class="review-item">

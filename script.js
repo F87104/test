@@ -170,15 +170,27 @@ const mvpTitle = document.getElementById("mvpTitle");
 const mvpMessage = document.getElementById("mvpMessage");
 const dailyFocusTitle = document.getElementById("dailyFocusTitle");
 const dailyFocusDescription = document.getElementById("dailyFocusDescription");
+const dailyFocusReward = document.getElementById("dailyFocusReward");
 const dailyFocusStatus = document.getElementById("dailyFocusStatus");
 const dailyFocusAction = document.getElementById("dailyFocusAction");
 const reactivationCard = document.getElementById("reactivationCard");
 const reactivationMessage = document.getElementById("reactivationMessage");
 const reactivationActionButton = document.getElementById("reactivationActionButton");
+const weeklyReviewUpdatedAt = document.getElementById("weeklyReviewUpdatedAt");
 const weeklyReviewSummary = document.getElementById("weeklyReviewSummary");
 const weeklyMetricProgress = document.getElementById("weeklyMetricProgress");
 const weeklyMetricConsistency = document.getElementById("weeklyMetricConsistency");
 const weeklyMetricNext = document.getElementById("weeklyMetricNext");
+const insightVelocityValue = document.getElementById("insightVelocityValue");
+const insightVelocityMeta = document.getElementById("insightVelocityMeta");
+const insightVelocityTrend = document.getElementById("insightVelocityTrend");
+const insightConsistencyValue = document.getElementById("insightConsistencyValue");
+const insightConsistencyMeta = document.getElementById("insightConsistencyMeta");
+const insightConsistencyTrend = document.getElementById("insightConsistencyTrend");
+const insightHealthValue = document.getElementById("insightHealthValue");
+const insightHealthMeta = document.getElementById("insightHealthMeta");
+const insightHealthTrend = document.getElementById("insightHealthTrend");
+const insightNarrative = document.getElementById("insightNarrative");
 const rankingTabButtons = document.querySelectorAll("[data-ranking-tab]");
 const learnerForm = document.getElementById("learnerForm");
 const learnerNameInput = document.getElementById("learnerNameInput");
@@ -463,6 +475,7 @@ function render() {
   renderUpdatedAt();
   renderDailyFocus();
   renderWeeklyReview();
+  renderInsights();
   renderReactivation();
   renderLearning();
   renderGamification();
@@ -745,6 +758,7 @@ function getFocusTask() {
       title: "最初の講座を1本完了する",
       description: "まずは講座を1本見終えて、初回ポイントを獲得しましょう。",
       status: "未達成",
+      reward: 12,
       actionLabel: "学習進捗へ移動",
       targetId: "learningSummary",
     };
@@ -755,6 +769,7 @@ function getFocusTask() {
       title: "今日30ptを達成する",
       description: "視聴完了や投稿で、あとポイントを積み上げましょう。",
       status: `${todayPoints}/30pt`,
+      reward: Math.max(5, 30 - todayPoints),
       actionLabel: "ポイントを積む",
       targetId: "rankingList",
     };
@@ -765,6 +780,7 @@ function getFocusTask() {
       title: "今日の投稿を1回実行する",
       description: "ポイント付与フォームから1回投稿して、行動記録を残しましょう。",
       status: "未投稿",
+      reward: 10,
       actionLabel: "投稿フォームへ",
       targetId: "awardForm",
     };
@@ -775,6 +791,7 @@ function getFocusTask() {
       title: "報酬を1つ交換する",
       description: "交換所で特典を受け取り、行動の報酬を体験しましょう。",
       status: `所持 ${userPoints}pt`,
+      reward: 3,
       actionLabel: "交換所へ",
       targetId: "rewardList",
     };
@@ -784,21 +801,123 @@ function getFocusTask() {
     title: "明日に向けて講座を1本進める",
     description: "明日のスタートを軽くするために、次の講座を先に視聴しましょう。",
     status: "おすすめ",
+    reward: 8,
     actionLabel: "学習へ",
     targetId: "lectureList",
   };
 }
 
 function renderDailyFocus() {
-  if (!dailyFocusTitle || !dailyFocusDescription || !dailyFocusStatus || !dailyFocusAction) {
+  if (!dailyFocusTitle || !dailyFocusDescription || !dailyFocusStatus || !dailyFocusAction || !dailyFocusReward) {
     return;
   }
   const task = getFocusTask();
   dailyFocusTitle.textContent = task.title;
   dailyFocusDescription.textContent = task.description;
+  dailyFocusReward.textContent = `推奨報酬: +${task.reward}pt`;
   dailyFocusStatus.textContent = `進捗: ${task.status}`;
   dailyFocusAction.textContent = task.actionLabel;
   dailyFocusAction.dataset.targetId = task.targetId;
+}
+
+function getRecentWeekPoints(weeks = 4) {
+  const result = [];
+  for (let offset = weeks - 1; offset >= 0; offset -= 1) {
+    const range = getWeekRange(-offset);
+    const points = getPointsInRange(state.learnerName, range);
+    result.push({
+      label: `${range.start.getMonth() + 1}/${range.start.getDate()}`,
+      points,
+    });
+  }
+  return result;
+}
+
+function getInsightMetrics() {
+  const recent = getRecentWeekPoints(4);
+  const currentPoints = recent[recent.length - 1]?.points ?? 0;
+  const previousPoints = recent[recent.length - 2]?.points ?? 0;
+  const velocityDelta = currentPoints - previousPoints;
+  const velocityRate = previousPoints > 0 ? (velocityDelta / previousPoints) * 100 : currentPoints > 0 ? 100 : 0;
+
+  const thisWeekRange = getWeekRange(0);
+  const activeDaysSet = new Set(
+    state.tickerEvents
+      .filter(
+        (event) =>
+          event.name === state.learnerName &&
+          event.timestamp >= thisWeekRange.start.getTime() &&
+          event.timestamp <= thisWeekRange.end.getTime()
+      )
+      .map((event) => new Date(event.timestamp).toISOString().slice(0, 10))
+  );
+  const actionRate = Math.round((activeDaysSet.size / 7) * 100);
+
+  const doneLectures = getCompletedLectureCount();
+  const completionRate = Math.round((doneLectures / lectureCatalog.length) * 100);
+
+  const weeklyContribution = getContributionScore(state.learnerName);
+  const healthScore = Math.max(0, Math.min(100, Math.round(actionRate * 0.45 + completionRate * 0.35 + Math.min(20, weeklyContribution / 3))));
+
+  return {
+    recent,
+    currentPoints,
+    previousPoints,
+    velocityDelta,
+    velocityRate,
+    actionRate,
+    completionRate,
+    healthScore,
+    weeklyContribution,
+  };
+}
+
+function getInsightTrendLabel(value) {
+  if (value >= 20) {
+    return "上昇トレンド";
+  }
+  if (value <= -20) {
+    return "減速トレンド";
+  }
+  return "安定トレンド";
+}
+
+function renderInsights() {
+  if (
+    !insightVelocityValue ||
+    !insightVelocityMeta ||
+    !insightVelocityTrend ||
+    !insightConsistencyValue ||
+    !insightConsistencyMeta ||
+    !insightConsistencyTrend ||
+    !insightHealthValue ||
+    !insightHealthMeta ||
+    !insightHealthTrend ||
+    !insightNarrative
+  ) {
+    return;
+  }
+
+  const metrics = getInsightMetrics();
+  const velocitySign = metrics.velocityRate > 0 ? "+" : "";
+  const velocityDeltaSign = metrics.velocityDelta > 0 ? "+" : "";
+
+  insightVelocityValue.textContent = `${velocitySign}${Math.round(metrics.velocityRate)}%`;
+  insightVelocityMeta.textContent = `先週比 ${velocityDeltaSign}${metrics.velocityDelta}pt`;
+  insightVelocityTrend.textContent = getInsightTrendLabel(metrics.velocityRate);
+
+  insightConsistencyValue.textContent = `${metrics.actionRate}%`;
+  insightConsistencyMeta.textContent = `今週アクティブ日数 ${Math.round((metrics.actionRate / 100) * 7)} / 7日`;
+  insightConsistencyTrend.textContent = metrics.actionRate >= 70 ? "再現性が高い状態" : "行動頻度を底上げ中";
+
+  insightHealthValue.textContent = `${metrics.healthScore}/100`;
+  insightHealthMeta.textContent = `講座完了率 ${metrics.completionRate}% / 貢献 ${metrics.weeklyContribution}pt`;
+  insightHealthTrend.textContent = metrics.healthScore >= 75 ? "健全に成長中" : "改善余地あり";
+
+  const recentText = metrics.recent.map((item) => `${item.label}: ${item.points}pt`).join(" / ");
+  insightNarrative.textContent = `直近4週: ${recentText}。次の伸びしろは「${
+    metrics.actionRate < 70 ? "行動頻度" : metrics.completionRate < 60 ? "講座完了率" : "貢献アクション"
+  }」です。`;
 }
 
 function getWeekRange(offsetWeeks = 0) {
@@ -875,6 +994,9 @@ function renderWeeklyReview() {
   weeklyMetricNext.textContent = `次の一手: ${
     rank ? `現在${rank}位。` : ""
   } 今日の最重要タスクを完了して、明日も継続しましょう。`;
+  if (weeklyReviewUpdatedAt) {
+    weeklyReviewUpdatedAt.textContent = `更新: ${formatTimestamp(state.updatedAt)}`;
+  }
 }
 
 function getTodayActionCount(actionType) {
