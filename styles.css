@@ -148,7 +148,7 @@ h1 span {
   display: flex;
   width: max-content;
   gap: 10px;
-  animation: tickerMove 28s linear infinite;
+  animation: tickerMove 56s linear infinite;
 }
 
 .ticker-item {
