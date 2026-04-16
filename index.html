@@ -186,30 +186,32 @@
           <ol id="rankingList" class="ranking-list"></ol>
         </article>
 
-        <article class="panel">
+        <article class="panel award-panel">
           <div class="panel-header">
             <h2>ポイント付与フォーム</h2>
-            <p class="panel-note">ここから「速報」を投稿できます</p>
+            <p class="panel-note">1クリックで速報に反映</p>
           </div>
           <form id="awardForm" class="award-form">
-            <label>
-              名前
-              <input id="nameInput" name="name" type="text" maxlength="20" placeholder="例: 田中さん" required />
-            </label>
-            <label>
-              獲得ポイント
-              <input
-                id="pointsInput"
-                name="points"
-                type="number"
-                min="1"
-                max="500"
-                value="10"
-                required
-              />
-            </label>
-            <label>
-              理由
+            <div class="award-form-grid">
+              <label class="field">
+                <span class="field-label">名前</span>
+                <input id="nameInput" name="name" type="text" maxlength="20" placeholder="例: 田中さん" required />
+              </label>
+              <label class="field">
+                <span class="field-label">獲得ポイント</span>
+                <input
+                  id="pointsInput"
+                  name="points"
+                  type="number"
+                  min="1"
+                  max="500"
+                  value="10"
+                  required
+                />
+              </label>
+            </div>
+            <label class="field">
+              <span class="field-label">理由</span>
               <select id="reasonInput" name="reason">
                 <option value="デイリー報告">デイリー報告</option>
                 <option value="週次課題提出">週次課題提出</option>
@@ -218,7 +220,10 @@
                 <option value="公開フィードバック登壇">公開フィードバック登壇</option>
               </select>
             </label>
-            <button class="button" type="submit">速報を投稿する</button>
+            <div class="award-submit-row">
+              <p class="award-helper">入力後すぐにランキングと速報へ反映されます</p>
+              <button class="button award-submit-button" type="submit">速報を投稿する</button>
+            </div>
           </form>
         </article>
       </section>

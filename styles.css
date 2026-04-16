@@ -855,11 +855,86 @@ h2 {
   gap: 11px;
 }
 
-.award-form label {
+.award-panel {
+  position: relative;
+  border: 1px solid rgba(138, 99, 48, 0.28);
+  background:
+    radial-gradient(circle at 100% -10%, rgba(193, 154, 90, 0.22), transparent 48%),
+    linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(255, 248, 239, 0.98));
+}
+
+.award-form {
+  gap: 12px;
+}
+
+.award-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 10px;
+}
+
+.field {
   display: grid;
   gap: 6px;
-  font-size: 0.86rem;
-  font-weight: 700;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #7e6037;
+  text-transform: uppercase;
+}
+
+.award-form .field input,
+.award-form .field select {
+  border: 1px solid rgba(138, 99, 48, 0.28);
+  background: rgba(255, 253, 248, 0.98);
+  border-radius: 12px;
+  min-height: 46px;
+  padding: 11px 13px;
+  font-size: 0.92rem;
+  color: var(--text);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.84) inset,
+    0 4px 10px rgba(98, 72, 38, 0.06);
+}
+
+.award-form .field input::placeholder {
+  color: rgba(138, 119, 94, 0.78);
+}
+
+.award-form .field input:hover,
+.award-form .field select:hover {
+  border-color: rgba(138, 99, 48, 0.45);
+}
+
+.award-form .field input:focus,
+.award-form .field select:focus {
+  outline: none;
+  border-color: rgba(138, 99, 48, 0.62);
+  box-shadow:
+    0 0 0 3px rgba(193, 154, 90, 0.2),
+    0 4px 10px rgba(98, 72, 38, 0.1);
+}
+
+.award-submit-row {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.award-helper {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.award-submit-button {
+  min-height: 46px;
+  padding-inline: 18px;
 }
 
 input,
@@ -1094,6 +1169,19 @@ button:focus {
 
   .lecture-status {
     font-size: 0.76rem;
+  }
+
+  .award-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .award-submit-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .award-submit-button {
+    width: 100%;
   }
 
   .site-footer {
