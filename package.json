@@ -1,0 +1,41 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "src/server/index.js",
+  "scripts": {
+    "dev": "node src/server/index.js",
+    "test": "vitest run --coverage --pool=threads",
+    "test:watch": "vitest",
+    "start": "node src/server/index.js",
+    "build": "node -e \"console.log('No compile step required for this Node app')\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/F87104/test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/F87104/test/issues"
+  },
+  "homepage": "https://github.com/F87104/test#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.9.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "socket.io": "^4.8.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.4",
+    "concurrently": "^9.2.1",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.4"
+  }
+}
