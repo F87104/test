@@ -729,6 +729,10 @@ button:focus {
 }
 
 @media (max-width: 960px) {
+  .container {
+    width: min(100%, 94%);
+  }
+
   .top-dashboard,
   .board-grid,
   .learning-grid,
@@ -737,32 +741,150 @@ button:focus {
   }
 
   .nav {
-    padding: 12px 0;
+    min-height: auto;
+    padding: 10px 0 12px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .header-actions .button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .panel {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .panel-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .mvp-card {
+    padding: 12px;
+  }
+
+  .reward-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reward-item .button {
+    width: 100%;
   }
 }
 
 @media (max-width: 640px) {
+  .brand {
+    width: 100%;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+  }
+
+  .brand-name {
+    font-size: 0.96rem;
+  }
+
+  .brand-sub {
+    font-size: 0.74rem;
+  }
+
+  .header-actions {
+    grid-template-columns: 1fr;
+  }
+
   .ticker-label {
-    min-width: 74px;
-    padding: 14px 6px;
+    min-width: 62px;
+    padding: 12px 5px;
+    font-size: 0.78rem;
+  }
+
+  .ticker-track {
+    padding: 10px 0;
+    gap: 8px;
+  }
+
+  .ticker-item {
+    font-size: 0.78rem;
+    padding: 7px 10px;
   }
 
   .ranking-row {
-    grid-template-columns: 38px 1fr auto;
-    padding: 10px 9px;
+    grid-template-columns: 32px 1fr;
+    grid-template-areas:
+      "pos name"
+      "pos points";
+    gap: 2px 8px;
+    padding: 9px 8px;
   }
 
   .ranking-position {
-    width: 30px;
-    height: 30px;
+    grid-area: pos;
+    width: 26px;
+    height: 26px;
     font-size: 0.82rem;
+  }
+
+  .ranking-name {
+    grid-area: name;
+    font-size: 0.9rem;
+  }
+
+  .ranking-points {
+    grid-area: points;
+    font-size: 0.82rem;
+    color: var(--muted);
   }
 
   .stat-grid {
     grid-template-columns: 1fr;
   }
 
+  .stat-card {
+    padding: 9px;
+  }
+
   .league-badges {
     grid-template-columns: 1fr;
+  }
+
+  .award-form {
+    gap: 10px;
+  }
+
+  input,
+  select,
+  .button,
+  .button-small {
+    min-height: 44px;
+    font-size: 0.92rem;
+  }
+
+  .lecture-card {
+    padding: 10px;
+  }
+
+  .lecture-status {
+    font-size: 0.78rem;
+  }
+
+  .site-footer {
+    padding-bottom: 32px;
   }
 }
