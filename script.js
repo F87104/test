@@ -1,6 +1,7 @@
 const STORAGE_KEY = "story-stock-lab-weekly-state-v1";
 const AUTO_FEED_INTERVAL_MS = 6500;
 const MAX_TICKER_ITEMS = 20;
+const RANKING_VISIBLE_COUNT = 4;
 const DEFAULT_LEARNER_NAME = "あなた";
 
 const VIDEO_COMPLETE_THRESHOLD = 0.95;
@@ -415,7 +416,7 @@ function getSortedMembersByTab(tabId) {
 function renderRanking() {
   rankingList.innerHTML = "";
 
-  const sorted = getSortedMembersByTab(currentRankingTab);
+  const sorted = getSortedMembersByTab(currentRankingTab).slice(0, RANKING_VISIBLE_COUNT);
 
   sorted.forEach((member, index) => {
     const nickname = getDisplayName(member.name);
