@@ -324,6 +324,11 @@ button:focus {
   background: #020611;
 }
 
+.lecture-player.vimeo {
+  aspect-ratio: 16 / 9;
+  min-height: 220px;
+}
+
 .lecture-status {
   margin: 0;
   font-size: 0.82rem;

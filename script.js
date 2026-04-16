@@ -12,48 +12,42 @@ const lectureCatalog = [
     title: "講座1: 強みの棚卸し",
     points: 12,
     minWatchSeconds: 45,
-    src:
-      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    vimeoId: "76979871",
   },
   {
     id: "lec-2",
     title: "講座2: ターゲット設定",
     points: 15,
     minWatchSeconds: 45,
-    src:
-      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    vimeoId: "22439234",
   },
   {
     id: "lec-3",
     title: "講座3: オファー設計",
     points: 20,
     minWatchSeconds: 50,
-    src:
-      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    vimeoId: "146022717",
   },
   {
     id: "lec-4",
     title: "講座4: LP作成の基本",
     points: 18,
     minWatchSeconds: 50,
-    src:
-      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    vimeoId: "357274789",
   },
   {
     id: "lec-5",
     title: "講座5: 初提案の作り方",
     points: 22,
     minWatchSeconds: 55,
-    src:
-      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    vimeoId: "76979871",
   },
   {
     id: "lec-6",
     title: "講座6: 改善ループ運用",
     points: 25,
     minWatchSeconds: 60,
-    src:
-      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    vimeoId: "22439234",
   },
 ];
 
@@ -108,6 +102,7 @@ let autoFeedEnabled = true;
 let autoFeedTimer = null;
 const playbackState = new Map();
 let learningViewInitialized = false;
+const vimeoPlayers = new Map();
 
 function loadState() {
   try {
@@ -268,14 +263,15 @@ function renderLearning() {
       card.innerHTML = `
         <p class="lecture-card-title">${lecture.title}</p>
         <p class="lecture-card-meta">完了で ${lecture.points}pt 獲得（自動判定）</p>
-        <video
+        <iframe
           class="lecture-player"
-          controls
-          preload="metadata"
-          playsinline
           data-lecture-id="${lecture.id}"
-          src="${lecture.src}"
-        ></video>
+          src="https://player.vimeo.com/video/${lecture.vimeoId}?title=0&byline=0&portrait=0&dnt=1"
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+          title="${lecture.title}"
+          frameborder="0"
+          allowfullscreen
+        ></iframe>
         <p class="lecture-status" data-watch-progress>
           視聴進捗: ${trackedSeconds}秒 / 最低${lecture.minWatchSeconds}秒
           ${safetyReady ? "・判定条件OK" : "・判定条件待ち"}
@@ -290,7 +286,7 @@ function renderLearning() {
       lectureList.appendChild(card);
     });
 
-    bindLectureVideoEvents();
+    bindLecturePlayerEvents();
     learningViewInitialized = true;
   }
 
@@ -347,85 +343,98 @@ function getOrCreatePlayback(lectureId) {
     playbackState.set(lectureId, {
       maxWatchedTime: 0,
       trackedSeconds: 0,
-      lastTickAt: null,
-      wasPlaying: false,
+      lastKnownSeconds: null,
       safetyReady: false,
     });
   }
   return playbackState.get(lectureId);
 }
 
-function bindLectureVideoEvents() {
-  const videos = lectureList.querySelectorAll("video[data-lecture-id]");
-  videos.forEach((video) => {
-    const lectureId = video.dataset.lectureId;
-    if (!lectureId || video.dataset.bound === "true") {
+function bindLecturePlayerEvents() {
+  if (!window.Vimeo || typeof window.Vimeo.Player !== "function") {
+    console.warn("Vimeo Player API not loaded");
+    return;
+  }
+
+  const frames = lectureList.querySelectorAll("iframe[data-lecture-id]");
+  frames.forEach((frame) => {
+    const lectureId = frame.dataset.lectureId;
+    if (!lectureId || frame.dataset.bound === "true") {
       return;
     }
-    video.dataset.bound = "true";
+    frame.dataset.bound = "true";
+
+    const lecture = lectureCatalog.find((item) => item.id === lectureId);
+    if (!lecture) {
+      return;
+    }
     const playback = getOrCreatePlayback(lectureId);
+    const player = new window.Vimeo.Player(frame);
+    vimeoPlayers.set(lectureId, player);
 
-    video.addEventListener("play", () => {
-      playback.wasPlaying = true;
-      playback.lastTickAt = Date.now();
-    });
-
-    video.addEventListener("pause", () => {
-      playback.wasPlaying = false;
-      playback.lastTickAt = null;
-    });
-
-    video.addEventListener("timeupdate", () => {
-      const lecture = lectureCatalog.find((item) => item.id === lectureId);
-      if (!lecture || !Number.isFinite(video.duration) || video.duration <= 0) {
+    player.on("timeupdate", (data) => {
+      const seconds = Number(data.seconds);
+      const duration = Number(data.duration);
+      if (!Number.isFinite(seconds) || !Number.isFinite(duration) || duration <= 0) {
         return;
       }
 
-      const now = Date.now();
-      if (playback.wasPlaying && playback.lastTickAt) {
-        const deltaSeconds = Math.max(0, (now - playback.lastTickAt) / 1000);
-        if (deltaSeconds <= 1.2) {
-          playback.trackedSeconds += deltaSeconds;
+      const previous = playback.lastKnownSeconds;
+      if (typeof previous === "number") {
+        const delta = seconds - previous;
+        if (delta >= 0 && delta <= 1.6) {
+          playback.trackedSeconds += delta;
+          playback.maxWatchedTime = Math.max(playback.maxWatchedTime, seconds);
         }
+      } else {
+        playback.maxWatchedTime = Math.max(playback.maxWatchedTime, seconds);
       }
-      playback.lastTickAt = now;
-
-      const seekDetected = video.currentTime - playback.maxWatchedTime > SEEK_TOLERANCE_SECONDS;
-      if (!seekDetected) {
-        playback.maxWatchedTime = Math.max(playback.maxWatchedTime, video.currentTime);
-      }
+      playback.lastKnownSeconds = seconds;
 
       if (playback.trackedSeconds >= lecture.minWatchSeconds) {
         playback.safetyReady = true;
       }
 
-      maybeAwardLectureCompletion(lecture, video, playback);
+      maybeAwardLectureCompletion(lecture, playback, duration, seconds, false);
       updateLearningCards();
     });
 
-    video.addEventListener("ended", () => {
-      const lecture = lectureCatalog.find((item) => item.id === lectureId);
-      if (!lecture) {
+    player.on("seeked", (data) => {
+      const seconds = Number(data.seconds);
+      const previous = playback.lastKnownSeconds;
+      if (typeof previous === "number" && seconds - previous > SEEK_TOLERANCE_SECONDS) {
+        // Jump detected: do not count jumped range as watched.
+        playback.lastKnownSeconds = seconds;
         return;
       }
-      maybeAwardLectureCompletion(lecture, video, playback, true);
+      playback.lastKnownSeconds = seconds;
+    });
+
+    player.on("ended", async () => {
+      let duration = playback.maxWatchedTime;
+      try {
+        duration = Number(await player.getDuration()) || duration;
+      } catch (error) {
+        console.warn("Failed to read Vimeo duration:", error);
+      }
+      maybeAwardLectureCompletion(lecture, playback, duration, duration, true);
       updateLearningCards();
     });
   });
 }
 
-function maybeAwardLectureCompletion(lecture, video, playback, endedEvent = false) {
+function maybeAwardLectureCompletion(lecture, playback, duration, currentSeconds, endedEvent = false) {
   if (state.learningProgress[lecture.id]) {
     return;
   }
-  if (!Number.isFinite(video.duration) || video.duration <= 0) {
+  if (!Number.isFinite(duration) || duration <= 0) {
     return;
   }
 
-  const ratio = playback.maxWatchedTime / video.duration;
+  const ratio = playback.maxWatchedTime / duration;
   const thresholdReached = ratio >= VIDEO_COMPLETE_THRESHOLD;
   const minWatchReached = playback.trackedSeconds >= lecture.minWatchSeconds;
-  const nearEnd = video.currentTime >= video.duration - 0.7;
+  const nearEnd = currentSeconds >= duration - 1;
 
   const canAward = thresholdReached && minWatchReached && (nearEnd || endedEvent);
   if (!canAward) {
@@ -459,6 +468,9 @@ resetLearningButton.addEventListener("click", () => {
   });
   state.learningProgress = emptyProgress;
   playbackState.clear();
+  vimeoPlayers.clear();
+  learningViewInitialized = false;
+  lectureList.innerHTML = "";
   state.updatedAt = Date.now();
   state.tickerEvents.unshift(createEvent("システム", 0, "学習進捗をリセット"));
   state.tickerEvents = state.tickerEvents.slice(0, MAX_TICKER_ITEMS);

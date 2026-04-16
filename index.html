@@ -118,7 +118,7 @@
           <p id="learningPoints" class="learning-points"></p>
 
           <p class="panel-note learning-note">
-            動画を最後まで視聴すると自動でポイント付与（手動ボタン不要）
+            Vimeo再生完了を自動判定してポイント付与（手動ボタン不要）
           </p>
           <div id="lectureList" class="lecture-list"></div>
         </article>
@@ -148,7 +148,7 @@
         <ul>
           <li>ランキングは毎週月曜 00:00 にリセット（このモックは手動リセット対応）。</li>
           <li>獲得ポイントは即時反映。速報テロップに「誰が何ポイント獲得したか」を表示。</li>
-          <li>講座動画を再生完了すると、初回のみ自動でポイントを獲得して学習進捗に反映。</li>
+          <li>Vimeo講座動画を再生完了すると、初回のみ自動でポイントを獲得して学習進捗に反映。</li>
           <li>完了条件は「95%以上視聴」かつ「最低再生時間を満たす」判定。</li>
           <li>表示されるポイントは換金不可・譲渡不可のコミュニティクレジット。</li>
         </ul>
@@ -162,6 +162,7 @@
       </div>
     </footer>
 
+    <script src="https://player.vimeo.com/api/player.js"></script>
     <script src="./script.js"></script>
   </body>
 </html>
