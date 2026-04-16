@@ -3,13 +3,58 @@ const AUTO_FEED_INTERVAL_MS = 6500;
 const MAX_TICKER_ITEMS = 20;
 const DEFAULT_LEARNER_NAME = "あなた";
 
+const VIDEO_COMPLETE_THRESHOLD = 0.95;
+const SEEK_TOLERANCE_SECONDS = 8;
+
 const lectureCatalog = [
-  { id: "lec-1", title: "講座1: 強みの棚卸し", points: 12 },
-  { id: "lec-2", title: "講座2: ターゲット設定", points: 15 },
-  { id: "lec-3", title: "講座3: オファー設計", points: 20 },
-  { id: "lec-4", title: "講座4: LP作成の基本", points: 18 },
-  { id: "lec-5", title: "講座5: 初提案の作り方", points: 22 },
-  { id: "lec-6", title: "講座6: 改善ループ運用", points: 25 },
+  {
+    id: "lec-1",
+    title: "講座1: 強みの棚卸し",
+    points: 12,
+    minWatchSeconds: 45,
+    src:
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  },
+  {
+    id: "lec-2",
+    title: "講座2: ターゲット設定",
+    points: 15,
+    minWatchSeconds: 45,
+    src:
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  },
+  {
+    id: "lec-3",
+    title: "講座3: オファー設計",
+    points: 20,
+    minWatchSeconds: 50,
+    src:
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  },
+  {
+    id: "lec-4",
+    title: "講座4: LP作成の基本",
+    points: 18,
+    minWatchSeconds: 50,
+    src:
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  },
+  {
+    id: "lec-5",
+    title: "講座5: 初提案の作り方",
+    points: 22,
+    minWatchSeconds: 55,
+    src:
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  },
+  {
+    id: "lec-6",
+    title: "講座6: 改善ループ運用",
+    points: 25,
+    minWatchSeconds: 60,
+    src:
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  },
 ];
 
 const starterMembers = [
@@ -61,6 +106,8 @@ const resetLearningButton = document.getElementById("resetLearningButton");
 let state = loadState();
 let autoFeedEnabled = true;
 let autoFeedTimer = null;
+const playbackState = new Map();
+let learningViewInitialized = false;
 
 function loadState() {
   try {
@@ -208,24 +255,74 @@ function renderLearning() {
   learningProgressBar.style.width = `${progressPercent}%`;
   learningPoints.textContent = `${state.learnerName}の講座視聴ポイント: ${earnedPoints} pt`;
 
-  lectureList.innerHTML = "";
+  if (!learningViewInitialized) {
+    lectureList.innerHTML = "";
+    lectureCatalog.forEach((lecture) => {
+      const done = state.learningProgress[lecture.id];
+      const card = document.createElement("article");
+      card.className = `lecture-card ${done ? "done" : ""}`;
+      card.dataset.lectureCardId = lecture.id;
+      const tracking = playbackState.get(lecture.id);
+      const trackedSeconds = tracking ? Math.floor(tracking.trackedSeconds) : 0;
+      const safetyReady = tracking?.safetyReady ?? false;
+      card.innerHTML = `
+        <p class="lecture-card-title">${lecture.title}</p>
+        <p class="lecture-card-meta">完了で ${lecture.points}pt 獲得（自動判定）</p>
+        <video
+          class="lecture-player"
+          controls
+          preload="metadata"
+          playsinline
+          data-lecture-id="${lecture.id}"
+          src="${lecture.src}"
+        ></video>
+        <p class="lecture-status" data-watch-progress>
+          視聴進捗: ${trackedSeconds}秒 / 最低${lecture.minWatchSeconds}秒
+          ${safetyReady ? "・判定条件OK" : "・判定条件待ち"}
+        </p>
+        <p class="lecture-status">
+          判定条件: 95%以上視聴 + 最低再生時間を満たす + 早送りのみで終わらせない
+        </p>
+        <p class="lecture-status ${done ? "done" : ""}" data-auto-status>
+          ${done ? "この講座は自動付与済みです" : "再生完了時に自動でポイント付与されます"}
+        </p>
+      `;
+      lectureList.appendChild(card);
+    });
+
+    bindLectureVideoEvents();
+    learningViewInitialized = true;
+  }
+
+  updateLearningCards();
+}
+
+function updateLearningCards() {
   lectureCatalog.forEach((lecture) => {
+    const card = lectureList.querySelector(`[data-lecture-card-id="${lecture.id}"]`);
+    if (!card) {
+      return;
+    }
+
     const done = state.learningProgress[lecture.id];
-    const card = document.createElement("article");
-    card.className = `lecture-card ${done ? "done" : ""}`;
-    card.innerHTML = `
-      <p class="lecture-card-title">${lecture.title}</p>
-      <p class="lecture-card-meta">完了で ${lecture.points}pt 獲得</p>
-      <button
-        class="button button-small ${done ? "button-ghost" : ""}"
-        type="button"
-        data-lecture-id="${lecture.id}"
-        ${done ? "disabled" : ""}
-      >
-        ${done ? "視聴完了済み" : "見終わった（ポイント獲得）"}
-      </button>
-    `;
-    lectureList.appendChild(card);
+    const tracking = playbackState.get(lecture.id);
+    const trackedSeconds = tracking ? Math.floor(tracking.trackedSeconds) : 0;
+    const safetyReady = tracking?.safetyReady ?? false;
+    const progressNode = card.querySelector("[data-watch-progress]");
+    const autoStatusNode = card.querySelector("[data-auto-status]");
+
+    card.classList.toggle("done", done);
+    if (progressNode) {
+      progressNode.textContent = `視聴進捗: ${trackedSeconds}秒 / 最低${lecture.minWatchSeconds}秒 ${
+        safetyReady ? "・判定条件OK" : "・判定条件待ち"
+      }`;
+    }
+    if (autoStatusNode) {
+      autoStatusNode.textContent = done
+        ? "この講座は自動付与済みです"
+        : "再生完了時に自動でポイント付与されます";
+      autoStatusNode.classList.toggle("done", done);
+    }
   });
 }
 
@@ -245,25 +342,99 @@ awardForm.addEventListener("submit", (event) => {
   nameInput.focus();
 });
 
-lectureList.addEventListener("click", (event) => {
-  const target = event.target;
-  if (!(target instanceof HTMLButtonElement)) {
+function getOrCreatePlayback(lectureId) {
+  if (!playbackState.has(lectureId)) {
+    playbackState.set(lectureId, {
+      maxWatchedTime: 0,
+      trackedSeconds: 0,
+      lastTickAt: null,
+      wasPlaying: false,
+      safetyReady: false,
+    });
+  }
+  return playbackState.get(lectureId);
+}
+
+function bindLectureVideoEvents() {
+  const videos = lectureList.querySelectorAll("video[data-lecture-id]");
+  videos.forEach((video) => {
+    const lectureId = video.dataset.lectureId;
+    if (!lectureId || video.dataset.bound === "true") {
+      return;
+    }
+    video.dataset.bound = "true";
+    const playback = getOrCreatePlayback(lectureId);
+
+    video.addEventListener("play", () => {
+      playback.wasPlaying = true;
+      playback.lastTickAt = Date.now();
+    });
+
+    video.addEventListener("pause", () => {
+      playback.wasPlaying = false;
+      playback.lastTickAt = null;
+    });
+
+    video.addEventListener("timeupdate", () => {
+      const lecture = lectureCatalog.find((item) => item.id === lectureId);
+      if (!lecture || !Number.isFinite(video.duration) || video.duration <= 0) {
+        return;
+      }
+
+      const now = Date.now();
+      if (playback.wasPlaying && playback.lastTickAt) {
+        const deltaSeconds = Math.max(0, (now - playback.lastTickAt) / 1000);
+        if (deltaSeconds <= 1.2) {
+          playback.trackedSeconds += deltaSeconds;
+        }
+      }
+      playback.lastTickAt = now;
+
+      const seekDetected = video.currentTime - playback.maxWatchedTime > SEEK_TOLERANCE_SECONDS;
+      if (!seekDetected) {
+        playback.maxWatchedTime = Math.max(playback.maxWatchedTime, video.currentTime);
+      }
+
+      if (playback.trackedSeconds >= lecture.minWatchSeconds) {
+        playback.safetyReady = true;
+      }
+
+      maybeAwardLectureCompletion(lecture, video, playback);
+      updateLearningCards();
+    });
+
+    video.addEventListener("ended", () => {
+      const lecture = lectureCatalog.find((item) => item.id === lectureId);
+      if (!lecture) {
+        return;
+      }
+      maybeAwardLectureCompletion(lecture, video, playback, true);
+      updateLearningCards();
+    });
+  });
+}
+
+function maybeAwardLectureCompletion(lecture, video, playback, endedEvent = false) {
+  if (state.learningProgress[lecture.id]) {
+    return;
+  }
+  if (!Number.isFinite(video.duration) || video.duration <= 0) {
     return;
   }
 
-  const lectureId = target.dataset.lectureId;
-  if (!lectureId || state.learningProgress[lectureId]) {
+  const ratio = playback.maxWatchedTime / video.duration;
+  const thresholdReached = ratio >= VIDEO_COMPLETE_THRESHOLD;
+  const minWatchReached = playback.trackedSeconds >= lecture.minWatchSeconds;
+  const nearEnd = video.currentTime >= video.duration - 0.7;
+
+  const canAward = thresholdReached && minWatchReached && (nearEnd || endedEvent);
+  if (!canAward) {
     return;
   }
 
-  const lecture = lectureCatalog.find((item) => item.id === lectureId);
-  if (!lecture) {
-    return;
-  }
-
-  state.learningProgress[lectureId] = true;
-  addPoints(state.learnerName, lecture.points, `${lecture.title}を見終わった`);
-});
+  state.learningProgress[lecture.id] = true;
+  addPoints(state.learnerName, lecture.points, `${lecture.title}を視聴完了`);
+}
 
 learnerForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -287,6 +458,7 @@ resetLearningButton.addEventListener("click", () => {
     emptyProgress[lecture.id] = false;
   });
   state.learningProgress = emptyProgress;
+  playbackState.clear();
   state.updatedAt = Date.now();
   state.tickerEvents.unshift(createEvent("システム", 0, "学習進捗をリセット"));
   state.tickerEvents = state.tickerEvents.slice(0, MAX_TICKER_ITEMS);

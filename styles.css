@@ -317,6 +317,24 @@ button:focus {
   background: rgba(79, 140, 255, 0.06);
 }
 
+.lecture-player {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(79, 140, 255, 0.35);
+  background: #020611;
+}
+
+.lecture-status {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.lecture-status.done {
+  color: var(--success);
+  font-weight: 700;
+}
+
 .lecture-card-title {
   margin: 0;
   font-size: 0.98rem;
@@ -327,10 +345,6 @@ button:focus {
   margin: 0;
   font-size: 0.82rem;
   color: var(--muted);
-}
-
-.lecture-card button {
-  justify-self: start;
 }
 
 .lecture-card.done {
