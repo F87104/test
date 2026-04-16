@@ -37,6 +37,14 @@ body {
   border-bottom: 1px solid rgba(79, 140, 255, 0.24);
 }
 
+.floating-mvp {
+  position: fixed;
+  top: 88px;
+  right: 16px;
+  width: min(320px, calc(100vw - 24px));
+  z-index: 22;
+}
+
 .nav {
   min-height: 76px;
   display: flex;
@@ -171,6 +179,9 @@ h1 span {
 .mvp-card {
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(250, 204, 21, 0.14));
+  box-shadow: 0 18px 36px rgba(7, 11, 22, 0.45), 0 0 0 1px rgba(250, 204, 21, 0.18) inset;
 }
 
 .mvp-card::before {
@@ -232,6 +243,12 @@ h1 span {
   animation: twinkle 1.8s ease-in-out infinite alternate;
 }
 
+.mvp-message {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  color: #e2e8ff;
+}
+
 @keyframes twinkle {
   from {
     opacity: 0.4;
@@ -248,6 +265,10 @@ h1 span {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.mvp-inline {
+  display: none;
 }
 
 .stat-grid {
@@ -708,6 +729,12 @@ button:focus {
 }
 
 @media (max-width: 960px) {
+  .floating-mvp {
+    position: static;
+    width: auto;
+    margin-bottom: 14px;
+  }
+
   .board-grid,
   .learning-grid,
   .gamify-grid {

@@ -406,6 +406,31 @@ function renderMvpCard() {
   }
 }
 
+function refreshMvpCardVisual(topMember) {
+  if (!mvpCard || !mvpNickname || !mvpPoints || !mvpTitle) {
+    return;
+  }
+  if (!topMember) {
+    mvpNickname.textContent = "未定";
+    mvpTitle.textContent = "MVP準備中";
+    mvpPoints.textContent = "0 pt";
+    mvpCard.classList.remove("is-gold", "is-silver", "is-bronze");
+    return;
+  }
+  const nickname = getDisplayName(topMember.name);
+  mvpNickname.textContent = nickname;
+  mvpTitle.textContent = getMvpTitle(topMember.points);
+  mvpPoints.textContent = `${topMember.points} pt`;
+  mvpCard.classList.remove("is-gold", "is-silver", "is-bronze");
+  if (topMember.points >= 250) {
+    mvpCard.classList.add("is-gold");
+  } else if (topMember.points >= 100) {
+    mvpCard.classList.add("is-silver");
+  } else {
+    mvpCard.classList.add("is-bronze");
+  }
+}
+
 function getCompletedLectureCount() {
   return lectureCatalog.filter((lecture) => state.learningProgress[lecture.id]).length;
 }
@@ -647,28 +672,6 @@ function renderLeagueAndRewards() {
     `;
     rewardList.appendChild(item);
   });
-}
-
-function getTopMember() {
-  const sorted = [...state.members].sort((a, b) => b.points - a.points);
-  return sorted[0] ?? null;
-}
-
-function renderMvpCard() {
-  const top = getTopMember();
-  if (!top) {
-    mvpName.textContent = "-";
-    mvpTitle.textContent = "MVP情報なし";
-    mvpPoints.textContent = "0 pt";
-    mvpCard.classList.remove("mvp-glow");
-    return;
-  }
-
-  const nickname = getDisplayName(top.name);
-  mvpName.textContent = nickname;
-  mvpTitle.textContent = "今週のスター";
-  mvpPoints.textContent = `${top.points} pt`;
-  mvpCard.classList.add("mvp-glow");
 }
 
 function spendPoints(name, points, reason) {
