@@ -1597,6 +1597,72 @@ h2 {
   gap: var(--space-1);
 }
 
+/* Brand signature palette polish */
+:root {
+  --brand-ink: #4b2f18;
+  --brand-brass: #b7894c;
+  --brand-ivory: #fff9ef;
+  --brand-terracotta: #b45a42;
+  --brand-sage: #4f7256;
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, #9a6f37, #c8a164);
+  box-shadow:
+    0 10px 20px rgba(111, 80, 39, 0.25),
+    0 0 0 1px rgba(255, 245, 226, 0.42) inset;
+}
+
+.brand-name {
+  color: var(--brand-ink);
+  letter-spacing: 0.01em;
+}
+
+.button {
+  background: linear-gradient(135deg, #8f6533, #bf9254);
+  box-shadow: 0 8px 18px rgba(108, 78, 41, 0.18);
+}
+
+.button:hover {
+  box-shadow: 0 10px 22px rgba(108, 78, 41, 0.24);
+}
+
+.ranking-tab.active {
+  background: linear-gradient(135deg, #865f30, #b9884e);
+}
+
+.review-grade.is-strong {
+  color: #2f5d3a;
+  border-color: rgba(79, 114, 86, 0.35);
+  background: rgba(79, 114, 86, 0.14);
+}
+
+.review-grade.is-alert {
+  color: #7f2f2f;
+  border-color: rgba(180, 90, 66, 0.38);
+  background: rgba(180, 90, 66, 0.14);
+}
+
+.task-chip {
+  border-color: rgba(183, 137, 76, 0.42);
+  background: rgba(183, 137, 76, 0.14);
+  color: #734a21;
+}
+
+.quick-point-chip.active {
+  background: linear-gradient(135deg, #8f6533, #bf9254);
+}
+
+.review-progress-fill,
+.trend-fill,
+.progress-bar {
+  background: linear-gradient(90deg, #bf8e4e, #e0be81);
+}
+
+.xp-bar {
+  background: linear-gradient(90deg, #a6793d, #cba467);
+}
+
 /* Visual quality master polish */
 :root {
   --surface-1: rgba(255, 251, 244, 0.92);
