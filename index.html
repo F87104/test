@@ -37,24 +37,66 @@
       </div>
     </header>
 
-    <aside id="mvpCard" class="panel mvp-panel mvp-floating" aria-label="今週のMVP">
-      <div class="panel-header">
-        <h2>今週のMVP</h2>
-        <p class="panel-note">週間1位に贈る称号</p>
-      </div>
-      <div class="mvp-card">
-        <div class="mvp-crown" aria-hidden="true">👑</div>
-        <p id="mvpNickname" class="mvp-nickname">---ちゃん</p>
-        <p id="mvpTitle" class="mvp-title">称号: 週間スター</p>
-        <p id="mvpPoints" class="mvp-points">0 pt</p>
-        <p id="mvpMessage" class="mvp-message">今週の行動でMVPを目指そう</p>
-        <div class="mvp-sparkles" aria-hidden="true">
-          <span>✦</span><span>✧</span><span>✦</span>
-        </div>
-      </div>
-    </aside>
-
     <main class="container page-main">
+      <section class="top-summary-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>あなたの現在地</h2>
+            <p class="panel-note">トップ画面でレベルと成長を確認</p>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <p class="stat-label">レベル</p>
+              <p id="playerLevel" class="stat-value">Lv.1</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">ストリーク</p>
+              <p id="playerStreak" class="stat-value">0日</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">経験値</p>
+              <p id="playerXp" class="stat-value">0 / 100 経験値</p>
+            </div>
+          </div>
+          <div class="xp-wrap" aria-label="経験値バー">
+            <div id="playerXpBar" class="xp-bar"></div>
+          </div>
+        </article>
+
+        <article id="mvpCard" class="panel mvp-panel" aria-label="今週のMVP">
+          <div class="panel-header">
+            <h2>今週のMVP</h2>
+            <p class="panel-note">週間1位に贈る称号</p>
+          </div>
+          <div class="mvp-card">
+            <div class="mvp-crown" aria-hidden="true">👑</div>
+            <p id="mvpNickname" class="mvp-nickname">---ちゃん</p>
+            <p id="mvpTitle" class="mvp-title">称号: 週間スター</p>
+            <p id="mvpPoints" class="mvp-points">0 pt</p>
+            <p id="mvpMessage" class="mvp-message">今週の行動でMVPを目指そう</p>
+            <div class="mvp-sparkles" aria-hidden="true">
+              <span>✦</span><span>✧</span><span>✦</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>週間リーグ</h2>
+            <p id="currentLeagueLabel" class="panel-note">ブロンズリーグ</p>
+          </div>
+          <div class="league-badges">
+            <span id="badgeBronze" class="league-badge bronze">ブロンズ</span>
+            <span id="badgeSilver" class="league-badge silver">シルバー</span>
+            <span id="badgeGold" class="league-badge gold">ゴールド</span>
+          </div>
+          <div class="progress-wrap league-progress" aria-label="リーグ進捗バー">
+            <div id="leagueProgressBar" class="progress-bar"></div>
+          </div>
+          <p id="leagueProgressText" class="panel-note"></p>
+        </article>
+      </section>
+
       <section class="hero">
         <p class="eyebrow">ライブゲームボード</p>
         <h1>
@@ -124,29 +166,6 @@
       <section class="gamify-grid">
         <article class="panel">
           <div class="panel-header">
-            <h2>プレイヤーステータス</h2>
-            <p class="panel-note">行動すると経験値が増えてレベルアップ</p>
-          </div>
-          <div class="stat-grid">
-            <div class="stat-card">
-              <p class="stat-label">レベル</p>
-              <p id="playerLevel" class="stat-value">Lv.1</p>
-            </div>
-            <div class="stat-card">
-              <p class="stat-label">ストリーク</p>
-              <p id="playerStreak" class="stat-value">0日</p>
-            </div>
-            <div class="stat-card">
-              <p class="stat-label">経験値</p>
-              <p id="playerXp" class="stat-value">0 / 100 経験値</p>
-            </div>
-          </div>
-          <div class="xp-wrap" aria-label="経験値バー">
-            <div id="playerXpBar" class="xp-bar"></div>
-          </div>
-        </article>
-        <article class="panel">
-          <div class="panel-header">
             <h2>デイリークエスト</h2>
             <p class="panel-note">毎日クリアで追加ポイント</p>
           </div>
@@ -158,20 +177,6 @@
           <ul id="badgeList" class="badge-list"></ul>
         </article>
         <article class="panel">
-          <div class="panel-header">
-            <h2>週間リーグ</h2>
-            <p id="currentLeagueLabel" class="panel-note">ブロンズリーグ</p>
-          </div>
-          <div class="league-badges">
-            <span id="badgeBronze" class="league-badge bronze">ブロンズ</span>
-            <span id="badgeSilver" class="league-badge silver">シルバー</span>
-            <span id="badgeGold" class="league-badge gold">ゴールド</span>
-          </div>
-          <div class="progress-wrap league-progress" aria-label="リーグ進捗バー">
-            <div id="leagueProgressBar" class="progress-bar"></div>
-          </div>
-          <p id="leagueProgressText" class="panel-note"></p>
-
           <div class="panel-header reward-header">
             <h2>報酬交換所</h2>
             <p id="rewardBalance" class="panel-note"></p>
