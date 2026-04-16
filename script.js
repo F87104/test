@@ -119,9 +119,9 @@ const rewardCatalog = [
 ];
 
 const leagueTable = [
-  { id: "bronze", title: "Bronze League", min: 0, max: 99, nextMin: 100 },
-  { id: "silver", title: "Silver League", min: 100, max: 249, nextMin: 250 },
-  { id: "gold", title: "Gold League", min: 250, max: null, nextMin: null },
+  { id: "bronze", title: "ブロンズリーグ", min: 0, max: 99, nextMin: 100 },
+  { id: "silver", title: "シルバーリーグ", min: 100, max: 249, nextMin: 250 },
+  { id: "gold", title: "ゴールドリーグ", min: 250, max: null, nextMin: null },
 ];
 
 const rankingList = document.getElementById("rankingList");
@@ -515,7 +515,7 @@ function renderGamification() {
   const totalPoints = getTotalPointsByLearner(state.learnerName);
   const levelState = calculateLevel(totalPoints);
   playerLevel.textContent = `Lv.${levelState.level}`;
-  playerXp.textContent = `${levelState.progress} / ${levelState.required} XP`;
+  playerXp.textContent = `${levelState.progress} / ${levelState.required} 経験値`;
   playerStreak.textContent = `${state.gamification.streak} 日`;
   playerXpBar.style.width = `${Math.round((levelState.progress / levelState.required) * 100)}%`;
 
@@ -536,10 +536,10 @@ function renderGamification() {
   });
 
   const badges = [
-    { id: "first-lecture", title: "First Clear", unlocked: getCompletedLectureCount() >= 1 },
-    { id: "three-lecture", title: "Learning Runner", unlocked: getCompletedLectureCount() >= 3 },
-    { id: "streak-3", title: "3 Days Streak", unlocked: state.gamification.streak >= 3 },
-    { id: "xp-300", title: "XP 300+", unlocked: totalPoints >= 300 },
+    { id: "first-lecture", title: "はじめてクリア", unlocked: getCompletedLectureCount() >= 1 },
+    { id: "three-lecture", title: "学習ランナー", unlocked: getCompletedLectureCount() >= 3 },
+    { id: "streak-3", title: "3日連続達成", unlocked: state.gamification.streak >= 3 },
+    { id: "xp-300", title: "経験値300以上", unlocked: totalPoints >= 300 },
   ];
   badgeList.innerHTML = "";
   badges.forEach((badge) => {
@@ -849,7 +849,7 @@ function runAutoFeedTick() {
 
 function setAutoFeed(enabled) {
   autoFeedEnabled = enabled;
-  autoFeedButton.textContent = `自動速報: ${enabled ? "ON" : "OFF"}`;
+  autoFeedButton.textContent = `自動速報: ${enabled ? "オン" : "オフ"}`;
   autoFeedButton.classList.toggle("button-danger", !enabled);
 
   if (enabled) {
