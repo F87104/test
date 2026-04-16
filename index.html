@@ -61,7 +61,7 @@
       <section class="board-grid">
         <article class="panel">
           <div class="panel-header">
-            <h2>週間ランキング</h2>
+            <h2>週間ランキング（ニックネーム）</h2>
             <p id="lastUpdated" class="panel-note"></p>
           </div>
           <ol id="rankingList" class="ranking-list"></ol>
@@ -104,31 +104,28 @@
         </article>
       </section>
 
-      <section class="game-grid">
+      <section class="gamify-grid">
         <article class="panel">
           <div class="panel-header">
             <h2>プレイヤーステータス</h2>
             <p class="panel-note">行動するとXPが増えてレベルアップ</p>
           </div>
-          <div class="status-grid">
-            <div class="status-card">
-              <p class="status-label">レベル</p>
-              <p id="playerLevel" class="status-value">Lv.1</p>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <p class="stat-label">レベル</p>
+              <p id="playerLevel" class="stat-value">Lv.1</p>
             </div>
-            <div class="status-card">
-              <p class="status-label">ストリーク</p>
-              <p id="streakDays" class="status-value">0日</p>
+            <div class="stat-card">
+              <p class="stat-label">ストリーク</p>
+              <p id="playerStreak" class="stat-value">0日</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">XP</p>
+              <p id="playerXp" class="stat-value">0 / 100 XP</p>
             </div>
           </div>
-          <p id="xpSummary" class="panel-note xp-summary"></p>
-          <div class="progress-wrap" aria-label="経験値バー">
-            <div id="xpProgressBar" class="progress-bar xp-bar"></div>
-          </div>
-          <div class="daily-actions">
-            <button id="claimDailyBonusButton" class="button button-small" type="button">
-              デイリーボーナスを受け取る
-            </button>
-            <p id="dailyBonusNote" class="panel-note"></p>
+          <div class="xp-wrap" aria-label="経験値バー">
+            <div id="playerXpBar" class="xp-bar"></div>
           </div>
         </article>
         <article class="panel">
@@ -142,6 +139,27 @@
             <p class="panel-note">達成条件を満たすと解放</p>
           </div>
           <ul id="badgeList" class="badge-list"></ul>
+        </article>
+        <article class="panel">
+          <div class="panel-header">
+            <h2>週間リーグ</h2>
+            <p id="currentLeagueLabel" class="panel-note">Bronze League</p>
+          </div>
+          <div class="league-badges">
+            <span id="badgeBronze" class="league-badge bronze">Bronze</span>
+            <span id="badgeSilver" class="league-badge silver">Silver</span>
+            <span id="badgeGold" class="league-badge gold">Gold</span>
+          </div>
+          <div class="progress-wrap league-progress" aria-label="リーグ進捗バー">
+            <div id="leagueProgressBar" class="progress-bar"></div>
+          </div>
+          <p id="leagueProgressText" class="panel-note"></p>
+
+          <div class="panel-header reward-header">
+            <h2>報酬交換所</h2>
+            <p id="rewardBalance" class="panel-note"></p>
+          </div>
+          <div id="rewardList" class="reward-list"></div>
         </article>
       </section>
 
@@ -188,7 +206,8 @@
         </div>
         <ul>
           <li>ランキングは毎週月曜 00:00 にリセット（このモックは手動リセット対応）。</li>
-          <li>獲得ポイントは即時反映。速報テロップに「誰が何ポイント獲得したか」を表示。</li>
+          <li>表示名はランダムなニックネーム。獲得ポイントは即時反映。</li>
+          <li>速報テロップに「誰が何ポイント獲得/消費したか」を表示。</li>
           <li>Vimeo講座動画を再生完了すると、初回のみ自動でポイントを獲得して学習進捗に反映。</li>
           <li>完了条件は「95%以上視聴」かつ「最低再生時間を満たす」判定。</li>
           <li>表示されるポイントは換金不可・譲渡不可のコミュニティクレジット。</li>

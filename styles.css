@@ -301,6 +301,84 @@ h1 span {
   color: var(--success);
 }
 
+.league-badges {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.league-badge {
+  text-align: center;
+  border-radius: 999px;
+  padding: 6px 8px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  border: 1px solid rgba(79, 140, 255, 0.3);
+  color: var(--muted);
+  background: rgba(79, 140, 255, 0.08);
+}
+
+.league-badge.active {
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.league-badge.bronze.active {
+  background: linear-gradient(135deg, #a16207, #d97706);
+}
+
+.league-badge.silver.active {
+  background: linear-gradient(135deg, #64748b, #94a3b8);
+}
+
+.league-badge.gold.active {
+  background: linear-gradient(135deg, #ca8a04, #facc15);
+  color: #1f2937;
+}
+
+.league-progress {
+  margin-bottom: 8px;
+}
+
+.reward-header {
+  margin-top: 14px;
+}
+
+.reward-list {
+  display: grid;
+  gap: 8px;
+}
+
+.reward-item {
+  border: 1px solid rgba(79, 140, 255, 0.24);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(79, 140, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.reward-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.reward-meta {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.reward-item .button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .learning-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -584,6 +662,10 @@ button:focus {
   }
 
   .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .league-badges {
     grid-template-columns: 1fr;
   }
 }

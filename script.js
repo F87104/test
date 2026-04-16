@@ -79,6 +79,35 @@ const randomReasons = [
 ];
 
 const randomPointTable = [1, 3, 5, 8, 10, 12, 20];
+const nicknamePool = [
+  "StarFox",
+  "BlueNova",
+  "PixelWolf",
+  "SkyBeat",
+  "MintRider",
+  "NeoSpark",
+  "RubyDash",
+  "LunaCore",
+  "CloudAce",
+  "FlashKey",
+  "AquaRay",
+  "CosmoLink",
+  "VioletArc",
+  "EchoMint",
+  "GlintRoad",
+];
+
+const rewardCatalog = [
+  { id: "priority-review", title: "優先レビュー権", cost: 40, description: "次回レビューの優先枠" },
+  { id: "special-template", title: "限定テンプレ解放", cost: 70, description: "上位会員向けテンプレを開放" },
+  { id: "mentor-qa", title: "メンターQ&Aチケット", cost: 120, description: "個別質問を1回送信可能" },
+];
+
+const leagueTable = [
+  { id: "bronze", title: "Bronze League", min: 0, max: 99, nextMin: 100 },
+  { id: "silver", title: "Silver League", min: 100, max: 249, nextMin: 250 },
+  { id: "gold", title: "Gold League", min: 250, max: null, nextMin: null },
+];
 
 const rankingList = document.getElementById("rankingList");
 const tickerTrack = document.getElementById("tickerTrack");
@@ -99,6 +128,14 @@ const playerStreak = document.getElementById("playerStreak");
 const playerXpBar = document.getElementById("playerXpBar");
 const questList = document.getElementById("questList");
 const badgeList = document.getElementById("badgeList");
+const currentLeagueLabel = document.getElementById("currentLeagueLabel");
+const leagueProgressBar = document.getElementById("leagueProgressBar");
+const leagueProgressText = document.getElementById("leagueProgressText");
+const badgeBronze = document.getElementById("badgeBronze");
+const badgeSilver = document.getElementById("badgeSilver");
+const badgeGold = document.getElementById("badgeGold");
+const rewardBalance = document.getElementById("rewardBalance");
+const rewardList = document.getElementById("rewardList");
 const learnerForm = document.getElementById("learnerForm");
 const learnerNameInput = document.getElementById("learnerNameInput");
 const resetLearningButton = document.getElementById("resetLearningButton");
@@ -144,6 +181,8 @@ function migrateState(baseState) {
     updatedAt: baseState.updatedAt ?? Date.now(),
     learnerName: baseState.learnerName ?? DEFAULT_LEARNER_NAME,
     learningProgress: mergedProgress,
+    nicknameMap: baseState.nicknameMap ?? {},
+    rewardInventory: baseState.rewardInventory ?? {},
     gamification: {
       streak: baseState.gamification?.streak ?? 0,
       lastActivityDate: baseState.gamification?.lastActivityDate ?? null,
@@ -173,6 +212,7 @@ function createEvent(name, points, reason) {
 
 function addPoints(name, points, reason) {
   const normalizedName = name.trim();
+  ensureNickname(normalizedName);
   const existing = state.members.find((member) => member.name === normalizedName);
 
   if (existing) {
@@ -197,17 +237,58 @@ function formatTimestamp(timestamp) {
   }).format(timestamp);
 }
 
+function getRandomNickname() {
+  const used = new Set(Object.values(state.nicknameMap));
+  const available = nicknamePool.filter((name) => !used.has(name));
+  const base = available[Math.floor(Math.random() * available.length)] ?? "Player";
+  if (!used.has(base)) {
+    return base;
+  }
+  return `${base}${Math.floor(Math.random() * 900 + 100)}`;
+}
+
+function ensureNickname(realName) {
+  if (!realName) {
+    return "Player";
+  }
+  if (!state.nicknameMap[realName]) {
+    state.nicknameMap[realName] = getRandomNickname();
+  }
+  return state.nicknameMap[realName];
+}
+
+function getDisplayName(realName) {
+  return ensureNickname(realName);
+}
+
+function formatTickerMessage(event) {
+  const displayName = getDisplayName(event.name);
+  if (event.points < 0) {
+    return `${displayName}が${event.reason}で${Math.abs(event.points)}pt消費しました（${formatTimestamp(
+      event.timestamp
+    )}）`;
+  }
+  return `${displayName}が${event.reason}で${event.points}pt獲得しました（${formatTimestamp(
+    event.timestamp
+  )}）`;
+}
+
+function getLeagueByPoints(points) {
+  return leagueTable.find((league) => points >= league.min && (league.max === null || points <= league.max));
+}
+
 function renderRanking() {
   rankingList.innerHTML = "";
 
   const sorted = [...state.members].sort((a, b) => b.points - a.points);
 
   sorted.forEach((member, index) => {
+    const nickname = getDisplayName(member.name);
     const row = document.createElement("li");
     row.className = `ranking-row ${index < 3 ? "top3" : ""}`;
     row.innerHTML = `
       <span class="ranking-position">${index + 1}</span>
-      <span class="ranking-name">${member.name}</span>
+      <span class="ranking-name">${nickname}</span>
       <span class="ranking-points">${member.points} pt</span>
     `;
     rankingList.appendChild(row);
@@ -221,9 +302,7 @@ function renderTicker() {
   repeatedEvents.forEach((event) => {
     const item = document.createElement("li");
     item.className = "ticker-item";
-    item.textContent = `${event.name}が${event.reason}で${event.points}pt獲得しました（${formatTimestamp(
-      event.timestamp
-    )}）`;
+    item.textContent = formatTickerMessage(event);
     tickerTrack.appendChild(item);
   });
 }
@@ -232,12 +311,27 @@ function renderUpdatedAt() {
   lastUpdated.textContent = `最終更新: ${formatTimestamp(state.updatedAt)}`;
 }
 
+function ensureNicknamesForMembers() {
+  let changed = false;
+  state.members.forEach((member) => {
+    if (!state.nicknameMap[member.name]) {
+      state.nicknameMap[member.name] = getRandomNickname();
+      changed = true;
+    }
+  });
+  if (changed) {
+    persistState();
+  }
+}
+
 function render() {
+  ensureNicknamesForMembers();
   renderRanking();
   renderTicker();
   renderUpdatedAt();
   renderLearning();
   renderGamification();
+  renderLeagueAndRewards();
 }
 
 function getCompletedLectureCount() {
@@ -441,6 +535,62 @@ function renderGamification() {
   });
 }
 
+function renderLeagueAndRewards() {
+  const userPoints = getTotalPointsByLearner(state.learnerName);
+  const league = getLeagueByPoints(userPoints) ?? leagueTable[0];
+  currentLeagueLabel.textContent = `${league.title} (${userPoints}pt)`;
+
+  badgeBronze.classList.toggle("active", league.id === "bronze");
+  badgeSilver.classList.toggle("active", league.id === "silver");
+  badgeGold.classList.toggle("active", league.id === "gold");
+
+  if (league.nextMin === null) {
+    leagueProgressBar.style.width = "100%";
+    leagueProgressText.textContent = "最高リーグ到達中";
+  } else {
+    const range = league.nextMin - league.min;
+    const current = Math.max(0, Math.min(range, userPoints - league.min));
+    const percent = Math.round((current / range) * 100);
+    leagueProgressBar.style.width = `${percent}%`;
+    leagueProgressText.textContent = `次のリーグまで ${Math.max(0, league.nextMin - userPoints)}pt`;
+  }
+
+  rewardBalance.textContent = `交換可能ポイント: ${userPoints}pt`;
+  rewardList.innerHTML = "";
+  rewardCatalog.forEach((reward) => {
+    const claimed = state.rewardInventory[reward.id] ?? 0;
+    const canBuy = userPoints >= reward.cost;
+    const item = document.createElement("article");
+    item.className = "reward-item";
+    item.innerHTML = `
+      <div>
+        <p class="reward-title">${reward.title}</p>
+        <p class="reward-meta">必要: ${reward.cost}pt / 所持: ${claimed}個</p>
+      </div>
+      <button class="button button-small" type="button" data-reward-id="${reward.id}" ${
+        canBuy ? "" : "disabled"
+      }>
+        交換
+      </button>
+    `;
+    rewardList.appendChild(item);
+  });
+}
+
+function spendPoints(name, points, reason) {
+  const existing = state.members.find((member) => member.name === name);
+  if (!existing || existing.points < points) {
+    return false;
+  }
+  existing.points -= points;
+  state.tickerEvents.unshift(createEvent(name, -points, reason));
+  state.tickerEvents = state.tickerEvents.slice(0, MAX_TICKER_ITEMS);
+  state.updatedAt = Date.now();
+  persistState();
+  render();
+  return true;
+}
+
 function updateLearningCards() {
   lectureCatalog.forEach((lecture) => {
     const card = lectureList.querySelector(`[data-lecture-card-id="${lecture.id}"]`);
@@ -488,6 +638,25 @@ awardForm.addEventListener("submit", (event) => {
   awardForm.reset();
   pointsInput.value = "10";
   nameInput.focus();
+});
+
+rewardList.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLButtonElement)) {
+    return;
+  }
+  const rewardId = target.dataset.rewardId;
+  const reward = rewardCatalog.find((item) => item.id === rewardId);
+  if (!reward) {
+    return;
+  }
+  const success = spendPoints(state.learnerName, reward.cost, `報酬交換:${reward.title}`);
+  if (!success) {
+    return;
+  }
+  state.rewardInventory[reward.id] = (state.rewardInventory[reward.id] ?? 0) + 1;
+  persistState();
+  render();
 });
 
 function getOrCreatePlayback(lectureId) {
