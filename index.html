@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>メモ魔塾 FOUNDER OS | サイトモック</title>
+    <title>Story Stock Lab | 週間ランキング速報</title>
     <meta
       name="description"
-      content="メモ魔塾 FOUNDER OS の実装イメージ。挑戦を事業に変える90日プログラムのサイトモックです。"
+      content="ポイント獲得の速報テロップと週間ランキングを備えた、ゲーム型コミュニティの実装モック。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,248 +20,106 @@
     <header class="site-header">
       <div class="container nav">
         <div class="brand">
-          <span class="brand-mark">FO</span>
+          <span class="brand-mark">SS</span>
           <div>
-            <p class="brand-name">メモ魔塾 FOUNDER OS</p>
-            <p class="brand-sub">努力が複利で効く世界を、設計する。</p>
+            <p class="brand-name">Story Stock Lab</p>
+            <p class="brand-sub">週間ランキング × ポイント速報システム</p>
           </div>
         </div>
-        <a class="button button-small" href="#cta">無料体験に申し込む</a>
+        <div class="header-actions">
+          <button id="toggleAutoFeedButton" class="button button-small" type="button">
+            自動速報: ON
+          </button>
+          <button id="resetButton" class="button button-small button-ghost" type="button">
+            今週の集計をリセット
+          </button>
+        </div>
       </div>
     </header>
 
-    <main>
+    <main class="container page-main">
       <section class="hero">
-        <div class="container hero-grid">
-          <div>
-            <p class="eyebrow">90日 実装伴走プログラム</p>
-            <h1>
-              学ぶだけで終わらせない。<br />
-              <span>あなたの事業が動き出すまで伴走する。</span>
-            </h1>
-            <p class="hero-copy">
-              メモ魔塾 FOUNDER OS は、<strong>商品設計・集客導線・販売導線・運営管理</strong
-              >を一気通貫で実装する起業OSです。<br />
-              「このままでは困る」を「私はもう動ける」に変えます。
-            </p>
-            <div class="hero-actions">
-              <a class="button" href="#program">プログラムを見る</a>
-              <a class="button button-ghost" href="#roadmap">ロードマップを見る</a>
-            </div>
-            <ul class="hero-metrics">
-              <li><strong>90日</strong><span>初売上までの伴走</span></li>
-              <li><strong>5層</strong><span>収益モデル</span></li>
-              <li><strong>30名</strong><span>β版密着から開始</span></li>
-            </ul>
-          </div>
-          <div class="hero-card">
-            <p class="card-title">今週の実装チェック</p>
-            <ol>
-              <li>ターゲット定義（誰の痛みを解決するか）</li>
-              <li>LP公開（オファー検証）</li>
-              <li>決済リンク接続（Stripe）</li>
-              <li>初回販売テスト（10件接触）</li>
-            </ol>
-            <p class="status"><span></span> AIコーチが毎朝「次の1手」を提案中</p>
-          </div>
+        <p class="eyebrow">LIVE GAME BOARD</p>
+        <h1>
+          <span>〇〇さんがポイント獲得しました</span>を
+          <br />
+          リアルタイムで流すサイト
+        </h1>
+        <p class="hero-copy">
+          ポイント付与が起きるたびに速報テロップが自動追加され、週間ランキングが即時更新されます。
+          運営は管理フォームから手動投稿も可能です。
+        </p>
+      </section>
+
+      <section class="ticker-section">
+        <div class="ticker-label">速報</div>
+        <div class="ticker-window">
+          <ul id="tickerTrack" class="ticker-track"></ul>
         </div>
       </section>
 
-      <section class="section section-dark">
-        <div class="container">
-          <h2>このプログラムで解決する課題</h2>
-          <div class="pain-grid">
-            <article>
-              <h3>頑張っているのに積み上がらない</h3>
-              <p>
-                日々の努力が収入や実績に結びつかない状態を、仕組み化で変える。
-              </p>
-            </article>
-            <article>
-              <h3>何から始めるか分からない</h3>
-              <p>
-                AIロードマップと週次伴走で、今日やることを具体化する。
-              </p>
-            </article>
-            <article>
-              <h3>売上が再現しない</h3>
-              <p>
-                商品・導線・KPIをテンプレ化し、単発ではなく継続売上を作る。
-              </p>
-            </article>
+      <section class="board-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>週間ランキング</h2>
+            <p id="lastUpdated" class="panel-note"></p>
           </div>
-        </div>
+          <ol id="rankingList" class="ranking-list"></ol>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>ポイント付与フォーム</h2>
+            <p class="panel-note">ここから「速報」を投稿できます</p>
+          </div>
+          <form id="awardForm" class="award-form">
+            <label>
+              名前
+              <input id="nameInput" name="name" type="text" maxlength="20" placeholder="例: 田中さん" required />
+            </label>
+            <label>
+              獲得ポイント
+              <input
+                id="pointsInput"
+                name="points"
+                type="number"
+                min="1"
+                max="500"
+                value="10"
+                required
+              />
+            </label>
+            <label>
+              理由
+              <select id="reasonInput" name="reason">
+                <option value="デイリー報告">デイリー報告</option>
+                <option value="週次課題提出">週次課題提出</option>
+                <option value="初案件獲得">初案件獲得</option>
+                <option value="他メンバー支援">他メンバー支援</option>
+                <option value="公開フィードバック登壇">公開フィードバック登壇</option>
+              </select>
+            </label>
+            <button class="button" type="submit">速報を投稿する</button>
+          </form>
+        </article>
       </section>
 
-      <section id="program" class="section">
-        <div class="container">
-          <h2>90日プログラム構成</h2>
-          <div class="program-grid">
-            <article class="program-card">
-              <p class="program-label">Days 1-30</p>
-              <h3>Phase 1：商品を作る</h3>
-              <ul>
-                <li>強み棚卸しとターゲット定義</li>
-                <li>オファー設計・価格設定</li>
-                <li>売れる説明文の完成</li>
-              </ul>
-            </article>
-            <article class="program-card">
-              <p class="program-label">Days 31-60</p>
-              <h3>Phase 2：売れる導線を作る</h3>
-              <ul>
-                <li>LP作成（AI添削あり）</li>
-                <li>決済導線実装（Stripe）</li>
-                <li>小予算でテスト集客</li>
-              </ul>
-            </article>
-            <article class="program-card">
-              <p class="program-label">Days 61-90</p>
-              <h3>Phase 3：初売上→仕組み化</h3>
-              <ul>
-                <li>初回有料顧客の獲得</li>
-                <li>顧客フィードバック改善</li>
-                <li>KPIダッシュボード運用開始</li>
-              </ul>
-            </article>
-          </div>
+      <section class="rules panel">
+        <div class="panel-header">
+          <h2>ルール（サンプル）</h2>
         </div>
-      </section>
-
-      <section class="section section-accent">
-        <div class="container">
-          <h2>ゼロイチ挑戦記（集客の中核）</h2>
-          <p class="section-copy">
-            講師の一方通行コンテンツではなく、塾生の挑戦を密着ドキュメンタリー化。<br />
-            「普通の人が変わる過程」そのものが、次の参加者を動かす。
-          </p>
-          <div class="story-cards">
-            <article>
-              <h3>Ep1-4：なぜ挑戦するのか</h3>
-              <p>背景・葛藤・商品の原型までを公開。</p>
-            </article>
-            <article>
-              <h3>Ep5-8：壁と突破</h3>
-              <p>反応ゼロ、営業失敗、改善の過程を共有。</p>
-            </article>
-            <article>
-              <h3>Ep9-12：初売上の瞬間</h3>
-              <p>顧客獲得・成果発表・次の目標を提示。</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="container">
-          <h2>料金プラン（モック）</h2>
-          <div class="pricing-grid">
-            <article class="price-card">
-              <p class="price-name">サロン会員</p>
-              <p class="price-value">¥4,980<span>/月</span></p>
-              <ul>
-                <li>週次ライブ</li>
-                <li>Discordコミュニティ</li>
-                <li>AI学習コーチ（基本）</li>
-              </ul>
-            </article>
-            <article class="price-card featured">
-              <p class="price-name">90日伴走</p>
-              <p class="price-value">¥198,000<span>/一括</span></p>
-              <ul>
-                <li>全プログラム参加</li>
-                <li>週次レビュー</li>
-                <li>初売上まで実装伴走</li>
-              </ul>
-            </article>
-            <article class="price-card">
-              <p class="price-name">OS継続</p>
-              <p class="price-value">¥9,800<span>/月</span></p>
-              <ul>
-                <li>KPIダッシュボード</li>
-                <li>AI次アクション提案</li>
-                <li>テンプレートライブラリ</li>
-              </ul>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="roadmap" class="section section-dark">
-        <div class="container">
-          <h2>18ヶ月ロードマップ（要約）</h2>
-          <div class="roadmap">
-            <article>
-              <p class="roadmap-step">Month 1-2</p>
-              <h3>準備期</h3>
-              <p>法務整備、MVP、β版30名募集。</p>
-            </article>
-            <article>
-              <p class="roadmap-step">Month 3-5</p>
-              <h3>β版実施</h3>
-              <p>90日伴走 + ゼロイチ挑戦記制作。</p>
-            </article>
-            <article>
-              <p class="roadmap-step">Month 6-9</p>
-              <h3>本販売</h3>
-              <p>実績公開で1,000名突破。</p>
-            </article>
-            <article>
-              <p class="roadmap-step">Month 10-18</p>
-              <h3>拡大・スケール</h3>
-              <p>3,000→10,000名、法人展開、MP稼働。</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="container">
-          <h2>受講クレジット制度（行動インセンティブ）</h2>
-          <p class="section-copy">
-            「行動した人ほど次の学びが安くなる」仕組み。換金不可・譲渡不可で、学習継続に集中。
-          </p>
-          <div class="credit-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>行動</th>
-                  <th>クレジット</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>週タスク完了</td><td>500円分</td></tr>
-                <tr><td>課題提出（期限内）</td><td>300円分</td></tr>
-                <tr><td>LP公開</td><td>1,000円分</td></tr>
-                <tr><td>初回CV達成</td><td>2,000円分</td></tr>
-                <tr><td>初売上達成</td><td>3,000円分</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section id="cta" class="cta">
-        <div class="container cta-inner">
-          <div>
-            <p class="eyebrow">まずは無料診断から</p>
-            <h2>あなたの「積み上がり度」を5分で可視化</h2>
-            <p>
-              学びたい人ではなく、「3ヶ月で変わらないと困る人」のための実装型プログラムです。
-            </p>
-          </div>
-          <div class="cta-actions">
-            <a class="button" href="#">無料診断を始める</a>
-            <a class="button button-ghost" href="#">説明会に申し込む</a>
-          </div>
-        </div>
+        <ul>
+          <li>ランキングは毎週月曜 00:00 にリセット（このモックは手動リセット対応）。</li>
+          <li>獲得ポイントは即時反映。速報テロップに「誰が何ポイント獲得したか」を表示。</li>
+          <li>表示されるポイントは換金不可・譲渡不可のコミュニティクレジット。</li>
+        </ul>
       </section>
     </main>
 
     <footer class="site-footer">
       <div class="container footer-inner">
-        <p>© 2026 メモ魔塾 FOUNDER OS (Mockup)</p>
-        <p class="footer-note">このページはビジネスプラン検証用モックです。</p>
+        <p>© 2026 Story Stock Lab</p>
+        <p class="footer-note">実装モック: 速報テロップ + 週間ランキング + 手動付与フォーム</p>
       </div>
     </footer>
 
