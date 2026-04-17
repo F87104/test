@@ -12,6 +12,31 @@ const DEFAULT_LEARNER_NAME = "あなた";
 const RANKING_VISIBLE_COUNT = 4;
 const CUSTOMER_LOGIN_EMAIL = "member@example.com";
 const CUSTOMER_LOGIN_PASSWORD = "member1234";
+const LECTURE_PROGRESS_THRESHOLD = 0.95;
+
+const lectureCatalog = [
+  {
+    id: "lecture-note-01",
+    title: "講座1: メモで価値を言語化する基礎",
+    vimeoId: "76979871",
+    minutes: 6,
+    points: 15,
+  },
+  {
+    id: "lecture-note-02",
+    title: "講座2: 自己紹介を商品ページ化する",
+    vimeoId: "22439234",
+    minutes: 7,
+    points: 20,
+  },
+  {
+    id: "lecture-note-03",
+    title: "講座3: 1週間レビューで改善サイクルを回す",
+    vimeoId: "146022717",
+    minutes: 8,
+    points: 25,
+  },
+];
 
 const rewardCatalog = [
   { id: "priority-review", title: "優先レビュー権", cost: 40, requiredLeagues: [] },
@@ -75,17 +100,26 @@ const els = {
   dailyFocusReward: document.getElementById("dailyFocusReward"),
   dailyFocusStatus: document.getElementById("dailyFocusStatus"),
   dailyFocusAction: document.getElementById("dailyFocusAction"),
+  learningSummary: document.getElementById("learningSummary"),
+  learningProgressBar: document.getElementById("learningProgressBar"),
+  learningPoints: document.getElementById("learningPoints"),
+  lectureList: document.getElementById("lectureList"),
+  learnerForm: document.getElementById("learnerForm"),
+  learnerNameInput: document.getElementById("learnerNameInput"),
+  resetLearningButton: document.getElementById("resetLearningButton"),
 };
 
 const localUi = {
   nicknameMap: JSON.parse(localStorage.getItem("ui-nickname-map") || "{}"),
   rewardInventory: JSON.parse(localStorage.getItem("ui-reward-inventory") || "{}"),
   learnerName: localStorage.getItem("ui-learner-name") || DEFAULT_LEARNER_NAME,
+  learningProgress: JSON.parse(localStorage.getItem("ui-learning-progress") || "{}"),
 };
 
 let authToken = getAuthToken();
 let me = null;
 let currentRankingTab = "overall";
+const vimeoPlayerMap = new Map();
 let currentState = {
   members: [],
   tickerEvents: [],
@@ -123,6 +157,116 @@ function getDisplayName(realName) {
 
 function roleCanAward(role) {
   return role === "admin" || role === "mentor";
+}
+
+function getLearningProgressRecord(lectureId) {
+  return localUi.learningProgress[lectureId] ?? null;
+}
+
+function isLectureCompleted(lectureId) {
+  return Boolean(getLearningProgressRecord(lectureId)?.completed);
+}
+
+function getLearningCompletedCount() {
+  return lectureCatalog.filter((lecture) => isLectureCompleted(lecture.id)).length;
+}
+
+function getLearningEarnedPoints() {
+  return lectureCatalog.reduce((sum, lecture) => {
+    return sum + (isLectureCompleted(lecture.id) ? lecture.points : 0);
+  }, 0);
+}
+
+function persistLearningProgress() {
+  localStorage.setItem("ui-learning-progress", JSON.stringify(localUi.learningProgress));
+}
+
+function updateLearningCardState(lecture) {
+  if (!els.lectureList) return;
+  const card = els.lectureList.querySelector(`[data-lecture-id="${lecture.id}"]`);
+  if (!card) return;
+  const status = card.querySelector("[data-lecture-status]");
+  const completed = isLectureCompleted(lecture.id);
+  card.classList.toggle("done", completed);
+  if (status) {
+    status.textContent = completed
+      ? `視聴完了 / +${lecture.points}pt（学習ポイント）`
+      : `未完了 / +${lecture.points}pt`;
+    status.classList.toggle("done", completed);
+  }
+}
+
+async function markLectureCompleted(lecture) {
+  if (isLectureCompleted(lecture.id)) return;
+  localUi.learningProgress[lecture.id] = {
+    completed: true,
+    completedAt: Date.now(),
+    points: lecture.points,
+  };
+  persistLearningProgress();
+  updateLearningCardState(lecture);
+  renderLearningSummary();
+  showAwardToast(`講座完了: ${lecture.title}`);
+}
+
+function renderLearningSummary() {
+  if (!els.learningSummary || !els.learningProgressBar || !els.learningPoints) return;
+  const completed = getLearningCompletedCount();
+  const total = lectureCatalog.length;
+  const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+  const earnedPoints = getLearningEarnedPoints();
+  els.learningSummary.textContent = `完了 ${completed} / ${total}本`;
+  els.learningProgressBar.style.width = `${percent}%`;
+  els.learningPoints.textContent = `学習ポイント: ${earnedPoints}pt`;
+}
+
+function renderLectureList() {
+  if (!els.lectureList) return;
+  if (els.lectureList.childElementCount !== lectureCatalog.length) {
+    els.lectureList.innerHTML = "";
+    lectureCatalog.forEach((lecture) => {
+      const card = document.createElement("article");
+      card.className = "lecture-card";
+      card.dataset.lectureId = lecture.id;
+      card.innerHTML = `
+        <p class="lecture-card-title">${lecture.title}</p>
+        <p class="lecture-card-meta">目安 ${lecture.minutes}分 / Vimeo サンプル</p>
+        <iframe
+          class="lecture-player"
+          title="${lecture.title}"
+          src="https://player.vimeo.com/video/${lecture.vimeoId}?title=0&byline=0&portrait=0"
+          loading="lazy"
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+          allowfullscreen
+          data-lecture-iframe
+          data-lecture-id="${lecture.id}"
+        ></iframe>
+        <p class="lecture-status" data-lecture-status></p>
+      `;
+      els.lectureList.appendChild(card);
+      updateLearningCardState(lecture);
+    });
+  } else {
+    lectureCatalog.forEach(updateLearningCardState);
+  }
+}
+
+function initializeVimeoTracking() {
+  const VimeoPlayer = window.Vimeo?.Player;
+  if (!VimeoPlayer || !els.lectureList) return;
+  lectureCatalog.forEach((lecture) => {
+    if (vimeoPlayerMap.has(lecture.id)) return;
+    const iframe = els.lectureList.querySelector(`iframe[data-lecture-id="${lecture.id}"]`);
+    if (!iframe) return;
+    const player = new VimeoPlayer(iframe);
+    vimeoPlayerMap.set(lecture.id, player);
+    player.on("timeupdate", async (event) => {
+      if (isLectureCompleted(lecture.id)) return;
+      if (Number(event?.percent ?? 0) >= LECTURE_PROGRESS_THRESHOLD) {
+        await markLectureCompleted(lecture);
+      }
+    });
+  });
 }
 
 function getTotalPointsByLearner(name) {
@@ -262,6 +406,9 @@ function render() {
   renderLeagueAndRewards();
   renderGamification();
   renderDailyFocus();
+  renderLectureList();
+  renderLearningSummary();
+  initializeVimeoTracking();
   renderUpdatedAt();
 }
 
@@ -392,6 +539,31 @@ function bindAwardUi() {
   });
 }
 
+function bindLearningUi() {
+  if (els.learnerNameInput) {
+    els.learnerNameInput.value = localUi.learnerName;
+  }
+
+  els.learnerForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const nextName = els.learnerNameInput?.value?.trim();
+    if (!nextName) return;
+    localUi.learnerName = nextName;
+    localStorage.setItem("ui-learner-name", nextName);
+    currentState.learnerName = nextName;
+    render();
+    showAwardToast(`学習者名を「${nextName}」へ更新しました`);
+  });
+
+  els.resetLearningButton?.addEventListener("click", () => {
+    localUi.learningProgress = {};
+    persistLearningProgress();
+    lectureCatalog.forEach(updateLearningCardState);
+    renderLearningSummary();
+    showAwardToast("学習進捗をリセットしました");
+  });
+}
+
 function bindNavigation() {
   document.querySelectorAll("[data-ranking-tab]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -407,6 +579,7 @@ function bindNavigation() {
 }
 
 bindAwardUi();
+bindLearningUi();
 bindNavigation();
 syncAwardPreview();
 bootstrap();
