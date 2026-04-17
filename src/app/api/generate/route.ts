@@ -15,6 +15,7 @@ const VALID_TOOLS: ToolKey[] = [
   "brainstorm",
   "pricing",
   "roadmap",
+  "automated",
 ];
 
 export async function POST(req: NextRequest) {

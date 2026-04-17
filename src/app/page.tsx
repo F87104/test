@@ -23,8 +23,8 @@ export default function HomePage() {
           <Link href="/tools/roadmap" className="btn-primary">
             月収100万円ロードマップを作る
           </Link>
-          <Link href="/tools/email" className="btn-secondary">
-            営業メールを作る
+          <Link href="/tools/automated" className="btn-secondary">
+            人を介さないビジネスを設計する
           </Link>
         </div>
       </section>

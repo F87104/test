@@ -24,6 +24,16 @@ export const tools: Tool[] = [
     category: "ひとり起業",
   },
   {
+    href: "/tools/automated",
+    title: "無人ビジネス設計",
+    icon: "🤖",
+    summary:
+      "商談・対面・1対1納品をなくし、人を介さず回るビジネスをAIが設計。",
+    description:
+      "デジタル商品・SaaS・広告メディア・自動配信などから3案を提案。決済/納品/サポート/集客の自動化スタックまで具体ツール名で提示します。",
+    category: "ひとり起業",
+  },
+  {
     href: "/tools/email",
     title: "営業メール作成",
     icon: "✉️",
