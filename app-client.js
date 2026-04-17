@@ -1,18 +1,17 @@
 import {
   awardPoints,
-  clearAuthToken,
-  fetchMe,
   fetchReview,
   fetchState,
   getAuthToken,
   login,
-  logout,
 } from "./src/shared/client.js";
 import { connectRealtime, disconnectRealtime } from "./src/shared/realtime.js";
 import { mapApiStateToUiState, mergeWeeklyReviewToDom } from "./src/shared/stateMapper.js";
 
 const DEFAULT_LEARNER_NAME = "あなた";
 const RANKING_VISIBLE_COUNT = 4;
+const CUSTOMER_LOGIN_EMAIL = "member@example.com";
+const CUSTOMER_LOGIN_PASSWORD = "member1234";
 
 const rewardCatalog = [
   { id: "priority-review", title: "優先レビュー権", cost: 40, requiredLeagues: [] },
@@ -44,11 +43,6 @@ const nicknamePool = [
 ];
 
 const els = {
-  authForm: document.getElementById("authForm"),
-  authEmail: document.getElementById("authEmail"),
-  authPassword: document.getElementById("authPassword"),
-  authStatus: document.getElementById("authStatus"),
-  logoutButton: document.getElementById("logoutButton"),
   rankingList: document.getElementById("rankingList"),
   lastUpdated: document.getElementById("lastUpdated"),
   tickerTrack: document.getElementById("tickerTrack"),
@@ -129,12 +123,6 @@ function getDisplayName(realName) {
 
 function roleCanAward(role) {
   return role === "admin" || role === "mentor";
-}
-
-function setAuthStatus(message) {
-  if (els.authStatus) {
-    els.authStatus.textContent = message;
-  }
 }
 
 function getTotalPointsByLearner(name) {
@@ -338,52 +326,20 @@ function connectRealtimeBridge() {
 }
 
 async function bootstrap() {
-  if (!authToken) {
-    setAuthStatus("未ログイン");
-    syncPermissions();
-    return;
-  }
   try {
-    me = await fetchMe();
-    setAuthStatus(`ログイン中: ${me.name}（${me.role}）`);
+    if (!authToken) {
+      const result = await login(CUSTOMER_LOGIN_EMAIL, CUSTOMER_LOGIN_PASSWORD);
+      authToken = result.token;
+      me = result.user;
+    }
     syncPermissions();
     await refreshState();
     connectRealtimeBridge();
   } catch (error) {
-    clearAuthToken();
-    authToken = "";
     me = null;
-    setAuthStatus(`認証エラー: ${error.message}`);
+    console.error("自動ログインに失敗しました:", error);
     syncPermissions();
   }
-}
-
-function bindAuthUi() {
-  els.authForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const email = els.authEmail.value.trim();
-    const password = els.authPassword.value;
-    if (!email || !password) return;
-    setAuthStatus("認証中...");
-    try {
-      const result = await login(email, password);
-      authToken = result.token;
-      me = result.user;
-      await bootstrap();
-    } catch (error) {
-      setAuthStatus(`ログイン失敗: ${error.message}`);
-    }
-  });
-
-  els.logoutButton?.addEventListener("click", () => {
-    logout();
-    clearAuthToken();
-    disconnectRealtime();
-    authToken = "";
-    me = null;
-    setAuthStatus("ログアウトしました");
-    syncPermissions();
-  });
 }
 
 function bindAwardUi() {
@@ -450,7 +406,6 @@ function bindNavigation() {
   });
 }
 
-bindAuthUi();
 bindAwardUi();
 bindNavigation();
 syncAwardPreview();
