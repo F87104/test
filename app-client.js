@@ -48,7 +48,7 @@ const lectureCatalog = [
 
 const rewardCatalog = [
   { id: "priority-review", title: "優先レビュー権", cost: 40, requiredLeagues: [] },
-  { id: "special-template", title: "限定テンプレ解放", cost: 70, requiredLeagues: ["silver", "gold"] },
+  { id: "special-template", title: "限定テンプレ解放", cost: 70, requiredLeagues: [] },
   { id: "mentor-qa", title: "メンターQ&Aチケット", cost: 120, requiredLeagues: ["gold"] },
 ];
 
@@ -392,15 +392,20 @@ function renderLeagueAndRewards() {
     const claimed = localUi.rewardInventory[reward.id] ?? 0;
     const unlocked = isRewardUnlockedForLeague(reward, league.id);
     const canBuy = unlocked && availablePoints >= reward.cost;
+    const statusText = !unlocked
+      ? "現在のリーグでは未解放"
+      : canBuy
+        ? "交換できます"
+        : `あと${reward.cost - availablePoints}ptで交換`;
     const card = document.createElement("article");
     card.className = `reward-item ${unlocked ? "" : "locked"}`;
     card.innerHTML = `
       <div>
         <p class="reward-title">${reward.title}</p>
         <p class="reward-meta">必要: ${reward.cost}pt / 所持: ${claimed}個</p>
-        ${unlocked ? "" : '<p class="reward-lock">現在のリーグでは未解放</p>'}
+        <p class="reward-lock">${statusText}</p>
       </div>
-      <button class="button button-small" type="button" data-reward-id="${reward.id}" ${canBuy ? "" : "disabled"}>交換</button>
+      <button class="button button-small" type="button" data-reward-id="${reward.id}">交換</button>
     `;
     els.rewardList.appendChild(card);
   });
