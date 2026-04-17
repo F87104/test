@@ -36,6 +36,14 @@ const lectureCatalog = [
     minutes: 8,
     points: 25,
   },
+  {
+    id: "lecture-special-01",
+    title: "特別講義: 成果導線の設計（報酬交換で解放）",
+    vimeoId: "395212534",
+    minutes: 10,
+    points: 35,
+    lockedByReward: "special-template",
+  },
 ];
 
 const rewardCatalog = [
@@ -112,6 +120,7 @@ const els = {
 const localUi = {
   nicknameMap: JSON.parse(localStorage.getItem("ui-nickname-map") || "{}"),
   rewardInventory: JSON.parse(localStorage.getItem("ui-reward-inventory") || "{}"),
+  rewardSpentPoints: Number(localStorage.getItem("ui-reward-spent-points") || "0"),
   learnerName: localStorage.getItem("ui-learner-name") || DEFAULT_LEARNER_NAME,
   learningProgress: JSON.parse(localStorage.getItem("ui-learning-progress") || "{}"),
 };
@@ -163,18 +172,33 @@ function getLearningProgressRecord(lectureId) {
   return localUi.learningProgress[lectureId] ?? null;
 }
 
+function isLectureUnlocked(lecture) {
+  if (!lecture.lockedByReward) return true;
+  return Number(localUi.rewardInventory[lecture.lockedByReward] ?? 0) > 0;
+}
+
 function isLectureCompleted(lectureId) {
   return Boolean(getLearningProgressRecord(lectureId)?.completed);
 }
 
 function getLearningCompletedCount() {
-  return lectureCatalog.filter((lecture) => isLectureCompleted(lecture.id)).length;
+  return lectureCatalog.filter((lecture) => isLectureUnlocked(lecture) && isLectureCompleted(lecture.id)).length;
 }
 
 function getLearningEarnedPoints() {
   return lectureCatalog.reduce((sum, lecture) => {
+    if (!isLectureUnlocked(lecture)) return sum;
     return sum + (isLectureCompleted(lecture.id) ? lecture.points : 0);
   }, 0);
+}
+
+function persistRewardState() {
+  localStorage.setItem("ui-reward-inventory", JSON.stringify(localUi.rewardInventory));
+  localStorage.setItem("ui-reward-spent-points", String(localUi.rewardSpentPoints));
+}
+
+function getAvailableRewardPoints() {
+  return Math.max(0, getTotalPointsByLearner(localUi.learnerName) - localUi.rewardSpentPoints);
 }
 
 function persistLearningProgress() {
@@ -186,10 +210,14 @@ function updateLearningCardState(lecture) {
   const card = els.lectureList.querySelector(`[data-lecture-id="${lecture.id}"]`);
   if (!card) return;
   const status = card.querySelector("[data-lecture-status]");
+  const unlocked = isLectureUnlocked(lecture);
   const completed = isLectureCompleted(lecture.id);
+  card.classList.toggle("locked", !unlocked);
   card.classList.toggle("done", completed);
   if (status) {
-    status.textContent = completed
+    status.textContent = !unlocked
+      ? "未解放 / 報酬交換で視聴可能"
+      : completed
       ? `視聴完了 / +${lecture.points}pt（学習ポイント）`
       : `未完了 / +${lecture.points}pt`;
     status.classList.toggle("done", completed);
@@ -197,6 +225,7 @@ function updateLearningCardState(lecture) {
 }
 
 async function markLectureCompleted(lecture) {
+  if (!isLectureUnlocked(lecture)) return;
   if (isLectureCompleted(lecture.id)) return;
   localUi.learningProgress[lecture.id] = {
     completed: true,
@@ -212,7 +241,7 @@ async function markLectureCompleted(lecture) {
 function renderLearningSummary() {
   if (!els.learningSummary || !els.learningProgressBar || !els.learningPoints) return;
   const completed = getLearningCompletedCount();
-  const total = lectureCatalog.length;
+  const total = lectureCatalog.filter(isLectureUnlocked).length;
   const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
   const earnedPoints = getLearningEarnedPoints();
   els.learningSummary.textContent = `完了 ${completed} / ${total}本`;
@@ -222,39 +251,43 @@ function renderLearningSummary() {
 
 function renderLectureList() {
   if (!els.lectureList) return;
-  if (els.lectureList.childElementCount !== lectureCatalog.length) {
-    els.lectureList.innerHTML = "";
-    lectureCatalog.forEach((lecture) => {
-      const card = document.createElement("article");
-      card.className = "lecture-card";
-      card.dataset.lectureId = lecture.id;
-      card.innerHTML = `
-        <p class="lecture-card-title">${lecture.title}</p>
-        <p class="lecture-card-meta">目安 ${lecture.minutes}分 / Vimeo サンプル</p>
-        <iframe
-          class="lecture-player"
-          title="${lecture.title}"
-          src="https://player.vimeo.com/video/${lecture.vimeoId}?title=0&byline=0&portrait=0"
-          loading="lazy"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
-          allowfullscreen
-          data-lecture-iframe
-          data-lecture-id="${lecture.id}"
-        ></iframe>
-        <p class="lecture-status" data-lecture-status></p>
-      `;
-      els.lectureList.appendChild(card);
-      updateLearningCardState(lecture);
-    });
-  } else {
-    lectureCatalog.forEach(updateLearningCardState);
-  }
+  els.lectureList.innerHTML = "";
+  lectureCatalog.forEach((lecture) => {
+    const unlocked = isLectureUnlocked(lecture);
+    const card = document.createElement("article");
+    card.className = "lecture-card";
+    card.dataset.lectureId = lecture.id;
+    card.innerHTML = `
+      <p class="lecture-card-title">${lecture.title}</p>
+      <p class="lecture-card-meta">目安 ${lecture.minutes}分 / Vimeo サンプル</p>
+      ${
+        unlocked
+          ? `<iframe
+        class="lecture-player"
+        title="${lecture.title}"
+        src="https://player.vimeo.com/video/${lecture.vimeoId}?title=0&byline=0&portrait=0"
+        loading="lazy"
+        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+        allowfullscreen
+        data-lecture-iframe
+        data-lecture-id="${lecture.id}"
+      ></iframe>`
+          : `<div class="lecture-player lecture-player-locked">
+        <p class="lecture-lock">この講義は報酬交換で開放されます</p>
+      </div>`
+      }
+      <p class="lecture-status" data-lecture-status></p>
+    `;
+    els.lectureList.appendChild(card);
+    updateLearningCardState(lecture);
+  });
 }
 
 function initializeVimeoTracking() {
   const VimeoPlayer = window.Vimeo?.Player;
   if (!VimeoPlayer || !els.lectureList) return;
   lectureCatalog.forEach((lecture) => {
+    if (!isLectureUnlocked(lecture)) return;
     if (vimeoPlayerMap.has(lecture.id)) return;
     const iframe = els.lectureList.querySelector(`iframe[data-lecture-id="${lecture.id}"]`);
     if (!iframe) return;
@@ -331,7 +364,10 @@ function renderMvp() {
 }
 
 function renderLeagueAndRewards() {
-  const userPoints = getTotalPointsByLearner(localUi.learnerName);
+  const totalPoints = getTotalPointsByLearner(localUi.learnerName);
+  const availablePoints = getAvailableRewardPoints();
+  const spentPoints = Math.max(0, localUi.rewardSpentPoints);
+  const userPoints = totalPoints;
   const league = getCurrentLeague(userPoints);
   els.currentLeagueLabel.textContent = `${league.title} (${userPoints}pt)`;
   const next = league.nextMin;
@@ -350,12 +386,12 @@ function renderLeagueAndRewards() {
   els.badgeSilver.classList.toggle("active", league.id === "silver");
   els.badgeGold.classList.toggle("active", league.id === "gold");
 
-  els.rewardBalance.textContent = `交換可能ポイント: ${userPoints}pt`;
+  els.rewardBalance.textContent = `交換可能 ${availablePoints}pt（累計 ${totalPoints}pt / 使用 ${spentPoints}pt）`;
   els.rewardList.innerHTML = "";
   rewardCatalog.forEach((reward) => {
     const claimed = localUi.rewardInventory[reward.id] ?? 0;
     const unlocked = isRewardUnlockedForLeague(reward, league.id);
-    const canBuy = unlocked && userPoints >= reward.cost;
+    const canBuy = unlocked && availablePoints >= reward.cost;
     const card = document.createElement("article");
     card.className = `reward-item ${unlocked ? "" : "locked"}`;
     card.innerHTML = `
@@ -532,10 +568,34 @@ function bindAwardUi() {
     if (!(target instanceof HTMLButtonElement)) return;
     const rewardId = target.dataset.rewardId;
     if (!rewardId) return;
+    const reward = rewardCatalog.find((item) => item.id === rewardId);
+    if (!reward) return;
+    const totalPoints = getTotalPointsByLearner(localUi.learnerName);
+    const league = getCurrentLeague(totalPoints);
+    if (!isRewardUnlockedForLeague(reward, league.id)) {
+      showAwardToast("現在のリーグでは交換できません");
+      return;
+    }
+    const availablePoints = getAvailableRewardPoints();
+    if (availablePoints < reward.cost) {
+      showAwardToast(`ポイント不足: あと${reward.cost - availablePoints}pt必要です`);
+      return;
+    }
+    const beforeOwned = Number(localUi.rewardInventory[rewardId] ?? 0);
     localUi.rewardInventory[rewardId] = (localUi.rewardInventory[rewardId] ?? 0) + 1;
-    localStorage.setItem("ui-reward-inventory", JSON.stringify(localUi.rewardInventory));
-    renderLeagueAndRewards();
-    showAwardToast("報酬を交換しました（デモ）");
+    localUi.rewardSpentPoints += reward.cost;
+    persistRewardState();
+
+    const newlyUnlockedLectures = lectureCatalog.filter(
+      (lecture) => lecture.lockedByReward === rewardId && beforeOwned === 0
+    );
+    if (newlyUnlockedLectures.length > 0) {
+      const titles = newlyUnlockedLectures.map((lecture) => `「${lecture.title}」`).join(" / ");
+      showAwardToast(`${reward.title}を交換。特別講義 ${titles} を開放しました`);
+    } else {
+      showAwardToast(`${reward.title}を交換しました（-${reward.cost}pt）`);
+    }
+    render();
   });
 }
 
