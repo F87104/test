@@ -324,6 +324,72 @@
         </article>
       </section>
 
+      <section class="panel mission-panel">
+        <div class="panel-header">
+          <h2>志マッチ（Mission Match）</h2>
+          <p class="panel-note">同じ志・補完スキルの仲間を見つけてチームを作る</p>
+        </div>
+        <div class="mission-grid">
+          <article class="mission-card">
+            <h3>あなたの志プロフィール</h3>
+            <form id="missionProfileForm" class="award-form">
+              <label class="field">
+                <span class="field-label">テーマ</span>
+                <input id="missionThemeInput" type="text" maxlength="80" placeholder="例: 教育×AI" required />
+              </label>
+              <label class="field">
+                <span class="field-label">3ヶ月ゴール</span>
+                <input id="missionGoalInput" type="text" maxlength="160" placeholder="例: 有料講座を1本リリース" required />
+              </label>
+              <div class="award-form-grid">
+                <label class="field">
+                  <span class="field-label">週の稼働時間</span>
+                  <input id="missionHoursInput" type="number" min="1" max="80" required />
+                </label>
+                <label class="field">
+                  <span class="field-label">提供できる役割</span>
+                  <input id="missionOfferRoleInput" type="text" maxlength="80" placeholder="例: 企画/設計" required />
+                </label>
+              </div>
+              <label class="field">
+                <span class="field-label">欲しい役割</span>
+                <input id="missionSeekRoleInput" type="text" maxlength="80" placeholder="例: 集客/セールス" required />
+              </label>
+              <label class="field">
+                <span class="field-label">補足メモ</span>
+                <textarea id="missionNoteInput" rows="3" maxlength="240" placeholder="温度感・やり方など"></textarea>
+              </label>
+              <button class="button button-small" type="submit">プロフィールを保存</button>
+            </form>
+          </article>
+
+          <article class="mission-card">
+            <div class="panel-header">
+              <h3>今週のマッチ候補</h3>
+              <button id="missionRefreshButton" class="button button-small button-ghost" type="button">再提案</button>
+            </div>
+            <ul id="missionMatchesList" class="mission-match-list"></ul>
+            <form id="missionTeamForm" class="award-form">
+              <label class="field">
+                <span class="field-label">チーム名</span>
+                <input id="missionTeamNameInput" type="text" maxlength="80" placeholder="例: スタートダッシュ隊" required />
+              </label>
+              <label class="field">
+                <span class="field-label">最初のミッション</span>
+                <input id="missionTeamMissionInput" type="text" maxlength="120" placeholder="例: LP案を3日で作成" required />
+              </label>
+              <p id="missionTeamSelection" class="panel-note">候補を選択してください</p>
+              <button class="button button-small" type="submit">チームを作成</button>
+            </form>
+          </article>
+
+          <article class="mission-card">
+            <h3>あなたのチーム</h3>
+            <ul id="missionTeamsList" class="mission-team-list"></ul>
+          </article>
+        </div>
+      </section>
+
       <section class="rules panel">
         <div class="panel-header">
           <h2>ルール（サンプル）</h2>

@@ -14,6 +14,7 @@
 - Socket.IO リアルタイム配信
 - 運用ダッシュボード（KPI + 監査ログ）
 - 週間レビュー（スコア・評価・達成率）
+- 志マッチ（プロフィール保存 / 候補提案 / チーム作成）
 - 自動テスト（Vitest + Supertest）
 - GitHub Actions CI
 
@@ -46,6 +47,11 @@ npm run dev
 - `POST /api/points/award` (`admin` / `mentor`)
 - `GET /api/ops/metrics` (`admin` / `mentor`)
 - `GET /api/ops/audit` (`admin`)
+- `GET /api/mission/profile`
+- `PUT /api/mission/profile`
+- `GET /api/mission/matches`
+- `GET /api/mission/teams`
+- `POST /api/mission/teams`
 
 ## 補足
 

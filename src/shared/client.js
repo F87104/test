@@ -68,3 +68,30 @@ export async function fetchOpsAudit() {
 export function hasToken() {
   return Boolean(getToken());
 }
+
+export async function fetchMissionProfile() {
+  return request("/mission/profile");
+}
+
+export async function saveMissionProfile(profile) {
+  return request("/mission/profile", {
+    method: "PUT",
+    body: JSON.stringify(profile),
+  });
+}
+
+export async function fetchMissionMatches(limit = 5) {
+  const safeLimit = Number.isFinite(Number(limit)) ? Number(limit) : 5;
+  return request(`/mission/matches?limit=${safeLimit}`);
+}
+
+export async function fetchMissionTeams() {
+  return request("/mission/teams");
+}
+
+export async function createMissionTeam(payload) {
+  return request("/mission/teams", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}

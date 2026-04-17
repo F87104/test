@@ -935,6 +935,76 @@ h2 {
   font-weight: 700;
 }
 
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mission-card {
+  border: 1px solid rgba(138, 99, 48, 0.24);
+  background: rgba(255, 252, 247, 0.88);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.mission-card h3 {
+  margin: 0 0 10px;
+  font-size: 0.96rem;
+}
+
+.mission-card textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(138, 99, 48, 0.28);
+  padding: 8px 10px;
+  font: inherit;
+  resize: vertical;
+}
+
+.mission-match-list,
+.mission-team-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.mission-match-item,
+.mission-team-item {
+  border-radius: 10px;
+  border: 1px solid rgba(134, 161, 226, 0.24);
+  background: rgba(93, 141, 255, 0.06);
+  padding: 9px 10px;
+}
+
+.mission-match-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.mission-match-name {
+  margin: 0;
+  font-weight: 700;
+}
+
+.mission-match-score {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--success);
+}
+
+.mission-match-reasons {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  color: var(--muted);
+  font-size: 0.77rem;
+}
+
 .lecture-player {
   width: 100%;
   border-radius: 10px;
@@ -1223,6 +1293,10 @@ button:focus {
   .board-grid,
   .learning-grid,
   .gamify-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-grid {
     grid-template-columns: 1fr;
   }
 

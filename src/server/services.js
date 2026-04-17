@@ -1,11 +1,16 @@
 import {
   addEvent,
+  createMissionTeam,
+  getAllMissionProfiles,
   getEvents,
   getMemberByName,
   getMembers,
+  getMissionProfileByUserId,
+  getMissionTeamsByUserId,
   getRoleByUserId,
   getWeeklyReviews,
   setMemberPoints,
+  upsertMissionProfile,
   upsertWeeklyReview,
 } from "./db.js";
 
@@ -188,4 +193,101 @@ export function getLiveState() {
 
 export function getUserRole(userId) {
   return getRoleByUserId(userId) ?? "member";
+}
+
+function normalizeText(value = "") {
+  return String(value).trim().toLowerCase();
+}
+
+function calcRoleComplementScore(baseProfile, candidateProfile) {
+  const baseSeek = normalizeText(baseProfile.seekRole);
+  const baseOffer = normalizeText(baseProfile.offerRole);
+  const candidateSeek = normalizeText(candidateProfile.seekRole);
+  const candidateOffer = normalizeText(candidateProfile.offerRole);
+  let score = 40;
+  if (baseSeek && candidateOffer && candidateOffer.includes(baseSeek)) score += 30;
+  if (baseOffer && candidateSeek && candidateSeek.includes(baseOffer)) score += 20;
+  return Math.min(100, score);
+}
+
+function calcThemeScore(baseProfile, candidateProfile) {
+  const baseTheme = normalizeText(baseProfile.theme);
+  const candidateTheme = normalizeText(candidateProfile.theme);
+  if (!baseTheme || !candidateTheme) return 50;
+  return baseTheme === candidateTheme ? 100 : 55;
+}
+
+function calcHoursScore(baseProfile, candidateProfile) {
+  const base = Number(baseProfile.weeklyHours ?? 0);
+  const candidate = Number(candidateProfile.weeklyHours ?? 0);
+  const diff = Math.abs(base - candidate);
+  if (diff <= 2) return 100;
+  if (diff <= 5) return 80;
+  if (diff <= 8) return 60;
+  return 40;
+}
+
+function computeMissionMatchScore(baseProfile, candidateProfile) {
+  const themeScore = calcThemeScore(baseProfile, candidateProfile);
+  const hoursScore = calcHoursScore(baseProfile, candidateProfile);
+  const complementScore = calcRoleComplementScore(baseProfile, candidateProfile);
+  const score = Math.round(themeScore * 0.45 + hoursScore * 0.2 + complementScore * 0.35);
+  return {
+    score,
+    reasons: [
+      `テーマ一致度 ${themeScore}%`,
+      `稼働時間の近さ ${hoursScore}%`,
+      `役割補完性 ${complementScore}%`,
+    ],
+  };
+}
+
+export function getMissionProfile(userId) {
+  return getMissionProfileByUserId(userId);
+}
+
+export function saveMissionProfile(userId, payload) {
+  return upsertMissionProfile({
+    userId,
+    theme: payload.theme,
+    goal: payload.goal,
+    weeklyHours: payload.weeklyHours,
+    offerRole: payload.offerRole,
+    seekRole: payload.seekRole,
+    note: payload.note,
+  });
+}
+
+export function getMissionMatchesForUser(userId, limit = 5) {
+  const base = getMissionProfileByUserId(userId);
+  if (!base) {
+    return [];
+  }
+  const allProfiles = getAllMissionProfiles();
+  return allProfiles
+    .filter((profile) => profile.userId !== userId)
+    .map((profile) => {
+      const scored = computeMissionMatchScore(base, profile);
+      return {
+        ...profile,
+        score: scored.score,
+        reasons: scored.reasons,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+}
+
+export function createMissionTeamForUser({ ownerUserId, teammateUserIds, teamName, missionTitle }) {
+  const allMemberIds = [ownerUserId, ...teammateUserIds];
+  return createMissionTeam({
+    name: teamName,
+    missionTitle,
+    createdByUserId: ownerUserId,
+    memberUserIds: allMemberIds,
+  });
+}
+
+export function getMissionTeamsForUser(userId) {
+  return getMissionTeamsByUserId(userId);
 }

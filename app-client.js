@@ -1,9 +1,14 @@
 import {
   awardPoints,
+  createMissionTeam,
+  fetchMissionMatches,
+  fetchMissionProfile,
+  fetchMissionTeams,
   fetchReview,
   fetchState,
   getAuthToken,
   login,
+  saveMissionProfile,
 } from "./src/shared/client.js";
 import { connectRealtime, disconnectRealtime } from "./src/shared/realtime.js";
 import { mapApiStateToUiState, mergeWeeklyReviewToDom } from "./src/shared/stateMapper.js";
@@ -115,6 +120,20 @@ const els = {
   learnerForm: document.getElementById("learnerForm"),
   learnerNameInput: document.getElementById("learnerNameInput"),
   resetLearningButton: document.getElementById("resetLearningButton"),
+  missionProfileForm: document.getElementById("missionProfileForm"),
+  missionThemeInput: document.getElementById("missionThemeInput"),
+  missionGoalInput: document.getElementById("missionGoalInput"),
+  missionHoursInput: document.getElementById("missionHoursInput"),
+  missionOfferRoleInput: document.getElementById("missionOfferRoleInput"),
+  missionSeekRoleInput: document.getElementById("missionSeekRoleInput"),
+  missionNoteInput: document.getElementById("missionNoteInput"),
+  missionRefreshButton: document.getElementById("missionRefreshButton"),
+  missionMatchesList: document.getElementById("missionMatchesList"),
+  missionTeamForm: document.getElementById("missionTeamForm"),
+  missionTeamNameInput: document.getElementById("missionTeamNameInput"),
+  missionTeamMissionInput: document.getElementById("missionTeamMissionInput"),
+  missionTeamSelection: document.getElementById("missionTeamSelection"),
+  missionTeamsList: document.getElementById("missionTeamsList"),
 };
 
 const localUi = {
@@ -129,6 +148,10 @@ let authToken = getAuthToken();
 let me = null;
 let currentRankingTab = "overall";
 const vimeoPlayerMap = new Map();
+let missionProfile = null;
+let missionMatches = [];
+let missionTeams = [];
+const selectedMissionMatchUserIds = new Set();
 let currentState = {
   members: [],
   tickerEvents: [],
@@ -302,6 +325,85 @@ function initializeVimeoTracking() {
   });
 }
 
+function renderMissionProfileForm() {
+  if (!missionProfile) return;
+  if (els.missionThemeInput) els.missionThemeInput.value = missionProfile.theme ?? "";
+  if (els.missionGoalInput) els.missionGoalInput.value = missionProfile.goal ?? "";
+  if (els.missionHoursInput) els.missionHoursInput.value = String(missionProfile.weeklyHours ?? 1);
+  if (els.missionOfferRoleInput) els.missionOfferRoleInput.value = missionProfile.offerRole ?? "";
+  if (els.missionSeekRoleInput) els.missionSeekRoleInput.value = missionProfile.seekRole ?? "";
+  if (els.missionNoteInput) els.missionNoteInput.value = missionProfile.note ?? "";
+}
+
+function renderMissionMatches() {
+  if (!els.missionMatchesList) return;
+  els.missionMatchesList.innerHTML = "";
+  if (!missionMatches.length) {
+    const empty = document.createElement("li");
+    empty.className = "mission-match-item";
+    empty.textContent = "候補がまだありません。プロフィールを保存して再提案してください。";
+    els.missionMatchesList.appendChild(empty);
+    return;
+  }
+
+  missionMatches.forEach((match) => {
+    const item = document.createElement("li");
+    const checked = selectedMissionMatchUserIds.has(match.userId);
+    item.className = "mission-match-item";
+    item.innerHTML = `
+      <label>
+        <input type="checkbox" data-mission-user-id="${match.userId}" ${checked ? "checked" : ""} />
+        <div class="mission-match-head">
+          <p class="mission-match-name">${match.userName}（${match.theme}）</p>
+          <p class="mission-match-score">一致度 ${match.score}%</p>
+        </div>
+      </label>
+      <ul class="mission-match-reasons">${(match.reasons ?? []).map((reason) => `<li>${reason}</li>`).join("")}</ul>
+    `;
+    els.missionMatchesList.appendChild(item);
+  });
+}
+
+function renderMissionTeams() {
+  if (!els.missionTeamsList) return;
+  els.missionTeamsList.innerHTML = "";
+  if (!missionTeams.length) {
+    const empty = document.createElement("li");
+    empty.className = "mission-team-item";
+    empty.textContent = "まだチームはありません。候補を選んで作成しましょう。";
+    els.missionTeamsList.appendChild(empty);
+    return;
+  }
+  missionTeams.forEach((team) => {
+    const item = document.createElement("li");
+    item.className = "mission-team-item";
+    const memberNames = (team.members ?? []).map((member) => member.userName).join(" / ");
+    item.innerHTML = `
+      <p class="mission-match-name">${team.name}</p>
+      <p class="reward-meta">ミッション: ${team.missionTitle}</p>
+      <p class="reward-meta">メンバー: ${memberNames}</p>
+    `;
+    els.missionTeamsList.appendChild(item);
+  });
+}
+
+function updateMissionSelectionText() {
+  if (!els.missionTeamSelection) return;
+  const selected = missionMatches.filter((match) => selectedMissionMatchUserIds.has(match.userId));
+  if (!selected.length) {
+    els.missionTeamSelection.textContent = "候補を選択してください";
+    return;
+  }
+  els.missionTeamSelection.textContent = `選択中: ${selected.map((member) => member.userName).join(" / ")}`;
+}
+
+function renderMission() {
+  renderMissionProfileForm();
+  renderMissionMatches();
+  renderMissionTeams();
+  updateMissionSelectionText();
+}
+
 function getTotalPointsByLearner(name) {
   const found = currentState.members.find((member) => member.name === name);
   return found ? found.points : 0;
@@ -450,6 +552,7 @@ function render() {
   renderLectureList();
   renderLearningSummary();
   initializeVimeoTracking();
+  renderMission();
   renderUpdatedAt();
 }
 
@@ -479,6 +582,25 @@ function syncPermissions() {
       ? "入力後すぐにランキングと速報へ反映されます"
       : "ポイント付与には mentor 以上の権限が必要です。";
   }
+}
+
+async function refreshMissionData() {
+  if (!authToken) return;
+  const [profileRes, matchesRes, teamsRes] = await Promise.all([
+    fetchMissionProfile(),
+    fetchMissionMatches(5),
+    fetchMissionTeams(),
+  ]);
+  missionProfile = profileRes?.profile ?? null;
+  missionMatches = matchesRes?.matches ?? [];
+  missionTeams = teamsRes?.teams ?? [];
+  const validUserIdSet = new Set(missionMatches.map((match) => match.userId));
+  [...selectedMissionMatchUserIds].forEach((userId) => {
+    if (!validUserIdSet.has(userId)) {
+      selectedMissionMatchUserIds.delete(userId);
+    }
+  });
+  renderMission();
 }
 
 async function refreshState() {
@@ -522,6 +644,7 @@ async function bootstrap() {
     }
     syncPermissions();
     await refreshState();
+    await refreshMissionData();
     connectRealtimeBridge();
   } catch (error) {
     me = null;
@@ -629,6 +752,89 @@ function bindLearningUi() {
   });
 }
 
+function bindMissionUi() {
+  els.missionProfileForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const payload = {
+      theme: els.missionThemeInput?.value?.trim() ?? "",
+      goal: els.missionGoalInput?.value?.trim() ?? "",
+      weeklyHours: Number(els.missionHoursInput?.value ?? 0),
+      offerRole: els.missionOfferRoleInput?.value?.trim() ?? "",
+      seekRole: els.missionSeekRoleInput?.value?.trim() ?? "",
+      note: els.missionNoteInput?.value?.trim() ?? "",
+    };
+    if (!payload.theme || !payload.goal || !payload.offerRole || !payload.seekRole || payload.weeklyHours < 1) {
+      showAwardToast("志プロフィールの必須項目を入力してください");
+      return;
+    }
+    try {
+      const result = await saveMissionProfile(payload);
+      missionProfile = result?.profile ?? missionProfile;
+      showAwardToast("志プロフィールを保存しました");
+      await refreshMissionData();
+    } catch (error) {
+      showAwardToast(`保存失敗: ${error.message}`);
+    }
+  });
+
+  els.missionRefreshButton?.addEventListener("click", async () => {
+    try {
+      await refreshMissionData();
+      showAwardToast("マッチ候補を更新しました");
+    } catch (error) {
+      showAwardToast(`再提案失敗: ${error.message}`);
+    }
+  });
+
+  els.missionMatchesList?.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    const userId = Number(target.dataset.missionUserId);
+    if (!Number.isFinite(userId)) return;
+    if (target.checked) {
+      if (selectedMissionMatchUserIds.size >= 3) {
+        target.checked = false;
+        showAwardToast("選択できるメンバーは3名までです");
+        return;
+      }
+      selectedMissionMatchUserIds.add(userId);
+    } else {
+      selectedMissionMatchUserIds.delete(userId);
+    }
+    updateMissionSelectionText();
+  });
+
+  els.missionTeamForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const teammateUserIds = [...selectedMissionMatchUserIds];
+    if (!teammateUserIds.length) {
+      showAwardToast("チームメンバーを1名以上選択してください");
+      return;
+    }
+    const teamName = els.missionTeamNameInput?.value?.trim() ?? "";
+    const missionTitle = els.missionTeamMissionInput?.value?.trim() ?? "";
+    if (!teamName || !missionTitle) {
+      showAwardToast("チーム名とミッションを入力してください");
+      return;
+    }
+    try {
+      await createMissionTeam({
+        teamName,
+        missionTitle,
+        teammateUserIds,
+      });
+      selectedMissionMatchUserIds.clear();
+      if (els.missionTeamForm) {
+        els.missionTeamForm.reset();
+      }
+      await refreshMissionData();
+      showAwardToast("新しいチームを作成しました");
+    } catch (error) {
+      showAwardToast(`チーム作成失敗: ${error.message}`);
+    }
+  });
+}
+
 function bindNavigation() {
   document.querySelectorAll("[data-ranking-tab]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -645,6 +851,7 @@ function bindNavigation() {
 
 bindAwardUi();
 bindLearningUi();
+bindMissionUi();
 bindNavigation();
 syncAwardPreview();
 bootstrap();

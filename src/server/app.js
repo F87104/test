@@ -5,7 +5,18 @@ import { z } from "zod";
 
 import { authenticateToken, authorizeRoles, loginAndIssueToken } from "./auth.js";
 import { getMembers, initDb } from "./db.js";
-import { awardPoints, buildWeeklyReview, getDashboardMetrics, getLiveState, getUserRole } from "./services.js";
+import {
+  awardPoints,
+  buildWeeklyReview,
+  createMissionTeamForUser,
+  getDashboardMetrics,
+  getLiveState,
+  getMissionMatchesForUser,
+  getMissionProfile,
+  getMissionTeamsForUser,
+  getUserRole,
+  saveMissionProfile,
+} from "./services.js";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -16,6 +27,21 @@ const awardSchema = z.object({
   memberName: z.string().min(1),
   points: z.number().int().min(1).max(500),
   reason: z.string().min(1).max(120),
+});
+
+const missionProfileSchema = z.object({
+  theme: z.string().min(1).max(80),
+  goal: z.string().min(1).max(160),
+  weeklyHours: z.number().int().min(1).max(80),
+  offerRole: z.string().min(1).max(80),
+  seekRole: z.string().min(1).max(80),
+  note: z.string().max(240).default(""),
+});
+
+const missionTeamSchema = z.object({
+  teamName: z.string().min(1).max(80),
+  missionTitle: z.string().min(1).max(120),
+  teammateUserIds: z.array(z.number().int().positive()).min(1).max(3),
 });
 
 export function createApp(io = null) {
@@ -63,6 +89,47 @@ export function createApp(io = null) {
 
   app.get("/api/reviews/:memberName", authenticateToken, (req, res) => {
     res.json({ review: buildWeeklyReview(req.params.memberName) });
+  });
+
+  app.get("/api/mission/profile", authenticateToken, (req, res) => {
+    const profile = getMissionProfile(req.user.id);
+    res.json({ profile });
+  });
+
+  app.put("/api/mission/profile", authenticateToken, (req, res) => {
+    const parsed = missionProfileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "プロフィール入力形式が不正です。" });
+    }
+    const profile = saveMissionProfile(req.user.id, parsed.data);
+    return res.json({ profile });
+  });
+
+  app.get("/api/mission/matches", authenticateToken, (req, res) => {
+    const requestedLimit = Number(req.query.limit ?? 5);
+    const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(10, requestedLimit)) : 5;
+    const matches = getMissionMatchesForUser(req.user.id, limit);
+    res.json({ matches, generatedAt: Date.now() });
+  });
+
+  app.get("/api/mission/teams", authenticateToken, (req, res) => {
+    const teams = getMissionTeamsForUser(req.user.id);
+    res.json({ teams });
+  });
+
+  app.post("/api/mission/teams", authenticateToken, (req, res) => {
+    const parsed = missionTeamSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "チーム入力形式が不正です。" });
+    }
+    const payload = parsed.data;
+    const team = createMissionTeamForUser({
+      ownerUserId: req.user.id,
+      teammateUserIds: payload.teammateUserIds,
+      teamName: payload.teamName,
+      missionTitle: payload.missionTitle,
+    });
+    return res.status(201).json({ team });
   });
 
   app.post("/api/points/award", authenticateToken, authorizeRoles(["admin", "mentor"]), (req, res) => {

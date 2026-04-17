@@ -78,6 +78,41 @@ export function initDb() {
       updated_at INTEGER NOT NULL,
       UNIQUE(member_name, week_start, week_end)
     );
+
+    CREATE TABLE IF NOT EXISTS mission_profiles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL UNIQUE,
+      theme TEXT NOT NULL DEFAULT '',
+      goal TEXT NOT NULL DEFAULT '',
+      weekly_hours INTEGER NOT NULL DEFAULT 0,
+      offer_role TEXT NOT NULL DEFAULT '',
+      seek_role TEXT NOT NULL DEFAULT '',
+      note TEXT NOT NULL DEFAULT '',
+      updated_at INTEGER NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS mission_teams (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      mission_title TEXT NOT NULL,
+      mission_status TEXT NOT NULL DEFAULT 'planning',
+      created_by_user_id INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      FOREIGN KEY(created_by_user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS mission_team_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      team_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      role_in_team TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'active',
+      joined_at INTEGER NOT NULL,
+      UNIQUE(team_id, user_id),
+      FOREIGN KEY(team_id) REFERENCES mission_teams(id),
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
   `);
 
   const userCount = database.prepare("SELECT COUNT(*) AS count FROM users").get().count;
@@ -108,6 +143,47 @@ export function initDb() {
     const now = Date.now();
     for (const member of seedMembers) {
       insertMember.run({ ...member, joined_at: now });
+    }
+  }
+
+  const missionProfileCount = database.prepare("SELECT COUNT(*) AS count FROM mission_profiles").get().count;
+  if (missionProfileCount === 0) {
+    const now = Date.now();
+    const insertProfile = database.prepare(`
+      INSERT INTO mission_profiles (user_id, theme, goal, weekly_hours, offer_role, seek_role, note, updated_at)
+      VALUES (@user_id, @theme, @goal, @weekly_hours, @offer_role, @seek_role, @note, @updated_at)
+    `);
+    const seedProfiles = [
+      {
+        user_id: 1,
+        theme: "教育DX",
+        goal: "3ヶ月で講座運営を自動化する",
+        weekly_hours: 8,
+        offer_role: "戦略設計",
+        seek_role: "実装担当",
+        note: "検証速度を重視",
+      },
+      {
+        user_id: 2,
+        theme: "コミュニティ運営",
+        goal: "伴走導線をテンプレート化する",
+        weekly_hours: 6,
+        offer_role: "コーチング",
+        seek_role: "SNS発信",
+        note: "小さく試すのが得意",
+      },
+      {
+        user_id: 3,
+        theme: "AI活用",
+        goal: "最初の有料サービスを作る",
+        weekly_hours: 10,
+        offer_role: "リサーチ",
+        seek_role: "販売設計",
+        note: "同じ熱量の仲間を探したい",
+      },
+    ];
+    for (const profile of seedProfiles) {
+      insertProfile.run({ ...profile, updated_at: now });
     }
   }
 }
@@ -285,4 +361,179 @@ export function getWeeklyReviews(limit = 100) {
     `
     )
     .all(limit);
+}
+
+export function getMissionProfileByUserId(userId) {
+  const database = getDb();
+  return (
+    database
+      .prepare(
+        `
+        SELECT
+          mp.user_id AS userId,
+          u.name AS userName,
+          u.email AS userEmail,
+          mp.theme,
+          mp.goal,
+          mp.weekly_hours AS weeklyHours,
+          mp.offer_role AS offerRole,
+          mp.seek_role AS seekRole,
+          mp.note,
+          mp.updated_at AS updatedAt
+        FROM mission_profiles mp
+        INNER JOIN users u ON u.id = mp.user_id
+        WHERE mp.user_id = ?
+      `
+      )
+      .get(userId) ?? null
+  );
+}
+
+export function upsertMissionProfile({
+  userId,
+  theme,
+  goal,
+  weeklyHours,
+  offerRole,
+  seekRole,
+  note,
+}) {
+  const database = getDb();
+  const updatedAt = Date.now();
+  database
+    .prepare(
+      `
+      INSERT INTO mission_profiles (
+        user_id, theme, goal, weekly_hours, offer_role, seek_role, note, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET
+        theme = excluded.theme,
+        goal = excluded.goal,
+        weekly_hours = excluded.weekly_hours,
+        offer_role = excluded.offer_role,
+        seek_role = excluded.seek_role,
+        note = excluded.note,
+        updated_at = excluded.updated_at
+    `
+    )
+    .run(userId, theme, goal, weeklyHours, offerRole, seekRole, note, updatedAt);
+  return getMissionProfileByUserId(userId);
+}
+
+export function getAllMissionProfiles() {
+  const database = getDb();
+  return database
+    .prepare(
+      `
+      SELECT
+        mp.user_id AS userId,
+        u.name AS userName,
+        u.email AS userEmail,
+        mp.theme,
+        mp.goal,
+        mp.weekly_hours AS weeklyHours,
+        mp.offer_role AS offerRole,
+        mp.seek_role AS seekRole,
+        mp.note,
+        mp.updated_at AS updatedAt
+      FROM mission_profiles mp
+      INNER JOIN users u ON u.id = mp.user_id
+      ORDER BY mp.updated_at DESC
+    `
+    )
+    .all();
+}
+
+export function createMissionTeam({
+  name,
+  missionTitle,
+  createdByUserId,
+  memberUserIds,
+}) {
+  const database = getDb();
+  const now = Date.now();
+  const insertTeam = database.prepare(
+    `
+    INSERT INTO mission_teams (name, mission_title, mission_status, created_by_user_id, created_at)
+    VALUES (?, ?, 'planning', ?, ?)
+  `
+  );
+  const insertMember = database.prepare(
+    `
+    INSERT INTO mission_team_members (team_id, user_id, role_in_team, status, joined_at)
+    VALUES (?, ?, '', 'active', ?)
+  `
+  );
+  const transaction = database.transaction(() => {
+    const teamResult = insertTeam.run(name, missionTitle, createdByUserId, now);
+    const teamId = Number(teamResult.lastInsertRowid);
+    const uniqueMembers = [...new Set(memberUserIds)];
+    for (const userId of uniqueMembers) {
+      insertMember.run(teamId, userId, now);
+    }
+    return teamId;
+  });
+  const teamId = transaction();
+  return getMissionTeamById(teamId);
+}
+
+export function getMissionTeamById(teamId) {
+  const database = getDb();
+  const team = database
+    .prepare(
+      `
+      SELECT
+        t.id,
+        t.name,
+        t.mission_title AS missionTitle,
+        t.mission_status AS missionStatus,
+        t.created_by_user_id AS createdByUserId,
+        t.created_at AS createdAt,
+        u.name AS createdByName
+      FROM mission_teams t
+      INNER JOIN users u ON u.id = t.created_by_user_id
+      WHERE t.id = ?
+    `
+    )
+    .get(teamId);
+  if (!team) return null;
+  const members = database
+    .prepare(
+      `
+      SELECT
+        tm.user_id AS userId,
+        u.name AS userName,
+        u.email AS userEmail,
+        tm.role_in_team AS roleInTeam,
+        tm.status,
+        tm.joined_at AS joinedAt
+      FROM mission_team_members tm
+      INNER JOIN users u ON u.id = tm.user_id
+      WHERE tm.team_id = ?
+      ORDER BY tm.joined_at ASC
+    `
+    )
+    .all(teamId);
+  return { ...team, members };
+}
+
+export function getMissionTeamsByUserId(userId) {
+  const database = getDb();
+  const teamRows = database
+    .prepare(
+      `
+      SELECT
+        t.id,
+        t.name,
+        t.mission_title AS missionTitle,
+        t.mission_status AS missionStatus,
+        t.created_at AS createdAt
+      FROM mission_teams t
+      INNER JOIN mission_team_members tm ON tm.team_id = t.id
+      WHERE tm.user_id = ?
+      ORDER BY t.created_at DESC
+    `
+    )
+    .all(userId);
+  return teamRows.map((row) => getMissionTeamById(row.id)).filter(Boolean);
 }
