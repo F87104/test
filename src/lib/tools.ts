@@ -4,10 +4,25 @@ export type Tool = {
   icon: string;
   summary: string;
   description: string;
-  category: "営業・顧客" | "マーケティング" | "経理・事務" | "経営・企画";
+  category:
+    | "ひとり起業"
+    | "営業・顧客"
+    | "マーケティング"
+    | "経理・事務"
+    | "経営・企画";
 };
 
 export const tools: Tool[] = [
+  {
+    href: "/tools/roadmap",
+    title: "月収100万円ロードマップ",
+    icon: "🚀",
+    summary:
+      "あなたのスキル・時間・資金から、一人で月収100万円に届く道筋をAIが設計。",
+    description:
+      "ビジネスモデル3案、単価×件数の数字設計、90日アクションプラン、撤退ラインまで一括で提案します。",
+    category: "ひとり起業",
+  },
   {
     href: "/tools/email",
     title: "営業メール作成",

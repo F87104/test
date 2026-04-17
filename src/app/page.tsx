@@ -20,11 +20,11 @@ export default function HomePage() {
           メール、見積、SNS、議事録、企画、料金設計まで、左メニューから必要なツールを選んで今すぐ使えます。
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/tools/email" className="btn-primary">
-            まずは営業メールを作ってみる
+          <Link href="/tools/roadmap" className="btn-primary">
+            月収100万円ロードマップを作る
           </Link>
-          <Link href="/tools/brainstorm" className="btn-secondary">
-            アイデアを出す
+          <Link href="/tools/email" className="btn-secondary">
+            営業メールを作る
           </Link>
         </div>
       </section>
