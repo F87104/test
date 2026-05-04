@@ -34,6 +34,16 @@ export const tools: Tool[] = [
     category: "ひとり起業",
   },
   {
+    href: "/tools/research",
+    title: "リサーチ・プロンプト生成",
+    icon: "🔍",
+    summary:
+      "Perplexity / ChatGPT / Claude などに投げる、高品質なリサーチ指示プロンプトを自動生成。",
+    description:
+      "テーマ・対象市場・深さ・除外論点を入れるだけで、英語/日本語の検索クエリ・出力フォーマット・引用ルールまで埋め込んだ完成形プロンプトを生成します。",
+    category: "経営・企画",
+  },
+  {
     href: "/tools/email",
     title: "営業メール作成",
     icon: "✉️",

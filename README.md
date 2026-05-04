@@ -15,6 +15,7 @@
 | 経理・事務 | 🧾 請求書・見積書 送付メール | 請求・見積の送付メール文面 |
 | マーケティング | 📣 SNS投稿ジェネレーター | X / Instagram / LinkedIn 等向けの投稿を3案 |
 | マーケティング | 🛍️ ランディング文案 | キャッチコピー / サブコピー / ベネフィット / CTA |
+| 経営・企画 | 🔍 リサーチ・プロンプト生成 | Perplexity / ChatGPT / Claude などに投げる、高品質なリサーチ指示プロンプトを自動生成 |
 | 経営・企画 | 📝 議事録・要約 | メモや文字起こしから議事録・ToDo を抽出 |
 | 経営・企画 | 💡 アイデアブレスト | テーマと制約から10案+おすすめTop3 |
 | 経営・企画 | 💴 料金プラン設計 | 3段階の料金プラン+根拠+アップセル案 |
@@ -91,6 +92,7 @@ src/
     tools/
       roadmap/page.tsx
       automated/page.tsx
+      research/page.tsx
       email/page.tsx
       reply/page.tsx
       invoice/page.tsx
