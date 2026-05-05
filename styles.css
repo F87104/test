@@ -2041,6 +2041,7 @@ body.popquest-theme .site-footer {
   border-top: 1px solid rgba(122, 92, 255, 0.22);
   background: rgba(255, 255, 255, 0.78);
   color: #6b6192;
+  display: none;
 }
 
 /* Game-lobby (no-scroll home) mode */
@@ -2084,24 +2085,26 @@ body.popquest-theme.game-lobby-mode .page-main {
   overflow: hidden;
 }
 
-body.popquest-theme.game-lobby-mode #dashboardContent {
+body.popquest-theme #dashboardContent {
   display: none;
 }
 
 .game-lobby {
-  display: none;
-}
-
-body.popquest-theme.game-lobby-mode .game-lobby {
   display: grid;
-  height: 100%;
+  min-height: 560px;
   gap: 10px;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto auto;
   border: 2px solid rgba(15, 26, 40, 0.88);
   border-radius: 16px;
   background: linear-gradient(180deg, rgba(8, 14, 24, 0.75), rgba(8, 14, 24, 0.58));
   padding: 8px;
   box-shadow: 0 12px 28px rgba(7, 12, 20, 0.35);
+}
+
+body.popquest-theme.game-lobby-mode .game-lobby {
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto 1fr auto;
 }
 
 .lobby-hud {
@@ -2401,7 +2404,7 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   padding-right: 2px;
 }
 
-body.popquest-theme.game-lobby-mode .ticker-section {
+body.popquest-theme .ticker-section {
   margin: 0;
 }
 
@@ -2410,12 +2413,40 @@ body.popquest-theme.game-lobby-mode .ticker-section {
     padding: 92px 0 12px;
   }
 
+  body.popquest-theme.game-lobby-mode .nav {
+    padding: 8px 0 8px;
+    gap: 8px;
+  }
+
+  body.popquest-theme.game-lobby-mode .header-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  body.popquest-theme.game-lobby-mode .header-actions .button {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 0;
+    font-size: 0.72rem;
+    padding: 8px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .lobby-bars {
     grid-template-columns: 1fr;
   }
 
   .lobby-hero-stage {
     min-height: 186px;
+  }
+
+  .game-lobby {
+    min-height: 520px;
   }
 
   .lobby-tab {
