@@ -185,6 +185,23 @@ const TUTORIAL_STORAGE_KEY = "ui-popquest-tutorial-seen";
 const LOBBY_MODE_STORAGE_KEY = "ui-popquest-lobby-mode";
 let activeLobbyTab = "overview";
 let tutorialStepIndex = 0;
+const lobbyTabMap = {
+  home: "overview",
+  quest: "overview",
+  monster: "lecture",
+  reward: "reward",
+  friend: "match",
+  other: "lecture",
+  overview: "overview",
+  match: "match",
+  lecture: "lecture",
+};
+const lobbyDefaultDisplayMap = {
+  overview: "home",
+  match: "friend",
+  reward: "reward",
+  lecture: "other",
+};
 const tutorialSteps = [
   {
     id: "overview",
@@ -613,12 +630,14 @@ function renderUpdatedAt() {
 }
 
 function setLobbyTab(tabId) {
-  activeLobbyTab = tabId;
+  const panelTab = lobbyTabMap[tabId] ?? "overview";
+  const displayTab = lobbyDefaultDisplayMap[tabId] ?? tabId;
+  activeLobbyTab = displayTab;
   els.lobbyTabButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.lobbyTab === tabId);
+    button.classList.toggle("active", button.dataset.lobbyTab === displayTab);
   });
   els.lobbyPanels.forEach((panel) => {
-    panel.classList.toggle("active", panel.dataset.lobbyPanel === tabId);
+    panel.classList.toggle("active", panel.dataset.lobbyPanel === panelTab);
   });
 }
 

@@ -76,10 +76,11 @@
         </div>
         <div class="lobby-hero">
           <div class="lobby-hero-stage">
-            <span class="lobby-monster monster-1">👾</span>
-            <span class="lobby-monster monster-2">🐉</span>
-            <span class="lobby-monster monster-3">🤖</span>
-            <span class="lobby-slime">💧</span>
+            <div class="lobby-mob mob-demon" aria-hidden="true"><span></span></div>
+            <div class="lobby-mob mob-ogre" aria-hidden="true"><span></span></div>
+            <div class="lobby-mob mob-golem" aria-hidden="true"><span></span></div>
+            <div class="lobby-mob mob-robot" aria-hidden="true"><span></span></div>
+            <div class="lobby-slime" aria-hidden="true"><span></span></div>
           </div>
         </div>
         <div class="lobby-main-action">
@@ -89,10 +90,24 @@
       </section>
 
       <section class="lobby-tabs panel" id="lobbyTabNav">
-        <button class="lobby-tab active" type="button" data-lobby-tab="overview">🏠 ホーム</button>
-        <button class="lobby-tab" type="button" data-lobby-tab="match">🤝 マッチ</button>
-        <button class="lobby-tab" type="button" data-lobby-tab="reward">💎 ショップ</button>
-        <button class="lobby-tab" type="button" data-lobby-tab="lecture">🎬 講義</button>
+        <button class="lobby-tab active" type="button" data-lobby-tab="home">
+          <span class="lobby-tab-icon">👤</span><span class="lobby-tab-label">マイページ</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="quest">
+          <span class="lobby-tab-icon">⚔️</span><span class="lobby-tab-label">クエスト</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="monster">
+          <span class="lobby-tab-icon">🐲</span><span class="lobby-tab-label">モンスター</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="reward">
+          <span class="lobby-tab-icon">💎</span><span class="lobby-tab-label">ショップ</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="friend">
+          <span class="lobby-tab-icon">🤝</span><span class="lobby-tab-label">フレンド</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="other">
+          <span class="lobby-tab-icon">📜</span><span class="lobby-tab-label">その他</span>
+        </button>
       </section>
 
       <div id="dashboardContent" class="lobby-panels">

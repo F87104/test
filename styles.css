@@ -2231,13 +2231,22 @@ body.popquest-theme.game-lobby-mode .game-lobby {
 .lobby-hero-stage {
   position: relative;
   height: 100%;
-  min-height: 190px;
+  min-height: 210px;
   border-radius: 12px;
   border: 2px solid rgba(255, 245, 187, 0.72);
   background:
-    linear-gradient(180deg, rgba(129, 218, 255, 0.66) 0%, rgba(142, 241, 205, 0.72) 58%, rgba(130, 201, 105, 0.84) 100%),
+    linear-gradient(180deg, rgba(124, 211, 255, 0.7) 0%, rgba(144, 245, 205, 0.7) 52%, rgba(130, 201, 105, 0.9) 100%),
     radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0));
   overflow: hidden;
+}
+
+.lobby-hero-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0)),
+    radial-gradient(circle at 82% 22%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
 }
 
 .lobby-hero-stage::after {
@@ -2250,35 +2259,165 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   background: linear-gradient(180deg, rgba(135, 110, 67, 0) 0%, rgba(111, 82, 39, 0.6) 100%);
 }
 
-.lobby-monster,
+.lobby-mob,
 .lobby-slime {
   position: absolute;
   z-index: 2;
-  filter: drop-shadow(0 8px 8px rgba(23, 27, 38, 0.3));
+  filter: drop-shadow(0 8px 8px rgba(23, 27, 38, 0.32));
 }
 
-.monster-1 {
-  font-size: 2.3rem;
-  left: 12%;
+.lobby-mob span,
+.lobby-slime span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  border: inherit;
+  background: inherit;
+}
+
+.lobby-mob::before,
+.lobby-mob::after,
+.lobby-slime::before,
+.lobby-slime::after {
+  content: "";
+  position: absolute;
+}
+
+.mob-demon {
+  width: 64px;
+  height: 68px;
+  left: 14%;
   bottom: 30%;
+  border-radius: 52% 52% 45% 45%;
+  border: 2px solid #3f1d1e;
+  background: linear-gradient(180deg, #dd534f, #98272b);
 }
 
-.monster-2 {
-  font-size: 2.6rem;
-  right: 12%;
-  bottom: 27%;
+.mob-demon::before,
+.mob-demon::after {
+  width: 14px;
+  height: 16px;
+  top: -10px;
+  border-radius: 2px 8px 2px 8px;
+  border: 2px solid #3f1d1e;
+  background: #f38d45;
 }
 
-.monster-3 {
-  font-size: 2.2rem;
-  right: 28%;
-  bottom: 14%;
+.mob-demon::before {
+  left: 8px;
+  transform: rotate(-22deg);
+}
+
+.mob-demon::after {
+  right: 8px;
+  transform: rotate(22deg);
+}
+
+.mob-ogre {
+  width: 78px;
+  height: 84px;
+  right: 13%;
+  bottom: 26%;
+  border-radius: 44% 44% 36% 36%;
+  border: 2px solid #21402a;
+  background: linear-gradient(180deg, #8cdd8d, #50a95e);
+}
+
+.mob-ogre::before {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f9f4d3;
+  border: 2px solid #21402a;
+  left: 10px;
+  top: 16px;
+}
+
+.mob-ogre::after {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f9f4d3;
+  border: 2px solid #21402a;
+  right: 10px;
+  top: 16px;
+}
+
+.mob-golem {
+  width: 66px;
+  height: 72px;
+  left: 8%;
+  bottom: 8%;
+  border-radius: 8px;
+  border: 2px solid #6f5023;
+  background: linear-gradient(180deg, #e1b672, #a2743d);
+}
+
+.mob-golem::before,
+.mob-golem::after {
+  width: 10px;
+  height: 22px;
+  border-radius: 8px;
+  background: #c49258;
+  border: 2px solid #6f5023;
+  bottom: -12px;
+}
+
+.mob-golem::before {
+  left: 8px;
+}
+
+.mob-golem::after {
+  right: 8px;
+}
+
+.mob-robot {
+  width: 62px;
+  height: 62px;
+  right: 24%;
+  bottom: 8%;
+  border-radius: 46% 46% 36% 36%;
+  border: 2px solid #1f3565;
+  background: linear-gradient(180deg, #72a4ff, #305ca8);
+}
+
+.mob-robot::before {
+  width: 26px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ff6c79;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .lobby-slime {
-  font-size: 2.5rem;
-  left: 41%;
-  bottom: 12%;
+  width: 84px;
+  height: 54px;
+  left: 38%;
+  bottom: 8%;
+  border-radius: 50% 50% 58% 58%;
+  border: 2px solid #145f86;
+  background: linear-gradient(180deg, #87f2ff, #3bb8e0);
+}
+
+.lobby-slime::before {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  left: 26px;
+  top: 20px;
+}
+
+.lobby-slime::after {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  right: 26px;
+  top: 20px;
 }
 
 .lobby-main-action {
@@ -2307,11 +2446,11 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 5px;
   border: 2px solid rgba(16, 23, 39, 0.92);
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(29, 42, 66, 0.96), rgba(16, 22, 35, 0.96));
-  padding: 8px;
+  padding: 6px;
   box-shadow: 0 8px 18px rgba(8, 13, 23, 0.35);
 }
 
@@ -2321,10 +2460,23 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   border-radius: 11px;
   background: linear-gradient(180deg, #445d86, #283a58);
   color: #def1ff;
-  font-size: 0.76rem;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  font-size: 0.7rem;
   font-weight: 800;
-  padding: 9px 6px;
+  padding: 7px 4px 6px;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+}
+
+.lobby-tab-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.lobby-tab-label {
+  font-size: 0.63rem;
+  line-height: 1.1;
 }
 
 .lobby-tab.active {
@@ -2369,11 +2521,19 @@ body.popquest-theme.game-lobby-mode .ticker-section {
   }
 
   .lobby-hero-stage {
-    min-height: 176px;
+    min-height: 186px;
   }
 
   .lobby-tab {
-    font-size: 0.72rem;
-    padding: 9px 4px;
+    font-size: 0.64rem;
+    padding: 7px 2px 6px;
+  }
+
+  .lobby-tab-icon {
+    font-size: 0.95rem;
+  }
+
+  .lobby-tab-label {
+    font-size: 0.58rem;
   }
 }
