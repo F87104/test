@@ -137,6 +137,10 @@ const els = {
   dashboardContent: document.getElementById("dashboardContent"),
   gameLobby: document.getElementById("gameLobby"),
   lobbyLevelValue: document.getElementById("lobbyLevelValue"),
+  lobbyGemValue: document.getElementById("lobbyGemValue"),
+  lobbyPointValue: document.getElementById("lobbyPointValue"),
+  lobbyStaminaValue: document.getElementById("lobbyStaminaValue"),
+  lobbyStaminaBar: document.getElementById("lobbyStaminaBar"),
   lobbyLeagueValue: document.getElementById("lobbyLeagueValue"),
   lobbyNextStepValue: document.getElementById("lobbyNextStepValue"),
   lobbyMainActionButton: document.getElementById("lobbyMainActionButton"),
@@ -703,6 +707,18 @@ function renderLobby() {
   }
   if (els.lobbyLeagueValue) {
     els.lobbyLeagueValue.textContent = league.title;
+  }
+  if (els.lobbyGemValue) {
+    els.lobbyGemValue.textContent = `${(10000 + points * 12).toLocaleString("ja-JP")} G`;
+  }
+  if (els.lobbyPointValue) {
+    els.lobbyPointValue.textContent = `${points.toLocaleString("ja-JP")} pt`;
+  }
+  if (els.lobbyStaminaValue) {
+    els.lobbyStaminaValue.textContent = `${levelState.progress} / ${levelState.required}`;
+  }
+  if (els.lobbyStaminaBar) {
+    els.lobbyStaminaBar.style.width = `${Math.min(100, Math.max(0, (levelState.progress / levelState.required) * 100))}%`;
   }
   if (els.lobbyNextStepValue) {
     els.lobbyNextStepValue.textContent = nextStep.label;

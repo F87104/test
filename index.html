@@ -42,41 +42,57 @@
 
     <main class="container page-main">
       <section class="game-lobby panel" id="gameLobby">
-        <div class="panel-header">
-          <h2>ゲームロビー</h2>
-          <p class="panel-note">スクロールせずに主要操作へ</p>
+        <div class="lobby-hud">
+          <div class="lobby-hud-top">
+            <div class="lobby-player-meta">
+              <p class="lobby-player-name">メモ魔トレーナー</p>
+              <p id="lobbyLevelValue" class="lobby-level-chip">Lv.1</p>
+            </div>
+            <div class="lobby-wallet">
+              <p id="lobbyGemValue" class="lobby-wallet-value">10000G</p>
+              <p id="lobbyPointValue" class="lobby-wallet-sub">0 pt</p>
+            </div>
+          </div>
+          <div class="lobby-bars">
+            <div class="lobby-bar-card">
+              <div class="lobby-bar-header">
+                <p class="lobby-bar-label">達成ゲージ</p>
+                <p id="lobbyStaminaValue" class="lobby-bar-value">0 / 100</p>
+              </div>
+              <div class="lobby-bar-track">
+                <div id="lobbyStaminaBar" class="lobby-bar-fill"></div>
+              </div>
+            </div>
+            <div class="lobby-bar-card">
+              <div class="lobby-bar-header">
+                <p class="lobby-bar-label">リーグ</p>
+                <p id="lobbyLeagueValue" class="lobby-bar-value">ブロンズ</p>
+              </div>
+              <div class="lobby-chip-row">
+                <span id="lobbyNextStepValue" class="lobby-step-chip">クエスト開始</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="lobby-stats">
-          <article class="lobby-stat">
-            <p class="lobby-status-label">レベル</p>
-            <p id="lobbyLevelValue" class="lobby-status-value">Lv.1</p>
-          </article>
-          <article class="lobby-stat">
-            <p class="lobby-status-label">リーグ</p>
-            <p id="lobbyLeagueValue" class="lobby-status-value">ブロンズ</p>
-          </article>
-          <article class="lobby-stat">
-            <p class="lobby-status-label">次の一手</p>
-            <p id="lobbyNextStepValue" class="lobby-status-value">クエスト開始</p>
-          </article>
+        <div class="lobby-hero">
+          <div class="lobby-hero-stage">
+            <span class="lobby-monster monster-1">👾</span>
+            <span class="lobby-monster monster-2">🐉</span>
+            <span class="lobby-monster monster-3">🤖</span>
+            <span class="lobby-slime">💧</span>
+          </div>
         </div>
         <div class="lobby-main-action">
-          <button id="lobbyMainActionButton" class="button lobby-main-action" type="button">今日のクエストを開始</button>
+          <button id="lobbyMainActionButton" class="button lobby-main-action-button" type="button">今日のクエストを開始</button>
           <p id="lobbyMainActionHint" class="panel-note">まず1つだけ進めましょう</p>
-        </div>
-        <div class="lobby-quick-grid">
-          <button id="lobbyQuestButton" class="button button-ghost lobby-quick-button" type="button">クエスト</button>
-          <button id="lobbyMatchButton" class="button button-ghost lobby-quick-button" type="button">仲間スカウト</button>
-          <button id="lobbyRewardButton" class="button button-ghost lobby-quick-button" type="button">ショップ</button>
-          <button id="lobbyLectureButton" class="button button-ghost lobby-quick-button" type="button">講義</button>
         </div>
       </section>
 
       <section class="lobby-tabs panel" id="lobbyTabNav">
-        <button class="lobby-tab active" type="button" data-lobby-tab="overview">ホーム</button>
-        <button class="lobby-tab" type="button" data-lobby-tab="match">マッチ</button>
-        <button class="lobby-tab" type="button" data-lobby-tab="reward">報酬</button>
-        <button class="lobby-tab" type="button" data-lobby-tab="lecture">講義</button>
+        <button class="lobby-tab active" type="button" data-lobby-tab="overview">🏠 ホーム</button>
+        <button class="lobby-tab" type="button" data-lobby-tab="match">🤝 マッチ</button>
+        <button class="lobby-tab" type="button" data-lobby-tab="reward">💎 ショップ</button>
+        <button class="lobby-tab" type="button" data-lobby-tab="lecture">🎬 講義</button>
       </section>
 
       <div id="dashboardContent" class="lobby-panels">
