@@ -2042,3 +2042,148 @@ body.popquest-theme .site-footer {
   background: rgba(255, 255, 255, 0.78);
   color: #6b6192;
 }
+
+/* Game-lobby (no-scroll home) mode */
+body.popquest-theme.game-lobby-mode {
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+body.popquest-theme.game-lobby-mode .site-header {
+  position: fixed;
+  width: 100%;
+}
+
+body.popquest-theme.game-lobby-mode .page-main {
+  height: calc(100dvh - 78px);
+  padding: 92px 0 16px;
+  overflow: hidden;
+}
+
+body.popquest-theme.game-lobby-mode #dashboardContent {
+  display: none;
+}
+
+.game-lobby {
+  display: none;
+}
+
+body.popquest-theme.game-lobby-mode .game-lobby {
+  display: grid;
+  height: 100%;
+  gap: 12px;
+  grid-template-rows: auto auto 1fr;
+}
+
+.lobby-player-card {
+  display: grid;
+  gap: 10px;
+}
+
+.lobby-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lobby-stat {
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 10px;
+}
+
+.lobby-stat-label {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.lobby-stat-value {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.lobby-main-action {
+  display: grid;
+  gap: 10px;
+}
+
+.lobby-main-action .task-title {
+  font-size: 1.05rem;
+}
+
+.lobby-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lobby-quick-button {
+  border: 1px solid rgba(122, 92, 255, 0.28);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #5f558d;
+  padding: 10px 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.lobby-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lobby-tab {
+  border: 1px solid rgba(122, 92, 255, 0.24);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #645a92;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 8px 6px;
+}
+
+.lobby-tab.active {
+  background: linear-gradient(135deg, #7a5cff, #ff5fa2);
+  color: #fff;
+  border-color: transparent;
+}
+
+.lobby-panels {
+  min-height: 0;
+}
+
+.lobby-panel {
+  display: none;
+  height: 100%;
+}
+
+.lobby-panel.active {
+  display: block;
+}
+
+.lobby-panel-scroll {
+  height: 100%;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+  padding-right: 2px;
+}
+
+body.popquest-theme.game-lobby-mode .ticker-section {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .lobby-quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lobby-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

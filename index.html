@@ -41,7 +41,46 @@
     </header>
 
     <main class="container page-main">
-      <section class="top-summary-grid">
+      <section class="game-lobby panel" id="gameLobby">
+        <div class="panel-header">
+          <h2>ゲームロビー</h2>
+          <p class="panel-note">スクロールせずに主要操作へ</p>
+        </div>
+        <div class="lobby-stats">
+          <article class="lobby-stat">
+            <p class="lobby-status-label">レベル</p>
+            <p id="lobbyLevelValue" class="lobby-status-value">Lv.1</p>
+          </article>
+          <article class="lobby-stat">
+            <p class="lobby-status-label">リーグ</p>
+            <p id="lobbyLeagueValue" class="lobby-status-value">ブロンズ</p>
+          </article>
+          <article class="lobby-stat">
+            <p class="lobby-status-label">次の一手</p>
+            <p id="lobbyNextStepValue" class="lobby-status-value">クエスト開始</p>
+          </article>
+        </div>
+        <div class="lobby-main-action">
+          <button id="lobbyMainActionButton" class="button lobby-main-action" type="button">今日のクエストを開始</button>
+          <p id="lobbyMainActionHint" class="panel-note">まず1つだけ進めましょう</p>
+        </div>
+        <div class="lobby-quick-grid">
+          <button id="lobbyQuestButton" class="button button-ghost lobby-quick-button" type="button">クエスト</button>
+          <button id="lobbyMatchButton" class="button button-ghost lobby-quick-button" type="button">仲間スカウト</button>
+          <button id="lobbyRewardButton" class="button button-ghost lobby-quick-button" type="button">ショップ</button>
+          <button id="lobbyLectureButton" class="button button-ghost lobby-quick-button" type="button">講義</button>
+        </div>
+      </section>
+
+      <section class="lobby-tabs panel" id="lobbyTabNav">
+        <button class="lobby-tab active" type="button" data-lobby-tab="overview">ホーム</button>
+        <button class="lobby-tab" type="button" data-lobby-tab="match">マッチ</button>
+        <button class="lobby-tab" type="button" data-lobby-tab="reward">報酬</button>
+        <button class="lobby-tab" type="button" data-lobby-tab="lecture">講義</button>
+      </section>
+
+      <div id="dashboardContent" class="lobby-panels">
+      <section class="top-summary-grid lobby-panel" data-lobby-panel="overview">
         <article class="panel">
           <div class="panel-header">
             <h2>あなたの現在地</h2>
@@ -114,7 +153,7 @@
         </article>
       </section>
 
-      <section class="panel insight-panel">
+      <section class="panel insight-panel lobby-panel" data-lobby-panel="overview">
         <div class="panel-header">
           <h2>成果インサイト（4週トレンド）</h2>
           <p id="weeklyReviewUpdatedAt" class="panel-note"></p>
@@ -142,7 +181,7 @@
         <p id="insightNarrative" class="insight-narrative">解析中...</p>
       </section>
 
-      <section class="panel review-panel">
+      <section class="panel review-panel lobby-panel" data-lobby-panel="overview">
         <div class="panel-header">
           <h2>週間レビュー（自動生成）</h2>
           <div class="review-header-meta">
@@ -184,14 +223,14 @@
         </div>
       </section>
 
-      <section class="ticker-section">
+      <section class="ticker-section lobby-panel" data-lobby-panel="overview">
         <div class="ticker-label">速報</div>
         <div class="ticker-window">
           <ul id="tickerTrack" class="ticker-track"></ul>
         </div>
       </section>
 
-      <section class="board-grid">
+      <section class="board-grid lobby-panel" data-lobby-panel="quest">
         <article class="panel">
           <div class="panel-header">
             <h2>週間ランキング（ニックネーム）</h2>
@@ -256,7 +295,7 @@
         </article>
       </section>
 
-      <section class="gamify-grid">
+      <section class="gamify-grid lobby-panel" data-lobby-panel="reward">
         <article id="reactivationCard" class="panel reactivation-card" hidden>
           <div class="panel-header">
             <h2>復帰ミッション</h2>
@@ -290,7 +329,7 @@
         </article>
       </section>
 
-      <section class="learning-grid">
+      <section class="learning-grid lobby-panel" data-lobby-panel="lecture">
         <article class="panel">
           <div class="panel-header">
             <h2>学習進捗</h2>
@@ -327,7 +366,7 @@
         </article>
       </section>
 
-      <section class="panel mission-panel">
+      <section class="panel mission-panel lobby-panel" data-lobby-panel="match">
         <div class="panel-header">
           <h2>志マッチ（Mission Match）</h2>
           <p class="panel-note">同じ志・補完スキルの仲間を見つけてチームを作る</p>
@@ -393,7 +432,7 @@
         </div>
       </section>
 
-      <section class="rules panel">
+      <section class="rules panel lobby-panel" data-lobby-panel="overview">
         <div class="panel-header">
           <h2>ルール（サンプル）</h2>
         </div>
@@ -406,6 +445,7 @@
           <li>表示されるポイントは換金不可・譲渡不可のコミュニティクレジット。</li>
         </ul>
       </section>
+      </div>
     </main>
 
     <div id="tutorialOverlay" class="onboarding-overlay" hidden>

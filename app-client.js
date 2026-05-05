@@ -134,9 +134,30 @@ const els = {
   missionTeamMissionInput: document.getElementById("missionTeamMissionInput"),
   missionTeamSelection: document.getElementById("missionTeamSelection"),
   missionTeamsList: document.getElementById("missionTeamsList"),
+  dashboardContent: document.getElementById("dashboardContent"),
+  gameLobby: document.getElementById("gameLobby"),
+  lobbyLevelValue: document.getElementById("lobbyLevelValue"),
+  lobbyLeagueValue: document.getElementById("lobbyLeagueValue"),
+  lobbyNextStepValue: document.getElementById("lobbyNextStepValue"),
+  lobbyMainActionButton: document.getElementById("lobbyMainActionButton"),
+  lobbyMainActionHint: document.getElementById("lobbyMainActionHint"),
+  lobbyQuestButton: document.getElementById("lobbyQuestButton"),
+  lobbyMatchButton: document.getElementById("lobbyMatchButton"),
+  lobbyRewardButton: document.getElementById("lobbyRewardButton"),
+  lobbyLectureButton: document.getElementById("lobbyLectureButton"),
+  lobbyTabButtons: document.querySelectorAll("[data-lobby-tab]"),
+  lobbyPanels: document.querySelectorAll("[data-lobby-panel]"),
   tutorialOverlay: document.getElementById("tutorialOverlay"),
   tutorialCloseButton: document.getElementById("tutorialCloseButton"),
   tutorialPrimaryButton: document.getElementById("tutorialPrimaryButton"),
+  tutorialGoButton: document.getElementById("tutorialGoButton"),
+  tutorialTargetLabel: document.getElementById("tutorialTargetLabel"),
+  tutorialStep: document.getElementById("tutorialStep"),
+  tutorialTitle: document.getElementById("tutorialTitle"),
+  tutorialCopy: document.getElementById("tutorialCopy"),
+  tutorialSkipButton: document.getElementById("tutorialSkipButton"),
+  tutorialPrevButton: document.getElementById("tutorialPrevButton"),
+  tutorialNextButton: document.getElementById("tutorialNextButton"),
   openTutorialButton: document.getElementById("openTutorialButton"),
 };
 
@@ -157,6 +178,46 @@ let missionMatches = [];
 let missionTeams = [];
 const selectedMissionMatchUserIds = new Set();
 const TUTORIAL_STORAGE_KEY = "ui-popquest-tutorial-seen";
+const LOBBY_MODE_STORAGE_KEY = "ui-popquest-lobby-mode";
+let activeLobbyTab = "overview";
+let tutorialStepIndex = 0;
+const tutorialSteps = [
+  {
+    id: "overview",
+    title: "ホーム（ロビー）",
+    copy: "まずはホームで「次の1手」を確認。中央の大きなボタンから最短で行動開始できます。",
+    targetLabel: "対象: ホームタブ",
+    lobbyTab: "overview",
+  },
+  {
+    id: "match",
+    title: "仲間スカウト",
+    copy: "マッチタブで候補を見て、いいね→チーム作成へ。志の近い仲間を素早く見つけます。",
+    targetLabel: "対象: マッチタブ",
+    lobbyTab: "match",
+  },
+  {
+    id: "reward",
+    title: "報酬ショップ",
+    copy: "報酬タブではポイントを特典に交換。特別講義の解放条件もここで確認できます。",
+    targetLabel: "対象: 報酬タブ",
+    lobbyTab: "reward",
+  },
+  {
+    id: "lecture",
+    title: "講義でスキル強化",
+    copy: "講義タブで進捗と解放済み講義をチェック。完了を積み重ねるほど成長が可視化されます。",
+    targetLabel: "対象: 講義タブ",
+    lobbyTab: "lecture",
+  },
+  {
+    id: "done",
+    title: "準備完了！",
+    copy: "あとはホームに戻って「今日のクエストを開始」を押すだけ。まず1アクションから進めましょう。",
+    targetLabel: "対象: メインアクション",
+    lobbyTab: "overview",
+  },
+];
 let currentState = {
   members: [],
   tickerEvents: [],
@@ -547,6 +608,114 @@ function renderUpdatedAt() {
   els.lastUpdated.textContent = `最終更新: ${formatTimestamp(currentState.updatedAt)}`;
 }
 
+function setLobbyTab(tabId) {
+  activeLobbyTab = tabId;
+  els.lobbyTabButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.lobbyTab === tabId);
+  });
+  els.lobbyPanels.forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.lobbyPanel === tabId);
+  });
+}
+
+function scrollToMissionPanel() {
+  const node = document.getElementById("missionPanel");
+  if (node) {
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function scrollToRewardPanel() {
+  const node = document.querySelector(".reward-header");
+  if (node) {
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function scrollToLecturePanel() {
+  const node = document.getElementById("lectureList");
+  if (node) {
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function decideNextLobbyStep(totalPoints) {
+  if (missionTeams.length === 0) {
+    return {
+      label: "仲間スカウト",
+      hint: "志マッチで候補を選び、最初のチームを作成",
+      buttonLabel: "仲間を探す",
+      action: () => {
+        setLobbyTab("match");
+        scrollToMissionPanel();
+      },
+    };
+  }
+  const specialUnlocked = Number(localUi.rewardInventory["special-template"] ?? 0) > 0;
+  if (!specialUnlocked) {
+    return {
+      label: "報酬解放",
+      hint: "ショップで「限定テンプレ解放」を交換して特別講義を開放",
+      buttonLabel: "ショップを開く",
+      action: () => {
+        setLobbyTab("reward");
+        scrollToRewardPanel();
+      },
+    };
+  }
+  const specialLecture = lectureCatalog.find((lecture) => lecture.id === "lecture-special-01");
+  if (specialLecture && !isLectureCompleted(specialLecture.id)) {
+    return {
+      label: "特別講義を視聴",
+      hint: "解放済みの特別講義を見て、次の成果導線を実行",
+      buttonLabel: "講義を再生",
+      action: () => {
+        setLobbyTab("lecture");
+        scrollToLecturePanel();
+      },
+    };
+  }
+  if (totalPoints < 80) {
+    return {
+      label: "クエスト開始",
+      hint: "まずはデイリー行動で80ptを目指しましょう",
+      buttonLabel: "今日のクエストを開始",
+      action: () => setLobbyTab("overview"),
+    };
+  }
+  return {
+    label: "週間レビュー更新",
+    hint: "今週の成果を振り返り、来週の一手を決める",
+    buttonLabel: "レビューを確認",
+    action: () => setLobbyTab("overview"),
+  };
+}
+
+function renderLobby() {
+  if (!els.gameLobby) return;
+  const points = getTotalPointsByLearner(localUi.learnerName);
+  const levelState = calculateLevel(points);
+  const league = getCurrentLeague(points);
+  const nextStep = decideNextLobbyStep(points);
+
+  if (els.lobbyLevelValue) {
+    els.lobbyLevelValue.textContent = `Lv.${levelState.level}`;
+  }
+  if (els.lobbyLeagueValue) {
+    els.lobbyLeagueValue.textContent = league.title;
+  }
+  if (els.lobbyNextStepValue) {
+    els.lobbyNextStepValue.textContent = nextStep.label;
+  }
+  if (els.lobbyMainActionButton) {
+    els.lobbyMainActionButton.textContent = nextStep.buttonLabel;
+    els.lobbyMainActionButton.onclick = nextStep.action;
+  }
+  if (els.lobbyMainActionHint) {
+    els.lobbyMainActionHint.textContent = nextStep.hint;
+  }
+}
+
 function render() {
   renderRanking();
   renderTicker();
@@ -558,6 +727,7 @@ function render() {
   renderLearningSummary();
   initializeVimeoTracking();
   renderMission();
+  renderLobby();
   renderUpdatedAt();
 }
 
@@ -570,14 +740,42 @@ function showAwardToast(message) {
 
 function openTutorial() {
   if (!els.tutorialOverlay) return;
+  renderTutorialStep();
   els.tutorialOverlay.classList.add("is-open");
+  els.tutorialOverlay.hidden = false;
   document.body.classList.add("modal-open");
 }
 
 function closeTutorial() {
   if (!els.tutorialOverlay) return;
   els.tutorialOverlay.classList.remove("is-open");
+  els.tutorialOverlay.hidden = true;
   document.body.classList.remove("modal-open");
+}
+
+function renderTutorialStep() {
+  const step = tutorialSteps[tutorialStepIndex] ?? tutorialSteps[0];
+  if (els.tutorialStep) {
+    els.tutorialStep.textContent = `Step ${tutorialStepIndex + 1} / ${tutorialSteps.length}`;
+  }
+  if (els.tutorialTitle) {
+    els.tutorialTitle.textContent = step.title;
+  }
+  if (els.tutorialCopy) {
+    els.tutorialCopy.textContent = step.copy;
+  }
+  if (els.tutorialTargetLabel) {
+    els.tutorialTargetLabel.textContent = step.targetLabel;
+  }
+  if (step.lobbyTab) {
+    setLobbyTab(step.lobbyTab);
+  }
+  if (els.tutorialPrevButton) {
+    els.tutorialPrevButton.disabled = tutorialStepIndex === 0;
+  }
+  if (els.tutorialNextButton) {
+    els.tutorialNextButton.textContent = tutorialStepIndex === tutorialSteps.length - 1 ? "完了" : "次へ";
+  }
 }
 
 function maybeOpenTutorialOnFirstVisit() {
@@ -870,18 +1068,70 @@ function bindNavigation() {
       renderRanking();
     });
   });
+
+  els.lobbyTabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const tabId = button.dataset.lobbyTab;
+      if (!tabId) return;
+      setLobbyTab(tabId);
+    });
+  });
+
+  els.lobbyQuestButton?.addEventListener("click", () => {
+    setLobbyTab("overview");
+  });
+  els.lobbyMatchButton?.addEventListener("click", () => {
+    setLobbyTab("match");
+    scrollToMissionPanel();
+  });
+  els.lobbyRewardButton?.addEventListener("click", () => {
+    setLobbyTab("reward");
+    scrollToRewardPanel();
+  });
+  els.lobbyLectureButton?.addEventListener("click", () => {
+    setLobbyTab("lecture");
+    scrollToLecturePanel();
+  });
 }
 
 function bindTutorialUi() {
   els.openTutorialButton?.addEventListener("click", () => {
+    tutorialStepIndex = 0;
     openTutorial();
   });
   els.tutorialCloseButton?.addEventListener("click", () => {
     closeTutorial();
   });
-  els.tutorialPrimaryButton?.addEventListener("click", () => {
+  els.tutorialSkipButton?.addEventListener("click", () => {
     localStorage.setItem(TUTORIAL_STORAGE_KEY, "1");
     closeTutorial();
+  });
+  els.tutorialPrevButton?.addEventListener("click", () => {
+    tutorialStepIndex = Math.max(0, tutorialStepIndex - 1);
+    renderTutorialStep();
+  });
+  els.tutorialNextButton?.addEventListener("click", () => {
+    if (tutorialStepIndex < tutorialSteps.length - 1) {
+      tutorialStepIndex += 1;
+      renderTutorialStep();
+      return;
+    }
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, "1");
+    closeTutorial();
+  });
+  els.tutorialGoButton?.addEventListener("click", () => {
+    const step = tutorialSteps[tutorialStepIndex];
+    if (!step) return;
+    if (step.lobbyTab) {
+      setLobbyTab(step.lobbyTab);
+    }
+    if (step.lobbyTab === "match") {
+      scrollToMissionPanel();
+    } else if (step.lobbyTab === "reward") {
+      scrollToRewardPanel();
+    } else if (step.lobbyTab === "lecture") {
+      scrollToLecturePanel();
+    }
   });
   els.tutorialOverlay?.addEventListener("click", (event) => {
     if (event.target === els.tutorialOverlay) {
@@ -890,11 +1140,20 @@ function bindTutorialUi() {
   });
 }
 
+function initLobbyMode() {
+  const enabled = localStorage.getItem(LOBBY_MODE_STORAGE_KEY) ?? "1";
+  if (enabled === "1") {
+    document.body.classList.add("game-lobby-mode");
+    setLobbyTab("overview");
+  }
+}
+
 bindAwardUi();
 bindLearningUi();
 bindMissionUi();
 bindNavigation();
 bindTutorialUi();
+initLobbyMode();
 syncAwardPreview();
 bootstrap();
 maybeOpenTutorialOnFirstVisit();
