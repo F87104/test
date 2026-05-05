@@ -3,3 +3,6 @@ coverage/
 data.sqlite
 *.log
 *.tmp
+.tunnel-url
+active-tunnel-url.txt
+cloudflared
