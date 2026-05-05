@@ -134,6 +134,10 @@ const els = {
   missionTeamMissionInput: document.getElementById("missionTeamMissionInput"),
   missionTeamSelection: document.getElementById("missionTeamSelection"),
   missionTeamsList: document.getElementById("missionTeamsList"),
+  tutorialOverlay: document.getElementById("tutorialOverlay"),
+  tutorialCloseButton: document.getElementById("tutorialCloseButton"),
+  tutorialPrimaryButton: document.getElementById("tutorialPrimaryButton"),
+  openTutorialButton: document.getElementById("openTutorialButton"),
 };
 
 const localUi = {
@@ -152,6 +156,7 @@ let missionProfile = null;
 let missionMatches = [];
 let missionTeams = [];
 const selectedMissionMatchUserIds = new Set();
+const TUTORIAL_STORAGE_KEY = "ui-popquest-tutorial-seen";
 let currentState = {
   members: [],
   tickerEvents: [],
@@ -563,6 +568,24 @@ function showAwardToast(message) {
   window.setTimeout(() => els.awardToast.classList.remove("show"), 1800);
 }
 
+function openTutorial() {
+  if (!els.tutorialOverlay) return;
+  els.tutorialOverlay.classList.add("is-open");
+  document.body.classList.add("modal-open");
+}
+
+function closeTutorial() {
+  if (!els.tutorialOverlay) return;
+  els.tutorialOverlay.classList.remove("is-open");
+  document.body.classList.remove("modal-open");
+}
+
+function maybeOpenTutorialOnFirstVisit() {
+  const seen = localStorage.getItem(TUTORIAL_STORAGE_KEY) === "1";
+  if (seen) return;
+  openTutorial();
+}
+
 function syncAwardPreview() {
   if (!els.awardPreview) return;
   const name = els.nameInput.value.trim() || "だれか";
@@ -849,9 +872,29 @@ function bindNavigation() {
   });
 }
 
+function bindTutorialUi() {
+  els.openTutorialButton?.addEventListener("click", () => {
+    openTutorial();
+  });
+  els.tutorialCloseButton?.addEventListener("click", () => {
+    closeTutorial();
+  });
+  els.tutorialPrimaryButton?.addEventListener("click", () => {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, "1");
+    closeTutorial();
+  });
+  els.tutorialOverlay?.addEventListener("click", (event) => {
+    if (event.target === els.tutorialOverlay) {
+      closeTutorial();
+    }
+  });
+}
+
 bindAwardUi();
 bindLearningUi();
 bindMissionUi();
 bindNavigation();
+bindTutorialUi();
 syncAwardPreview();
 bootstrap();
+maybeOpenTutorialOnFirstVisit();

@@ -27,6 +27,9 @@
           </div>
         </div>
         <div class="header-actions">
+          <button id="tutorialStartButton" class="button button-small button-ghost" type="button">
+            使い方
+          </button>
           <button id="toggleAutoFeedButton" class="button button-small" type="button">
             自動速報: オン
           </button>
@@ -404,6 +407,25 @@
         </ul>
       </section>
     </main>
+
+    <div id="tutorialOverlay" class="onboarding-overlay" hidden>
+      <section class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+        <p id="tutorialStep" class="onboarding-step">Step 1 / 6</p>
+        <h3 id="tutorialTitle" class="onboarding-title">ようこそ！</h3>
+        <p id="tutorialCopy" class="onboarding-copy">このサイトの使い方を1分で案内します。</p>
+        <div class="onboarding-target">
+          <p id="tutorialTargetLabel" class="panel-note">対象: ホーム</p>
+          <button id="tutorialGoButton" class="button button-small button-ghost" type="button">対象へ移動</button>
+        </div>
+        <div class="onboarding-actions">
+          <button id="tutorialSkipButton" class="button button-small button-ghost" type="button">スキップ</button>
+          <div class="onboarding-primary-actions">
+            <button id="tutorialPrevButton" class="button button-small button-ghost" type="button">戻る</button>
+            <button id="tutorialNextButton" class="button button-small" type="button">次へ</button>
+          </div>
+        </div>
+      </section>
+    </div>
 
     <footer class="site-footer">
       <div class="container footer-inner">

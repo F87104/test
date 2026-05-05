@@ -578,6 +578,29 @@ h2 {
   gap: 8px;
 }
 
+body.popquest-theme .onboarding-overlay {
+  background: rgba(26, 20, 54, 0.58);
+}
+
+body.popquest-theme .onboarding-modal {
+  border-radius: 22px;
+  border: 1px solid rgba(190, 177, 247, 0.58);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 244, 255, 0.98));
+  box-shadow: 0 20px 40px rgba(78, 56, 168, 0.26);
+}
+
+body.popquest-theme .onboarding-step {
+  color: #7b72a6;
+}
+
+body.popquest-theme .onboarding-title {
+  color: #3f376d;
+}
+
+body.popquest-theme .onboarding-copy {
+  color: #5e5588;
+}
+
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
