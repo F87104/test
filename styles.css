@@ -1845,3 +1845,177 @@ h2 {
     box-shadow: var(--shadow-soft);
   }
 }
+
+/* Pop Quest theme override */
+body.popquest-theme {
+  --bg: #f8f7ff;
+  --bg-soft: #fff0f8;
+  --panel: #ffffff;
+  --panel-strong: #f4f0ff;
+  --line: rgba(168, 146, 255, 0.28);
+  --text: #3f376d;
+  --muted: #8d84a7;
+  --primary: #7a5cff;
+  --primary-strong: #6948ff;
+  --accent: #ffd84d;
+  --success: #53f2b2;
+  --warning: #ffb84d;
+  --surface-1: rgba(255, 255, 255, 0.98);
+  --surface-2: rgba(252, 249, 255, 0.98);
+  --line-soft: rgba(190, 177, 247, 0.35);
+  --line-strong: rgba(143, 120, 237, 0.5);
+  --shadow-soft: 0 10px 24px rgba(122, 92, 255, 0.12);
+  --shadow-strong: 0 14px 28px rgba(122, 92, 255, 0.2);
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% -10%, rgba(122, 92, 255, 0.34), transparent 42%),
+    radial-gradient(circle at 90% 0%, rgba(255, 95, 162, 0.26), transparent 36%),
+    linear-gradient(180deg, #f8f7ff 0%, #ffeaf6 100%);
+}
+
+body.popquest-theme .site-header {
+  border-bottom: 1px solid rgba(168, 146, 255, 0.28);
+  background: linear-gradient(90deg, rgba(122, 92, 255, 0.94), rgba(255, 95, 162, 0.92));
+  backdrop-filter: blur(10px);
+}
+
+body.popquest-theme .brand-mark {
+  border-radius: 14px;
+  box-shadow: 0 12px 24px rgba(97, 65, 222, 0.36);
+  background: linear-gradient(135deg, #ffd84d, #53f2b2);
+  color: #4a2e7c;
+}
+
+body.popquest-theme .brand-name {
+  color: #fff;
+}
+
+body.popquest-theme .brand-sub {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+body.popquest-theme .panel {
+  border-color: var(--line-soft);
+  border-radius: 22px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
+  box-shadow: var(--shadow-soft);
+}
+
+body.popquest-theme .panel:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-strong);
+}
+
+body.popquest-theme .task-panel::before {
+  background: radial-gradient(circle, rgba(255, 216, 77, 0.34), transparent 62%);
+}
+
+body.popquest-theme .task-chip {
+  border-color: rgba(255, 216, 77, 0.5);
+  background: rgba(255, 216, 77, 0.23);
+  color: #7a5d14;
+}
+
+body.popquest-theme .task-chip-muted {
+  border-color: rgba(122, 92, 255, 0.26);
+  background: rgba(122, 92, 255, 0.11);
+  color: #6d6292;
+}
+
+body.popquest-theme .button {
+  border-color: rgba(102, 71, 235, 0.24);
+  background: linear-gradient(135deg, #7a5cff, #946eff);
+  box-shadow: 0 8px 20px rgba(122, 92, 255, 0.24);
+}
+
+body.popquest-theme .button:hover {
+  background: linear-gradient(135deg, #6a4dff, #8b63ff);
+}
+
+body.popquest-theme .button-ghost {
+  border-color: rgba(122, 92, 255, 0.35);
+  background: rgba(255, 255, 255, 0.68);
+  color: #5a4d86;
+  box-shadow: none;
+}
+
+body.popquest-theme .ranking-tab {
+  border-color: rgba(122, 92, 255, 0.28);
+  background: rgba(255, 255, 255, 0.86);
+  color: #6f6497;
+}
+
+body.popquest-theme .ranking-tab.active {
+  background: linear-gradient(135deg, #7a5cff, #ff5fa2);
+  color: #fff;
+}
+
+body.popquest-theme .mvp-panel {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255, 216, 77, 0.26), transparent 48%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(248, 243, 255, 0.98));
+}
+
+body.popquest-theme .review-progress-fill,
+body.popquest-theme .trend-fill,
+body.popquest-theme .progress-bar {
+  background: linear-gradient(90deg, #7a5cff, #53f2b2);
+}
+
+body.popquest-theme .xp-bar {
+  background: linear-gradient(90deg, #7a5cff, #ff5fa2);
+}
+
+body.popquest-theme .reward-item.locked {
+  opacity: 0.76;
+  filter: saturate(0.92);
+}
+
+body.popquest-theme .reward-lock {
+  color: #9a83af;
+}
+
+body.popquest-theme .quick-point-chip {
+  border-color: rgba(122, 92, 255, 0.32);
+  background: rgba(255, 255, 255, 0.95);
+  color: #6755a2;
+}
+
+body.popquest-theme .quick-point-chip.active {
+  border-color: transparent;
+  background: linear-gradient(135deg, #7a5cff, #ff5fa2);
+  color: #fff;
+}
+
+body.popquest-theme .lecture-card.locked {
+  border-style: dashed;
+  border-color: rgba(141, 132, 167, 0.5);
+  background:
+    repeating-linear-gradient(-45deg, rgba(141, 132, 167, 0.08), rgba(141, 132, 167, 0.08) 10px, rgba(255, 255, 255, 0.92) 10px, rgba(255, 255, 255, 0.92) 20px);
+}
+
+body.popquest-theme .lecture-lock-chip {
+  border-color: rgba(255, 216, 77, 0.6);
+  background: rgba(255, 216, 77, 0.28);
+  color: #7f6214;
+}
+
+body.popquest-theme .lecture-card.done {
+  border-color: rgba(83, 242, 178, 0.54);
+  background: rgba(227, 255, 243, 0.95);
+}
+
+body.popquest-theme .ticker-section {
+  border-color: rgba(122, 92, 255, 0.24);
+  background: linear-gradient(90deg, rgba(122, 92, 255, 0.1), rgba(255, 95, 162, 0.1));
+}
+
+body.popquest-theme .ticker-label {
+  color: #5d4b98;
+}
+
+body.popquest-theme .site-footer {
+  border-top: 1px solid rgba(122, 92, 255, 0.22);
+  background: rgba(255, 255, 255, 0.78);
+  color: #6b6192;
+}
