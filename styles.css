@@ -2137,6 +2137,7 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   color: #3e2a00;
   font-size: 0.82rem;
   font-weight: 900;
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
 }
 
 .lobby-wallet {
@@ -2151,9 +2152,11 @@ body.popquest-theme.game-lobby-mode .game-lobby {
 .lobby-wallet-value {
   margin: 0;
   color: #fff8cd;
-  font-size: 1.08rem;
+  font-size: 0.9rem;
   font-weight: 900;
   letter-spacing: 0.02em;
+  line-height: 1.2;
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
 }
 
 .lobby-wallet-sub {
@@ -2161,6 +2164,7 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   color: #90f6d2;
   font-size: 0.75rem;
   font-weight: 800;
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
 }
 
 .lobby-bars {
@@ -2189,6 +2193,11 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   font-size: 0.72rem;
   font-weight: 800;
   color: #dce6ff;
+}
+
+.lobby-bar-value {
+  font-family: "DotGothic16", "Noto Sans JP", sans-serif;
+  font-size: 0.58rem;
 }
 
 .lobby-bar-track {
@@ -2234,9 +2243,9 @@ body.popquest-theme.game-lobby-mode .game-lobby {
   min-height: 210px;
   border-radius: 12px;
   border: 2px solid rgba(255, 245, 187, 0.72);
-  background:
-    linear-gradient(180deg, rgba(124, 211, 255, 0.7) 0%, rgba(144, 245, 205, 0.7) 52%, rgba(130, 201, 105, 0.9) 100%),
-    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0));
+  background-image: url("./assets/rpg-lobby/battlefield-bg.png");
+  background-size: cover;
+  background-position: center;
   overflow: hidden;
 }
 
@@ -2263,161 +2272,46 @@ body.popquest-theme.game-lobby-mode .game-lobby {
 .lobby-slime {
   position: absolute;
   z-index: 2;
-  filter: drop-shadow(0 8px 8px rgba(23, 27, 38, 0.32));
-}
-
-.lobby-mob span,
-.lobby-slime span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  border: inherit;
-  background: inherit;
-}
-
-.lobby-mob::before,
-.lobby-mob::after,
-.lobby-slime::before,
-.lobby-slime::after {
-  content: "";
-  position: absolute;
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 8px rgba(23, 27, 38, 0.36));
 }
 
 .mob-demon {
-  width: 64px;
-  height: 68px;
   left: 14%;
   bottom: 30%;
-  border-radius: 52% 52% 45% 45%;
-  border: 2px solid #3f1d1e;
-  background: linear-gradient(180deg, #dd534f, #98272b);
-}
-
-.mob-demon::before,
-.mob-demon::after {
-  width: 14px;
-  height: 16px;
-  top: -10px;
-  border-radius: 2px 8px 2px 8px;
-  border: 2px solid #3f1d1e;
-  background: #f38d45;
-}
-
-.mob-demon::before {
-  left: 8px;
-  transform: rotate(-22deg);
-}
-
-.mob-demon::after {
-  right: 8px;
-  transform: rotate(22deg);
+  width: 82px;
+  height: 82px;
 }
 
 .mob-ogre {
-  width: 78px;
-  height: 84px;
   right: 13%;
   bottom: 26%;
-  border-radius: 44% 44% 36% 36%;
-  border: 2px solid #21402a;
-  background: linear-gradient(180deg, #8cdd8d, #50a95e);
-}
-
-.mob-ogre::before {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #f9f4d3;
-  border: 2px solid #21402a;
-  left: 10px;
-  top: 16px;
-}
-
-.mob-ogre::after {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #f9f4d3;
-  border: 2px solid #21402a;
-  right: 10px;
-  top: 16px;
+  width: 96px;
+  height: 96px;
 }
 
 .mob-golem {
-  width: 66px;
-  height: 72px;
   left: 8%;
   bottom: 8%;
-  border-radius: 8px;
-  border: 2px solid #6f5023;
-  background: linear-gradient(180deg, #e1b672, #a2743d);
-}
-
-.mob-golem::before,
-.mob-golem::after {
-  width: 10px;
-  height: 22px;
-  border-radius: 8px;
-  background: #c49258;
-  border: 2px solid #6f5023;
-  bottom: -12px;
-}
-
-.mob-golem::before {
-  left: 8px;
-}
-
-.mob-golem::after {
-  right: 8px;
+  width: 82px;
+  height: 82px;
 }
 
 .mob-robot {
-  width: 62px;
-  height: 62px;
   right: 24%;
   bottom: 8%;
-  border-radius: 46% 46% 36% 36%;
-  border: 2px solid #1f3565;
-  background: linear-gradient(180deg, #72a4ff, #305ca8);
-}
-
-.mob-robot::before {
-  width: 26px;
-  height: 8px;
-  border-radius: 999px;
-  background: #ff6c79;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 78px;
+  height: 78px;
 }
 
 .lobby-slime {
-  width: 84px;
-  height: 54px;
   left: 38%;
   bottom: 8%;
-  border-radius: 50% 50% 58% 58%;
-  border: 2px solid #145f86;
-  background: linear-gradient(180deg, #87f2ff, #3bb8e0);
-}
-
-.lobby-slime::before {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff;
-  left: 26px;
-  top: 20px;
-}
-
-.lobby-slime::after {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff;
-  right: 26px;
-  top: 20px;
+  width: 102px;
+  height: 76px;
 }
 
 .lobby-main-action {
