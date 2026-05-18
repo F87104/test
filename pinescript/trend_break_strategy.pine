@@ -1,8 +1,11 @@
 //@version=5
 // =====================================================================================
-//  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy)
-//  ★★ VERSION 2026-05-18-1335  最新版確認用 ★★
-//  右上テーブルに同じバージョン文字列が出るので、出てなければキャッシュ古い
+//  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
+//  ★★ VERSION 2026-05-18-1340  H1 専用化 + オープン中ポジション完全可視化 ★★
+//
+//  ▶ 1時間足 (H1) 専用に設計されています。
+//     他の時間足にチャートを切り替えると、画面中央に大きく
+//     「⚠️ H1 ではありません」の警告が出ます。
 //
 //  Python リポジトリ:  cursor/pine-script-trend-break-backtester-51bc
 //  対応 Python 設定:   configs/best_<SYMBOL>.json
@@ -42,8 +45,26 @@ strategy(
      calc_on_every_tick      = false,
      max_lines_count         = 500,
      max_labels_count        = 500,
+     max_boxes_count         = 100,
      max_bars_back           = 5000
  )
+
+
+// =====================================================================================
+//  H1 (1時間足) チェック  ★ NEW ★
+//  チャートの時間足が 60 分でない場合、画面中央に大きく警告を出す
+// =====================================================================================
+is_h1 = timeframe.in_seconds() == 3600
+if barstate.islast and not is_h1
+    var label tf_warn = na
+    label.delete(tf_warn)
+    tf_warn := label.new(bar_index, (high + low) / 2,
+         "⚠️ 1時間足 (H1) ではありません\n現在: " + timeframe.period + "\n\n" +
+         "このストラテジーは H1 専用に最適化されています。\n" +
+         "チャート上部のタイムフレーム選択で「1時間」に切り替えてください。",
+         xloc=xloc.bar_index, yloc=yloc.price,
+         color=color.new(color.red, 10), textcolor=color.white,
+         style=label.style_label_center, size=size.huge)
 
 
 // =====================================================================================
@@ -374,6 +395,63 @@ plot(show_open_sl_tp and strategy.position_size != 0 ? strategy.position_avg_pri
 
 
 // =====================================================================================
+//  ★★ オープン中ポジションの完全可視化 ★★ (NEW)
+//
+//  strategy.closedtrades が 0 件でも「今ポジションを持っている」状況を
+//  視覚的に伝える。これで「決済点が見えない」=「まだ決済してないだけ」が
+//  ハッキリ分かる。
+//
+//  - エントリー位置から現在バーまで「進行中」を太線で結ぶ (緑=含み益 / 赤=含み損)
+//  - エントリー価格・SL 価格・TP 価格を各々大きなラベルで表示
+//  - 現在の含み損益 ($ と %) を画面右端に表示
+// =====================================================================================
+if is_h1 and strategy.position_size != 0 and barstate.islast
+    ent_pr   = strategy.position_avg_price
+    is_long  = strategy.position_size > 0
+    cur_pnl  = (close - ent_pr) * (is_long ? 1 : -1) * math.abs(strategy.position_size)
+    cur_pnl_pct = (close - ent_pr) / ent_pr * 100 * (is_long ? 1 : -1)
+    pos_col  = cur_pnl >= 0 ? color.new(color.lime, 0) : color.new(color.red, 0)
+
+    // エントリーバー (現在ポジの平均約定バー) を推定 — Pine の strategy.opentrades から取得
+    ent_bar = strategy.opentrades > 0 ? strategy.opentrades.entry_bar_index(0) : bar_index
+
+    // 進行中ライン
+    line.new(x1=ent_bar, y1=ent_pr, x2=bar_index, y2=close,
+             xloc=xloc.bar_index, color=pos_col, width=3, style=line.style_solid)
+
+    // エントリー位置ラベル
+    label.new(ent_bar, ent_pr,
+              (is_long ? "🟢 IN: LONG @ " : "🔴 IN: SHORT @ ") + str.tostring(ent_pr, format.mintick),
+              xloc=xloc.bar_index, yloc=yloc.price,
+              color=color.new(color.aqua, 0), textcolor=color.white,
+              style=label.style_label_right, size=size.normal)
+
+    // SL ラベル (右側に固定)
+    if not na(locked_sl)
+        label.new(bar_index + 5, locked_sl,
+                  "SL @ " + str.tostring(locked_sl, format.mintick),
+                  xloc=xloc.bar_index, yloc=yloc.price,
+                  color=color.new(color.red, 0), textcolor=color.white,
+                  style=label.style_label_left, size=size.normal)
+
+    // TP ラベル (右側に固定)
+    if not na(locked_tp)
+        label.new(bar_index + 5, locked_tp,
+                  "TP @ " + str.tostring(locked_tp, format.mintick),
+                  xloc=xloc.bar_index, yloc=yloc.price,
+                  color=color.new(color.lime, 0), textcolor=color.white,
+                  style=label.style_label_left, size=size.normal)
+
+    // 現在の含み損益ラベル
+    pnl_sign = cur_pnl >= 0 ? "+" : ""
+    label.new(bar_index, close,
+              "現在 " + pnl_sign + "$" + str.tostring(cur_pnl, "#.00") + "  (" + pnl_sign + str.tostring(cur_pnl_pct, "#.00") + "%)",
+              xloc=xloc.bar_index, yloc=yloc.price,
+              color=pos_col, textcolor=color.white,
+              style=is_long ? label.style_label_down : label.style_label_up, size=size.large)
+
+
+// =====================================================================================
 //  アラート定義 (TradingView の Alerts から有効化可能)
 // =====================================================================================
 alertcondition(finalLong,  title="🟢 Long Signal",  message="{{ticker}}: LONG signal at {{close}} (level break detected)")
@@ -386,7 +464,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1335", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1340", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset,          text_size=size.small)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
