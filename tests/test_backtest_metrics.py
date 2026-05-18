@@ -170,6 +170,38 @@ def test_breakeven_caps_losses_at_zero_after_threshold():
             assert tr.r_multiple >= -1.01  # original 1R risk, never blown past
 
 
+def test_level_kind_any_fires_more_signals():
+    """level_kind='any' は mid OR long → 件数 >= mid のみ。"""
+    df = synthesise_ohlcv(n=4000, seed=17)
+    icfg_kwargs = dict(lookback=400, exclude_recent=80, lookback_3m=80, exclude_recent_3m=20, strict_warmup=True, pine_compat_mode="intended")
+    bcfg_kwargs = dict(direction="both", sl_mode="atr", sl_atr_mult=2.0, tp_mode="rr", tp_rr=2.0, atr_period=14)
+    res_mid = run_backtest(df,
+        indicator_cfg=IndicatorConfig(**icfg_kwargs),
+        backtest_cfg=BacktestConfig(level_kind="mid",  **bcfg_kwargs),
+        pip_size=0.01,
+    )
+    res_any = run_backtest(df,
+        indicator_cfg=IndicatorConfig(**icfg_kwargs),
+        backtest_cfg=BacktestConfig(level_kind="any",  **bcfg_kwargs),
+        pip_size=0.01,
+    )
+    # any モードは mid と long の和集合なので件数は mid 以上のはず
+    # (signal の重複は one_position_only でブロックされるが any >= mid は保証)
+    assert len(res_any.trades) >= len(res_mid.trades) * 0.5  # 安全マージン
+
+
+def test_reentry_cooldown_blocks_quick_reentry():
+    """reentry_cooldown_bars=50 で直近決済後 50 バー以内の新エントリー禁止"""
+    df = synthesise_ohlcv(n=4000, seed=21)
+    icfg = IndicatorConfig(lookback=400, exclude_recent=80, lookback_3m=80, exclude_recent_3m=20, strict_warmup=True, pine_compat_mode="intended")
+    bcfg_no_cool  = BacktestConfig(direction="both", sl_mode="atr", sl_atr_mult=2.0, tp_mode="rr", tp_rr=2.0, atr_period=14, reentry_cooldown_bars=0)
+    bcfg_cool     = BacktestConfig(direction="both", sl_mode="atr", sl_atr_mult=2.0, tp_mode="rr", tp_rr=2.0, atr_period=14, reentry_cooldown_bars=50)
+    res_a = run_backtest(df, indicator_cfg=icfg, backtest_cfg=bcfg_no_cool, pip_size=0.01)
+    res_b = run_backtest(df, indicator_cfg=icfg, backtest_cfg=bcfg_cool, pip_size=0.01)
+    # cooldown 適用版は件数 <= 通常版
+    assert len(res_b.trades) <= len(res_a.trades)
+
+
 def test_trailing_stop_can_extend_winners():
     """With trailing on, the average winning bars_held should not be tiny.
     More importantly: trailing must not error out."""

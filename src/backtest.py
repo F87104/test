@@ -174,6 +174,10 @@ def _signal_series(
     elif level_kind == "confluence":
         long_s = df["longCond"] & df["longCond3m"]
         short_s = df["shortCond"] & df["shortCond3m"]
+    elif level_kind == "any":
+        # 緩和モード: 長期 OR 中期のどちらかで発火 → 取引頻度大幅増
+        long_s = df["longCond"] | df["longCond3m"]
+        short_s = df["shortCond"] | df["shortCond3m"]
     else:
         raise ValueError(f"[ERR-PARAM] unknown level_kind={level_kind!r}")
 
@@ -245,6 +249,7 @@ def run_backtest(
     pos_size = 0.0
     pos_risk_money = 0.0
     pending_signal: Optional[int] = None  # +1/-1 → fill on next bar's open
+    last_exit_idx = -1  # 直近決済バー (cooldown 用)
 
     cost_per_unit = backtest_cfg.cost_pips * pip_size
     slip_per_unit = backtest_cfg.slippage_pips * pip_size
@@ -344,6 +349,7 @@ def run_backtest(
                 )
                 equity += trades[-1].pnl_money
                 in_pos = False
+                last_exit_idx = t  # cooldown 計測の起点
 
         # ---------- Open a pending entry (filled on this bar's open) -----
         if (
@@ -376,7 +382,12 @@ def run_backtest(
             pending_signal = None
 
         # ---------- Generate new signal at this bar's close --------------
-        if not in_pos:
+        cooldown_ok = (
+            backtest_cfg.reentry_cooldown_bars <= 0
+            or last_exit_idx < 0
+            or (t - last_exit_idx) >= backtest_cfg.reentry_cooldown_bars
+        )
+        if not in_pos and cooldown_ok:
             sig_long = bool(long_arr[t])
             sig_short = bool(short_arr[t])
             if sig_long and sig_short:

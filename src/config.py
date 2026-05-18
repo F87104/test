@@ -67,7 +67,8 @@ class IndicatorConfig:
 # Backtest parameters
 # ---------------------------------------------------------------------------
 EntryFill = Literal["next_open", "signal_close"]
-LevelKind = Literal["long", "mid", "confluence"]
+LevelKind = Literal["long", "mid", "confluence", "any"]
+# "any" = long OR mid (どちらか一方でも発火 → 取引頻度↑)
 SLMode = Literal["atr", "fixed_pct", "signal_bar"]
 TPMode = Literal["rr", "atr", "none"]
 Direction = Literal["long_only", "short_only", "both"]
@@ -124,6 +125,11 @@ class BacktestConfig:
     # the most favourable price.  0.0 disables.  When trailing is active and
     # ``tp_mode == 'none'`` you'll let winners run until the trail is hit.
     trailing_atr_mult: float = 0.0
+
+    # Re-entry cooldown: minimum bars between a position close and the next
+    # entry.  0 = always allowed, no waiting.  N > 0 = block re-entry for
+    # N bars (useful to avoid revenge trading or back-to-back fakeouts).
+    reentry_cooldown_bars: int = 0
 
     def validate(self) -> None:
         if self.sl_atr_mult <= 0:
