@@ -1,0 +1,40 @@
+{
+  "_description": "半自動シグナルスキャナの監視対象。各通貨ペアは optimisation で発見した best_*.json を使用。",
+  "items": [
+    {
+      "symbol": "XAUUSD",
+      "data_dir": "data/XAUUSD2014-2024",
+      "config_path": "configs/best_XAUUSD.json",
+      "backtest_pf": 2.17,
+      "backtest_win_rate": 0.4330
+    },
+    {
+      "symbol": "XAGUSD",
+      "data_dir": "data/SILVER2014-2024",
+      "config_path": "configs/best_XAGUSD.json",
+      "backtest_pf": 2.98,
+      "backtest_win_rate": 0.5106
+    },
+    {
+      "symbol": "GBPJPY",
+      "data_dir": "data/GBYJPY2014-2024",
+      "config_path": "configs/best_GBPJPY.json",
+      "backtest_pf": 4.59,
+      "backtest_win_rate": 0.5882
+    },
+    {
+      "symbol": "USDJPY",
+      "data_dir": "data/USDJPY2014-2024",
+      "config_path": "configs/best_USDJPY.json",
+      "backtest_pf": 2.19,
+      "backtest_win_rate": 0.4314
+    },
+    {
+      "symbol": "EURJPY",
+      "data_dir": "data/EURJPY2014-2024",
+      "config_path": "configs/best_EURJPY.json",
+      "backtest_pf": 1.35,
+      "backtest_win_rate": 0.3167
+    }
+  ]
+}
