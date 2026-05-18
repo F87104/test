@@ -1,7 +1,11 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-18-1405  ラベル重なり解消 (オフセット拡大 + テキスト整理) ★★
+//  ★★ VERSION 2026-05-18-1520  緩和プリセット追加 (Conservative / Relaxed 切替) ★★
+//
+//   - プリセット 5 通貨 ×  保守 / 緩和  の 2 モードに対応
+//   - level_kind="any" (mid OR long) モード追加
+//   - reentry_cooldown_bars (再エントリー禁止期間) 追加
 //
 //  ▶ 1時間足 (H1) 専用に設計されています。
 //     他の時間足にチャートを切り替えると、画面中央に大きく
@@ -72,6 +76,7 @@ if barstate.islast and not is_h1
 // =====================================================================================
 grp_pre  = "▼ プリセット (まず選ぶ)"
 preset   = input.string("XAUUSD", "通貨プリセット", options=["XAUUSD", "XAGUSD", "GBPJPY", "USDJPY", "EURJPY", "カスタム"], group=grp_pre, tooltip="選ぶと下のパラメータが自動で書き換わる (カスタム以外)")
+preset_mode = input.string("緩和 (新版・高頻度)", "プリセットモード", options=["緩和 (新版・高頻度)", "保守 (旧版・高PF)"], group=grp_pre, tooltip="緩和=取引数 多・リターン重視 / 保守=取引数 少・PF重視")
 
 grp_ind  = "▼ インジケーター・パラメータ (Pine 互換)"
 in_lookback_3m       = input.int(480,  "中期 lookback_3m  (節目を探す本数)", minval=10, group=grp_ind)
@@ -81,7 +86,7 @@ in_exclude_recent    = input.int(760,  "長期 exclude_recent (参考表示用)"
 strict_warmup        = input.bool(true, "strict warm-up (lookback本未満ではシグナル抑制)", group=grp_ind)
 
 grp_lvl  = "▼ レベル種別 (Python: level_kind)"
-level_kind = input.string("mid", "level_kind", options=["mid", "long", "confluence"], group=grp_lvl, tooltip="mid=中期のみ / long=長期のみ / confluence=両方同時")
+level_kind_input = input.string("auto", "level_kind", options=["auto", "mid", "long", "confluence", "any"], group=grp_lvl, tooltip="auto=プリセット推奨値 / mid=中期 / long=長期 / confluence=両方同時 / any=mid OR long (取引数倍増)")
 
 grp_risk = "▼ リスク管理"
 sl_atr_mult        = input.float(2.0, "SL = entry ± N×ATR  (sl_atr_mult)", minval=0.1, step=0.1, group=grp_risk)
@@ -90,11 +95,12 @@ atr_period         = input.int(14,    "ATR period", minval=2, group=grp_risk)
 risk_per_trade_pct = input.float(1.0, "1 トレードリスク % (口座資金に対する)", minval=0.01, maxval=10.0, step=0.1, group=grp_risk)
 
 grp_filt = "▼ プリトレード・フィルタ"
-session_filter_enabled = input.bool(false, "セッションフィルタを有効化", group=grp_filt)
+session_filter_enabled = input.bool(false, "セッションフィルタを有効化 (カスタム時)", group=grp_filt)
 filter_asia            = input.bool(true,  "  Asia (00-07,21-24 UTC)", group=grp_filt)
 filter_europe          = input.bool(false, "  Europe (07-13 UTC)",      group=grp_filt)
 filter_ny              = input.bool(true,  "  NY (13-21 UTC)",          group=grp_filt)
-min_breakout_margin    = input.float(0.0, "min_breakout_margin_atr (弱いブレイク除外)", minval=0.0, step=0.1, group=grp_filt)
+min_breakout_margin    = input.float(0.0, "min_breakout_margin_atr (カスタム時)", minval=0.0, step=0.1, group=grp_filt)
+reentry_cooldown_in    = input.int(0, "reentry_cooldown_bars (カスタム時)", minval=0, group=grp_filt, tooltip="決済後この本数は新規エントリーを禁止")
 
 grp_dir  = "▼ 方向"
 allow_long  = input.bool(true, "ロング許可",   group=grp_dir)
@@ -110,8 +116,12 @@ show_levels_only_when_unbroken = input.bool(true, "未ブレイクのライン�
 // =====================================================================================
 //  プリセット適用 (Python configs/best_*.json と完全一致)
 //  Pine v5 の switch 文で書く (多段三項演算子は構文エラーになる)
+//  ★ 保守 (旧版・高PF) / 緩和 (新版・高頻度) の 2 モード対応
 // =====================================================================================
-preset_lookback_3m = switch preset
+is_relaxed = preset_mode == "緩和 (新版・高頻度)"
+
+// ---- 中期 lookback_3m ----
+preset_lookback_3m_conservative = switch preset
     "XAUUSD" => 480
     "XAGUSD" => 360
     "GBPJPY" => 360
@@ -119,7 +129,18 @@ preset_lookback_3m = switch preset
     "EURJPY" => 360
     => in_lookback_3m
 
-preset_exclude_recent_3m = switch preset
+preset_lookback_3m_relaxed = switch preset
+    "XAUUSD" => 240
+    "XAGUSD" => 360
+    "GBPJPY" => 180
+    "USDJPY" => 180
+    "EURJPY" => 180
+    => in_lookback_3m
+
+preset_lookback_3m = is_relaxed ? preset_lookback_3m_relaxed : preset_lookback_3m_conservative
+
+// ---- 中期 exclude_recent_3m ----
+preset_exclude_3m_conservative = switch preset
     "XAUUSD" => 120
     "XAGUSD" => 180
     "GBPJPY" => 180
@@ -127,17 +148,58 @@ preset_exclude_recent_3m = switch preset
     "EURJPY" => 60
     => in_exclude_recent_3m
 
-preset_sl_atr_mult = switch preset
+preset_exclude_3m_relaxed = switch preset
+    "XAUUSD" => 30
+    "XAGUSD" => 30
+    "GBPJPY" => 30
+    "USDJPY" => 30
+    "EURJPY" => 30
+    => in_exclude_recent_3m
+
+preset_exclude_recent_3m = is_relaxed ? preset_exclude_3m_relaxed : preset_exclude_3m_conservative
+
+// ---- SL ATR× ----
+preset_sl_atr_conservative = switch preset
     "GBPJPY" => 2.5
     "EURJPY" => 2.5
     "カスタム" => sl_atr_mult
     => 2.0
 
-preset_session_enabled = preset == "XAGUSD" or preset == "GBPJPY" or preset == "USDJPY"
+preset_sl_atr_relaxed = switch preset
+    "EURJPY" => 2.0
+    "カスタム" => sl_atr_mult
+    => 1.5  // 緩和モードは SL 狭く・回数で稼ぐ
+
+preset_sl_atr_mult = is_relaxed ? preset_sl_atr_relaxed : preset_sl_atr_conservative
+
+// ---- level_kind (auto 時のプリセット推奨) ----
+preset_level_kind_conservative = "mid"  // 保守は全通貨 mid
+preset_level_kind_relaxed = switch preset
+    "XAGUSD" => "any"
+    "GBPJPY" => "any"
+    => "mid"  // 他通貨は mid のままが最適だった
+preset_level_kind = is_relaxed ? preset_level_kind_relaxed : preset_level_kind_conservative
+level_kind = level_kind_input == "auto" ? preset_level_kind : level_kind_input
+
+// ---- セッションフィルタ ----
+preset_session_conservative = preset == "XAGUSD" or preset == "GBPJPY" or preset == "USDJPY"
+preset_session_relaxed = preset == "XAUUSD" or preset == "USDJPY" or preset == "EURJPY"
+preset_session_enabled = is_relaxed ? preset_session_relaxed : preset_session_conservative
 preset_filter_asia     = true
 preset_filter_europe   = false
 preset_filter_ny       = true
-preset_margin          = preset == "EURJPY" ? 0.5 : 0.0
+
+// ---- マージンフィルタ ----
+preset_margin_conservative = preset == "EURJPY" ? 0.5 : 0.0
+preset_margin_relaxed      = preset == "USDJPY" ? 0.3 : 0.0
+preset_margin = is_relaxed ? preset_margin_relaxed : preset_margin_conservative
+
+// ---- 再エントリー Cooldown ----
+preset_cooldown_relaxed = switch preset
+    "XAGUSD" => 24
+    "EURJPY" => 24
+    => 0
+preset_cooldown = is_relaxed ? preset_cooldown_relaxed : 0  // 保守版は cooldown 無し
 
 // 実際に使う値 (プリセット優先、カスタム時のみ入力値)
 is_custom         = preset == "カスタム"
@@ -149,6 +211,7 @@ use_f_asia        = is_custom ? filter_asia            : preset_filter_asia
 use_f_europe      = is_custom ? filter_europe          : preset_filter_europe
 use_f_ny          = is_custom ? filter_ny              : preset_filter_ny
 use_margin        = is_custom ? min_breakout_margin    : preset_margin
+use_cooldown      = is_custom ? reentry_cooldown_in    : preset_cooldown
 
 
 // =====================================================================================
@@ -176,9 +239,20 @@ shortCond3m = close < lowLevel3m  and noRecentLowTouch3m
 longCond    = close > highLevel   and noRecentHighTouch
 shortCond   = close < lowLevel    and noRecentLowTouch
 
-// level_kind による選択
-longSig  = level_kind == "long" ? longCond  : level_kind == "mid" ? longCond3m  : (longCond  and longCond3m)
-shortSig = level_kind == "long" ? shortCond : level_kind == "mid" ? shortCond3m : (shortCond and shortCond3m)
+// level_kind による選択 (any = mid OR long どちらかで発火)
+longSig = switch level_kind
+    "long"        => longCond
+    "mid"         => longCond3m
+    "any"         => longCond or longCond3m
+    "confluence"  => longCond and longCond3m
+    => longCond3m
+
+shortSig = switch level_kind
+    "long"        => shortCond
+    "mid"         => shortCond3m
+    "any"         => shortCond or shortCond3m
+    "confluence"  => shortCond and shortCond3m
+    => shortCond3m
 
 // strict warm-up: 必要本数に満たない bar はシグナル抑制
 warmup_ok = bar_index >= math.max(lookback_3m, exclude_recent_3m) + 5
@@ -229,12 +303,12 @@ finalShort = shortSig and sess_pass and margin_pass_short
 // Python では entry_atr = atr_series[t-1] (=シグナルバーの ATR)
 // Pine では bar X+1 における atrVal[1] = ATR at bar X = シグナルバーの ATR  → 一致
 // =====================================================================================
-var int    signal_bar = na   // シグナル発火バーの bar_index を記憶
-var float  locked_sl  = na   // 約定後に確定する SL (一度設定したら不変)
-var float  locked_tp  = na   // 同上
+var int    signal_bar    = na   // シグナル発火バーの bar_index を記憶
+var float  locked_sl     = na   // 約定後に確定する SL (一度設定したら不変)
+var float  locked_tp     = na   // 同上
+var int    last_exit_bar = na   // 直近決済バー (cooldown 用)
 
 // ポジションサイズ計算 (Python と同じ式: equity × risk% / |entry-SL|)
-// 暫定 SL を close と現バー ATR から見積もって qty 算出
 est_entry      = close
 est_sl_long    = est_entry - use_sl_atr * atrVal
 est_sl_short   = est_entry + use_sl_atr * atrVal
@@ -242,12 +316,15 @@ risk_money     = strategy.equity * (risk_per_trade_pct / 100.0)
 qty_long       = math.max(risk_money / math.max(math.abs(est_entry - est_sl_long),  1e-12), 1e-6)
 qty_short      = math.max(risk_money / math.max(math.abs(est_entry - est_sl_short), 1e-12), 1e-6)
 
+// 再エントリー Cooldown チェック
+cooldown_ok = use_cooldown <= 0 or na(last_exit_bar) or (bar_index - last_exit_bar) >= use_cooldown
+
 // シグナル発火 → 次バー始値で約定予約
-if finalLong and strategy.position_size == 0
+if finalLong and strategy.position_size == 0 and cooldown_ok
     signal_bar := bar_index
     strategy.entry("L", strategy.long, qty=qty_long,
          comment="Long signal @" + str.tostring(close, format.mintick))
-if finalShort and strategy.position_size == 0
+if finalShort and strategy.position_size == 0 and cooldown_ok
     signal_bar := bar_index
     strategy.entry("S", strategy.short, qty=qty_short,
          comment="Short signal @" + str.tostring(close, format.mintick))
@@ -273,9 +350,10 @@ if strategy.position_size < 0 and not na(locked_sl)
 //   位置 != 0 だった経歴がある (= locked_sl が既にセットされた) 状態で
 //   position_size == 0 に戻ったときだけリセットする。
 if strategy.position_size == 0 and not na(locked_sl)
-    locked_sl  := na
-    locked_tp  := na
-    signal_bar := na
+    locked_sl     := na
+    locked_tp     := na
+    signal_bar    := na
+    last_exit_bar := bar_index  // cooldown 計測の起点
 
 
 // =====================================================================================
@@ -504,9 +582,9 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1405", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1520", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
-    table.cell(info, 1, 1, preset,          text_size=size.small)
+    table.cell(info, 1, 1, preset + " / " + (is_relaxed ? "緩和" : "保守"), text_size=size.small, text_color=is_relaxed ? color.lime : color.aqua)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
     table.cell(info, 1, 2, level_kind,      text_size=size.small)
     table.cell(info, 0, 3, "lookback_3m",   text_size=size.small)
@@ -519,8 +597,8 @@ if barstate.islast
     table.cell(info, 1, 6, str.tostring(tp_rr),             text_size=size.small)
     table.cell(info, 0, 7, "session filter", text_size=size.small)
     table.cell(info, 1, 7, use_session_on ? ((use_f_asia?"A":"") + (use_f_europe?"E":"") + (use_f_ny?"N":"")) : "OFF", text_size=size.small)
-    table.cell(info, 0, 8, "margin filter", text_size=size.small)
-    table.cell(info, 1, 8, use_margin > 0 ? str.tostring(use_margin) + " ATR" : "OFF", text_size=size.small)
+    table.cell(info, 0, 8, "margin / cool", text_size=size.small)
+    table.cell(info, 1, 8, (use_margin > 0 ? str.tostring(use_margin, "#.##") + " ATR" : "OFF") + " / " + (use_cooldown > 0 ? str.tostring(use_cooldown) + "b" : "0"), text_size=size.small)
     // 診断情報 ★ NEW ★
     table.cell(info, 0, 9, "── 診断 ──", bgcolor=color.new(color.gray, 70), text_color=color.white, text_size=size.small)
     table.cell(info, 1, 9, "",            bgcolor=color.new(color.gray, 70), text_size=size.small)
