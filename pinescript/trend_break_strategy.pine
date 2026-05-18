@@ -1,7 +1,7 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-18-1520  緩和プリセット追加 (Conservative / Relaxed 切替) ★★
+//  ★★ VERSION 2026-05-18-1615  7通貨対応 (+AUDJPY/CHFJPY) ★★
 //
 //   - プリセット 5 通貨 ×  保守 / 緩和  の 2 モードに対応
 //   - level_kind="any" (mid OR long) モード追加
@@ -75,7 +75,7 @@ if barstate.islast and not is_h1
 //  入力パラメータ
 // =====================================================================================
 grp_pre  = "▼ プリセット (まず選ぶ)"
-preset   = input.string("XAUUSD", "通貨プリセット", options=["XAUUSD", "XAGUSD", "GBPJPY", "USDJPY", "EURJPY", "カスタム"], group=grp_pre, tooltip="選ぶと下のパラメータが自動で書き換わる (カスタム以外)")
+preset   = input.string("XAUUSD", "通貨プリセット", options=["XAUUSD", "XAGUSD", "GBPJPY", "USDJPY", "EURJPY", "AUDJPY", "CHFJPY", "カスタム"], group=grp_pre, tooltip="選ぶと下のパラメータが自動で書き換わる (カスタム以外)")
 preset_mode = input.string("緩和 (新版・高頻度)", "プリセットモード", options=["緩和 (新版・高頻度)", "保守 (旧版・高PF)"], group=grp_pre, tooltip="緩和=取引数 多・リターン重視 / 保守=取引数 少・PF重視")
 
 grp_ind  = "▼ インジケーター・パラメータ (Pine 互換)"
@@ -127,6 +127,8 @@ preset_lookback_3m_conservative = switch preset
     "GBPJPY" => 360
     "USDJPY" => 480
     "EURJPY" => 360
+    "AUDJPY" => 480
+    "CHFJPY" => 480
     => in_lookback_3m
 
 preset_lookback_3m_relaxed = switch preset
@@ -135,6 +137,8 @@ preset_lookback_3m_relaxed = switch preset
     "GBPJPY" => 180
     "USDJPY" => 180
     "EURJPY" => 180
+    "AUDJPY" => 480
+    "CHFJPY" => 480
     => in_lookback_3m
 
 preset_lookback_3m = is_relaxed ? preset_lookback_3m_relaxed : preset_lookback_3m_conservative
@@ -146,6 +150,8 @@ preset_exclude_3m_conservative = switch preset
     "GBPJPY" => 180
     "USDJPY" => 180
     "EURJPY" => 60
+    "AUDJPY" => 120
+    "CHFJPY" => 120
     => in_exclude_recent_3m
 
 preset_exclude_3m_relaxed = switch preset
@@ -154,6 +160,8 @@ preset_exclude_3m_relaxed = switch preset
     "GBPJPY" => 30
     "USDJPY" => 30
     "EURJPY" => 30
+    "AUDJPY" => 30
+    "CHFJPY" => 90
     => in_exclude_recent_3m
 
 preset_exclude_recent_3m = is_relaxed ? preset_exclude_3m_relaxed : preset_exclude_3m_conservative
@@ -167,6 +175,7 @@ preset_sl_atr_conservative = switch preset
 
 preset_sl_atr_relaxed = switch preset
     "EURJPY" => 2.0
+    "CHFJPY" => 2.5
     "カスタム" => sl_atr_mult
     => 1.5  // 緩和モードは SL 狭く・回数で稼ぐ
 
@@ -177,6 +186,8 @@ preset_level_kind_conservative = "mid"  // 保守は全通貨 mid
 preset_level_kind_relaxed = switch preset
     "XAGUSD" => "any"
     "GBPJPY" => "any"
+    "AUDJPY" => "any"
+    "CHFJPY" => "any"
     => "mid"  // 他通貨は mid のままが最適だった
 preset_level_kind = is_relaxed ? preset_level_kind_relaxed : preset_level_kind_conservative
 level_kind = level_kind_input == "auto" ? preset_level_kind : level_kind_input
@@ -582,7 +593,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1520", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1615", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset + " / " + (is_relaxed ? "緩和" : "保守"), text_size=size.small, text_color=is_relaxed ? color.lime : color.aqua)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
