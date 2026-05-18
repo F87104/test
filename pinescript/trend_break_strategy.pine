@@ -270,6 +270,46 @@ plotshape(finalShort, title="SHORT signal", location=location.abovebar, style=sh
 bgcolor(finalLong  ? color.new(color.green, 85) : na, title="LONG bg")
 bgcolor(finalShort ? color.new(color.red,   85) : na, title="SHORT bg")
 
+// =====================================================================================
+//  エントリー値段ラベル ★ NEW ★
+//    シグナル発火バーで「LONG @ 4,531.14」のような吹き出しを出す
+//    値段はバーの close (実体ブレイク基準) — 実約定は次バー始値だがほぼ同値
+// =====================================================================================
+grp_lbl  = "▼ エントリー値段ラベル"
+show_entry_label    = input.bool(true, "エントリー値段を吹き出しで表示", group=grp_lbl)
+entry_label_size    = input.string("normal", "ラベルサイズ", options=["tiny","small","normal","large"], group=grp_lbl)
+entry_label_compact = input.bool(false, "コンパクト表示 (価格のみ)", group=grp_lbl)
+
+entry_size_val = switch entry_label_size
+    "tiny"  => size.tiny
+    "small" => size.small
+    "large" => size.large
+    => size.normal
+
+if show_entry_label and finalLong
+    txt_l = entry_label_compact ? str.tostring(close, format.mintick) : ("🟢 LONG\n@ " + str.tostring(close, format.mintick))
+    label.new(x=bar_index, y=low, text=txt_l,
+              xloc=xloc.bar_index, yloc=yloc.belowbar,
+              color=color.new(color.green, 0), textcolor=color.white,
+              style=label.style_label_up, size=entry_size_val,
+              tooltip="シグナル発火バーの close = " + str.tostring(close, format.mintick) +
+                      "\n突破した中期ライン = " + str.tostring(highLevel3m, format.mintick) +
+                      "\nATR(14) = " + str.tostring(atrVal, format.mintick) +
+                      "\n推奨 SL = " + str.tostring(close - use_sl_atr * atrVal, format.mintick) +
+                      "\n推奨 TP (RR " + str.tostring(tp_rr, "#.##") + ") = " + str.tostring(close + tp_rr * use_sl_atr * atrVal, format.mintick))
+
+if show_entry_label and finalShort
+    txt_s = entry_label_compact ? str.tostring(close, format.mintick) : ("🔴 SHORT\n@ " + str.tostring(close, format.mintick))
+    label.new(x=bar_index, y=high, text=txt_s,
+              xloc=xloc.bar_index, yloc=yloc.abovebar,
+              color=color.new(color.red, 0), textcolor=color.white,
+              style=label.style_label_down, size=entry_size_val,
+              tooltip="シグナル発火バーの close = " + str.tostring(close, format.mintick) +
+                      "\n突破した中期ライン = " + str.tostring(lowLevel3m, format.mintick) +
+                      "\nATR(14) = " + str.tostring(atrVal, format.mintick) +
+                      "\n推奨 SL = " + str.tostring(close + use_sl_atr * atrVal, format.mintick) +
+                      "\n推奨 TP (RR " + str.tostring(tp_rr, "#.##") + ") = " + str.tostring(close - tp_rr * use_sl_atr * atrVal, format.mintick))
+
 
 // =====================================================================================
 //  決済 (Exit) 可視化  ★ NEW (堅牢版) ★
