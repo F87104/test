@@ -1,7 +1,7 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-18-1400  決済ラベル堅牢化 (即時描画) ★★
+//  ★★ VERSION 2026-05-18-1405  ラベル重なり解消 (オフセット拡大 + テキスト整理) ★★
 //
 //  ▶ 1時間足 (H1) 専用に設計されています。
 //     他の時間足にチャートを切り替えると、画面中央に大きく
@@ -315,7 +315,7 @@ entry_size_val = switch entry_label_size
 if show_entry_label and finalLong
     txt_l = entry_label_compact ? str.tostring(close, format.mintick) : "🟢 LONG @ " + str.tostring(close, format.mintick)
     tip_l = "Long signal. close=" + str.tostring(close, format.mintick) + ", level=" + str.tostring(highLevel3m, format.mintick) + ", ATR=" + str.tostring(atrVal, format.mintick) + ", SL=" + str.tostring(close - use_sl_atr * atrVal, format.mintick) + ", TP=" + str.tostring(close + tp_rr * use_sl_atr * atrVal, format.mintick)
-    label.new(bar_index, low - atrVal * 0.5, txt_l,
+    label.new(bar_index, low - atrVal * 1.5, txt_l,
               xloc=xloc.bar_index, yloc=yloc.price,
               color=color.new(color.green, 0), textcolor=color.white,
               style=label.style_label_up, size=entry_size_val,
@@ -324,7 +324,7 @@ if show_entry_label and finalLong
 if show_entry_label and finalShort
     txt_s = entry_label_compact ? str.tostring(close, format.mintick) : "🔴 SHORT @ " + str.tostring(close, format.mintick)
     tip_s = "Short signal. close=" + str.tostring(close, format.mintick) + ", level=" + str.tostring(lowLevel3m, format.mintick) + ", ATR=" + str.tostring(atrVal, format.mintick) + ", SL=" + str.tostring(close + use_sl_atr * atrVal, format.mintick) + ", TP=" + str.tostring(close - tp_rr * use_sl_atr * atrVal, format.mintick)
-    label.new(bar_index, high + atrVal * 0.5, txt_s,
+    label.new(bar_index, high + atrVal * 1.5, txt_s,
               xloc=xloc.bar_index, yloc=yloc.price,
               color=color.new(color.red, 0), textcolor=color.white,
               style=label.style_label_down, size=entry_size_val,
@@ -358,13 +358,14 @@ last_trade_pnl   = trade_just_closed ? strategy.closedtrades.profit(strategy.clo
 last_was_win     = trade_just_closed and last_trade_pnl >  0
 last_was_loss    = trade_just_closed and last_trade_pnl <= 0
 
+// シンプルな ✕ マーカーのみ (text なし → ラベル重なり回避)
 plotshape(show_exit_shapes and last_was_win,  title="✕ WIN exit",  location=location.abovebar,
-          style=shape.xcross, color=color.new(color.lime, 0), size=size.large, text="WIN",  textcolor=color.white)
+          style=shape.xcross, color=color.new(color.lime, 0), size=size.small)
 plotshape(show_exit_shapes and last_was_loss, title="✕ LOSS exit", location=location.belowbar,
-          style=shape.xcross, color=color.new(color.red,  0), size=size.large, text="LOSS", textcolor=color.white)
+          style=shape.xcross, color=color.new(color.red,  0), size=size.small)
 
-// ★★ 決済確定の瞬間に「✕ WIN @ price」ラベルを直接描画 ★★
-//    for ループに頼らず、確実に描画するための堅牢実装
+// ★★ 決済確定の瞬間に価格付きラベルを描画 (即時) ★★
+// 重なり回避のため、WIN は高値より十分上、LOSS は安値より十分下にオフセット
 if trade_just_closed and strategy.closedtrades > 0
     _idx       = strategy.closedtrades - 1
     _exit_pr   = strategy.closedtrades.exit_price(_idx)
@@ -375,7 +376,10 @@ if trade_just_closed and strategy.closedtrades > 0
     _sign      = _pnl >= 0 ? "+$" : "-$"
     _text      = _result + " @ " + str.tostring(_exit_pr, format.mintick) +
                  "\n(" + _sign + str.tostring(math.abs(_pnl), "#.00") + ")"
-    label.new(bar_index, _exit_pr, _text,
+    // ATR の 2 倍分オフセットして他ラベルとの重なりを回避
+    _y_offset  = atrVal * 2.0
+    _label_y   = _is_win ? _exit_pr + _y_offset : _exit_pr - _y_offset
+    label.new(bar_index, _label_y, _text,
               xloc=xloc.bar_index, yloc=yloc.price,
               color=_col, textcolor=color.white,
               style=_is_win ? label.style_label_down : label.style_label_up,
@@ -500,7 +504,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1400", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1405", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset,          text_size=size.small)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
