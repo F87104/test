@@ -93,6 +93,75 @@ def _classify_session(hour_utc: int) -> str:
 
 
 # ---------------------------------------------------------------------------
+def _apply_pretrade_filters(
+    *,
+    df: pd.DataFrame,
+    out_df: pd.DataFrame,
+    long_arr: np.ndarray,
+    short_arr: np.ndarray,
+    atr_series: np.ndarray,
+    backtest_cfg: BacktestConfig,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Mask out signals that fail any of the enabled pre-trade filters."""
+    long_arr = long_arr.copy()
+    short_arr = short_arr.copy()
+    n = len(long_arr)
+
+    # ---- 1) Session filter ---------------------------------------------
+    # We filter on the *entry* bar's session, not the signal bar's, so that
+    # ``trade.session`` always matches the user's filter.  With the default
+    # entry_fill='next_open', entry is at bar t+1, so we shift the mask by -1.
+    if backtest_cfg.session_filter:
+        allowed = {s.lower() for s in backtest_cfg.session_filter}
+        sessions = np.array(
+            [_classify_session(t.hour) for t in df.index], dtype=object
+        )
+        in_allowed = np.array([s in allowed for s in sessions])
+        if backtest_cfg.entry_fill == "next_open":
+            # signal at t → entry at t+1.  Shift mask backward by 1.
+            shifted = np.zeros_like(in_allowed)
+            shifted[:-1] = in_allowed[1:]
+            in_allowed = shifted
+        long_arr &= in_allowed
+        short_arr &= in_allowed
+
+    # ---- 2) Break-out margin filter (close - level) / ATR --------------
+    if backtest_cfg.min_breakout_margin_atr > 0:
+        close = df["close"].to_numpy(dtype=float)
+        h_lvl = out_df["highLevel" if backtest_cfg.level_kind != "mid"
+                       else "highLevel3m"].to_numpy(dtype=float)
+        l_lvl = out_df["lowLevel" if backtest_cfg.level_kind != "mid"
+                       else "lowLevel3m"].to_numpy(dtype=float)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            margin_long = (close - h_lvl) / np.where(atr_series > 0, atr_series, np.nan)
+            margin_short = (l_lvl - close) / np.where(atr_series > 0, atr_series, np.nan)
+        long_arr &= np.nan_to_num(margin_long, nan=-1.0) >= backtest_cfg.min_breakout_margin_atr
+        short_arr &= np.nan_to_num(margin_short, nan=-1.0) >= backtest_cfg.min_breakout_margin_atr
+
+    # ---- 3) Body-strength filter |close-open|/(high-low) ---------------
+    if backtest_cfg.min_body_strength > 0:
+        body = (df["close"] - df["open"]).abs()
+        rng = (df["high"] - df["low"]).clip(lower=1e-12)
+        strength = (body / rng).to_numpy()
+        ok = strength >= backtest_cfg.min_body_strength
+        long_arr &= ok
+        short_arr &= ok
+
+    # ---- 4) Volatility regime filter -----------------------------------
+    if backtest_cfg.atr_pct_band is not None:
+        lo, hi = backtest_cfg.atr_pct_band
+        s = pd.Series(atr_series)
+        rank = s.rank(pct=True).to_numpy()
+        # NaNs (warm-up) → False
+        rank_safe = np.nan_to_num(rank, nan=-1.0)
+        ok = (rank_safe >= lo) & (rank_safe <= hi)
+        long_arr &= ok
+        short_arr &= ok
+
+    return long_arr, short_arr
+
+
+# ---------------------------------------------------------------------------
 def _signal_series(
     res: IndicatorResult, level_kind: str, direction: str
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -144,6 +213,16 @@ def run_backtest(
     )
     atr_series = atr(df, period=backtest_cfg.atr_period).to_numpy()
 
+    # ---- Precompute pre-trade filter masks -----------------------------
+    long_arr, short_arr = _apply_pretrade_filters(
+        df=df,
+        out_df=out_df,
+        long_arr=long_arr,
+        short_arr=short_arr,
+        atr_series=atr_series,
+        backtest_cfg=backtest_cfg,
+    )
+
     high = df["high"].to_numpy(dtype=float)
     low = df["low"].to_numpy(dtype=float)
     close = df["close"].to_numpy(dtype=float)
@@ -178,11 +257,45 @@ def run_backtest(
         backtest_cfg.direction,
     )
 
+    # Trailing stop running state -- reset on every entry
+    pos_max_favourable = 0.0  # tracks high (long) / low (short) since entry
+
     for t in range(n):
         # ---------- Manage open position FIRST (use current bar's H/L) ----
         if in_pos and t > pos_entry_idx:
             bar_high = high[t]
             bar_low = low[t]
+
+            # ---- Break-even move: once price travels +R in our favour,
+            #      shift SL to entry (lock in zero loss).
+            if backtest_cfg.breakeven_at_r > 0 and pos_risk_money > 0:
+                if pos_dir == 1:
+                    favourable = bar_high - pos_entry_price
+                else:
+                    favourable = pos_entry_price - bar_low
+                r_travelled = favourable / max(abs(pos_entry_price - pos_sl), 1e-12)
+                if r_travelled >= backtest_cfg.breakeven_at_r:
+                    new_sl = pos_entry_price
+                    if pos_dir == 1 and new_sl > pos_sl:
+                        pos_sl = new_sl
+                    elif pos_dir == -1 and new_sl < pos_sl:
+                        pos_sl = new_sl
+
+            # ---- ATR trailing stop: trail SL from the max-favourable price
+            if backtest_cfg.trailing_atr_mult > 0:
+                atr_t = atr_series[t]
+                if not np.isnan(atr_t) and atr_t > 0:
+                    if pos_dir == 1:
+                        pos_max_favourable = max(pos_max_favourable, bar_high)
+                        new_sl = pos_max_favourable - backtest_cfg.trailing_atr_mult * atr_t
+                        if new_sl > pos_sl:
+                            pos_sl = new_sl
+                    else:
+                        pos_max_favourable = min(pos_max_favourable, bar_low)
+                        new_sl = pos_max_favourable + backtest_cfg.trailing_atr_mult * atr_t
+                        if new_sl < pos_sl:
+                            pos_sl = new_sl
+
             exit_price: Optional[float] = None
             exit_reason = ""
             if pos_dir == 1:
@@ -258,6 +371,7 @@ def run_backtest(
                 entry_price=pos_entry_price,
                 sl=pos_sl,
             )
+            pos_max_favourable = pos_entry_price
             in_pos = True
             pending_signal = None
 

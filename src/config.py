@@ -97,6 +97,34 @@ class BacktestConfig:
     initial_equity: float = 10_000.0
     risk_per_trade_pct: float = 1.0  # % of equity risked on each trade
 
+    # ------------------------------------------------------------------
+    # Optional strategy enhancements (disabled by default = "vanilla")
+    # ------------------------------------------------------------------
+    # Session filter: only trade when entry bar's UTC hour falls in one of
+    # the listed sessions.  None / empty = no filter.
+    session_filter: Optional[tuple[str, ...]] = None  # e.g. ("asia","ny")
+
+    # Breakout-strength pre-filter: require the signal bar's close to clear
+    # the broken level by at least this many ATRs.  0.0 disables.
+    min_breakout_margin_atr: float = 0.0
+
+    # Body-strength pre-filter: require |close-open| / (high-low) >= ratio.
+    # 0.0 disables.
+    min_body_strength: float = 0.0
+
+    # Volatility regime filter: skip trades whose ATR percentile (across the
+    # full series) is outside [low, high].  None = no filter.
+    atr_pct_band: Optional[tuple[float, float]] = None  # e.g. (0.0, 0.66)
+
+    # Move stop-loss to break-even when price has travelled this many R in
+    # favour.  0.0 disables.
+    breakeven_at_r: float = 0.0
+
+    # ATR trailing stop: after entry, dynamically trail SL by N × ATR from
+    # the most favourable price.  0.0 disables.  When trailing is active and
+    # ``tp_mode == 'none'`` you'll let winners run until the trail is hit.
+    trailing_atr_mult: float = 0.0
+
     def validate(self) -> None:
         if self.sl_atr_mult <= 0:
             raise ValueError("[ERR-PARAM] sl_atr_mult must be > 0")

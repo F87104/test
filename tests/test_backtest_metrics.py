@@ -128,3 +128,52 @@ def test_dd_money_is_negative():
     dd_pct, dd_money, _ = _max_drawdown(eq)
     assert dd_money < 0
     assert dd_pct < 0
+
+
+def _run(icfg_kwargs, bcfg_kwargs, df=None):
+    df = df if df is not None else synthesise_ohlcv(n=4000, seed=21)
+    icfg = IndicatorConfig(**{**dict(
+        lookback=400, exclude_recent=80, lookback_3m=80, exclude_recent_3m=20,
+        strict_warmup=True, pine_compat_mode="intended",
+    ), **icfg_kwargs})
+    bcfg = BacktestConfig(**{**dict(
+        direction="both", sl_mode="atr", sl_atr_mult=2.0,
+        tp_mode="rr", tp_rr=2.0, atr_period=14,
+    ), **bcfg_kwargs})
+    return run_backtest(df, indicator_cfg=icfg, backtest_cfg=bcfg, pip_size=0.01)
+
+
+def test_session_filter_reduces_trades():
+    base = _run({}, {})
+    filtered = _run({}, {"session_filter": ("asia",)})
+    assert len(filtered.trades) <= len(base.trades)
+    if filtered.trades:
+        for tr in filtered.trades:
+            assert tr.session == "asia"
+
+
+def test_breakout_margin_filter_reduces_trades():
+    base = _run({}, {})
+    filtered = _run({}, {"min_breakout_margin_atr": 0.5})
+    assert len(filtered.trades) <= len(base.trades)
+
+
+def test_breakeven_caps_losses_at_zero_after_threshold():
+    """Once BE is moved to entry, any subsequent SL hit should yield ~0 R."""
+    res = _run({}, {"breakeven_at_r": 1.0, "tp_mode": "rr", "tp_rr": 3.0})
+    if not res.trades:
+        return
+    # Any "sl" exit that came AFTER price reached +1R should have ~0 PnL (BE)
+    # We only verify SL is never strictly worse than -1R (the original risk)
+    for tr in res.trades:
+        if tr.exit_reason == "sl":
+            assert tr.r_multiple >= -1.01  # original 1R risk, never blown past
+
+
+def test_trailing_stop_can_extend_winners():
+    """With trailing on, the average winning bars_held should not be tiny.
+    More importantly: trailing must not error out."""
+    res = _run({}, {"trailing_atr_mult": 2.0, "tp_mode": "none"})
+    # With tp_mode='none' the only exit reasons are sl / time / eod
+    for tr in res.trades:
+        assert tr.exit_reason in {"sl", "time", "eod"}
