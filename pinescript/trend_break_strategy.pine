@@ -37,7 +37,10 @@ strategy(
      commission_value  = 0.0,
      slippage          = 0,
      process_orders_on_close = false,
-     calc_on_every_tick      = false
+     calc_on_every_tick      = false,
+     max_lines_count         = 500,
+     max_labels_count        = 500,
+     max_bars_back           = 5000
  )
 
 
@@ -250,7 +253,7 @@ if strategy.position_size == 0
 
 
 // =====================================================================================
-//  プロット (Pine 原版を継承 + 戦略的視覚化)
+//  プロット (Pine 原版 + 戦略的視覚化 + 決済可視化)
 // =====================================================================================
 // ラインの表示 (style_linebr で「未ブレイク区間のみ」描画される)
 plot(plot_long_level ? highLevel : na, title="長期 高値ライン", color=color.new(color.green,  0), linewidth=2, style=show_levels_only_when_unbroken ? plot.style_linebr : plot.style_line)
@@ -259,13 +262,75 @@ plot(plot_mid_level  ? highLevel3m : na, title="中期 高値ライン", color=c
 plot(plot_mid_level  ? lowLevel3m  : na, title="中期 安値ライン", color=color.new(color.fuchsia, 0), linewidth=2, style=show_levels_only_when_unbroken ? plot.style_linebr : plot.style_line)
 plot(plot_mid_median ? midMedian3m : na, title="中期 中央値ライン", color=color.new(#2195f3, 0), linewidth=1, style=plot.style_line)
 
-// シグナル発火マーカー
+// シグナル発火マーカー (=エントリー候補。実約定は次バー始値)
 plotshape(finalLong,  title="LONG signal",  location=location.belowbar, style=shape.triangleup,   color=color.new(color.green, 0), size=size.small)
 plotshape(finalShort, title="SHORT signal", location=location.abovebar, style=shape.triangledown, color=color.new(color.red,   0), size=size.small)
 
 // 背景塗り潰し (シグナル発火バー)
 bgcolor(finalLong  ? color.new(color.green, 85) : na, title="LONG bg")
 bgcolor(finalShort ? color.new(color.red,   85) : na, title="SHORT bg")
+
+
+// =====================================================================================
+//  決済 (Exit) 可視化  ★ NEW ★
+//    全クローズ済みトレードについて:
+//      - エントリーから決済へ「線」を引く (勝ち=緑実線 / 負け=赤実線)
+//      - 決済点に ✕ ラベル + 損益 % を表示
+//      - 直近 max_trades_drawn 件だけを描画 (チャート過密防止)
+//    保有中ポジションは:
+//      - エントリー価格に水平の「SL」「TP」線を一時描画
+// =====================================================================================
+grp_exit  = "▼ 決済可視化"
+show_exit_visuals = input.bool(true, "決済位置をチャートに描画 (推奨)", group=grp_exit)
+max_trades_drawn  = input.int(80, "過去何件まで描画するか", minval=1, maxval=500, group=grp_exit)
+show_pnl_label    = input.bool(true, "決済点に損益 % を表示", group=grp_exit)
+show_open_sl_tp   = input.bool(true, "保有中ポジの SL/TP 水平線を表示", group=grp_exit)
+
+if show_exit_visuals and barstate.islast
+    // ---- 全クローズ済みトレードに「エントリー→決済」線を引く ----
+    total_closed = strategy.closedtrades
+    start_i = math.max(0, total_closed - max_trades_drawn)
+    for i = start_i to total_closed - 1
+        ent_bar  = strategy.closedtrades.entry_bar_index(i)
+        ent_pr   = strategy.closedtrades.entry_price(i)
+        ext_bar  = strategy.closedtrades.exit_bar_index(i)
+        ext_pr   = strategy.closedtrades.exit_price(i)
+        pnl_money = strategy.closedtrades.profit(i)
+        is_win    = pnl_money > 0
+        col       = is_win ? color.new(color.green, 0) : color.new(color.red, 0)
+
+        // エントリー位置に小さな丸 (= 約定位置)
+        label.new(x=ent_bar, y=ent_pr, text="●",
+                  xloc=xloc.bar_index, yloc=yloc.price,
+                  color=color.new(color.aqua, 0), textcolor=color.white,
+                  style=label.style_label_center, size=size.tiny)
+
+        // エントリー → 決済 を結ぶライン (勝ち=緑実線 / 負け=赤実線)
+        line.new(x1=ent_bar, y1=ent_pr, x2=ext_bar, y2=ext_pr,
+                 xloc=xloc.bar_index, color=col, width=2, style=line.style_solid)
+
+        // 決済点に ✕ マーカー
+        label.new(x=ext_bar, y=ext_pr, text="✕",
+                  xloc=xloc.bar_index, yloc=yloc.price,
+                  color=col, textcolor=color.white,
+                  style=label.style_label_center, size=size.small)
+
+        if show_pnl_label
+            sign_str = pnl_money >= 0 ? "+$" : "-$"
+            txt = sign_str + str.tostring(math.abs(pnl_money), "#.00")
+            label.new(x=ext_bar, y=ext_pr, text=txt,
+                      xloc=xloc.bar_index, yloc=yloc.price,
+                      color=color.new(col, 70), textcolor=color.white,
+                      style=is_win ? label.style_label_down : label.style_label_up,
+                      size=size.tiny)
+
+// ---- 保有中ポジションの SL/TP 水平線 ----
+plot(show_open_sl_tp and strategy.position_size != 0 ? locked_sl : na,
+     title="現ポジ SL", color=color.new(color.red, 0), linewidth=2, style=plot.style_linebr)
+plot(show_open_sl_tp and strategy.position_size != 0 ? locked_tp : na,
+     title="現ポジ TP", color=color.new(color.green, 0), linewidth=2, style=plot.style_linebr)
+plot(show_open_sl_tp and strategy.position_size != 0 ? strategy.position_avg_price : na,
+     title="現ポジ エントリー", color=color.new(color.aqua, 0), linewidth=1, style=plot.style_linebr)
 
 
 // =====================================================================================
