@@ -126,6 +126,30 @@ def test_symbol_inference_user_googledrive_patterns(tmp_path):
     assert infer_pip_size("GOLD") == 0.1     # alias resolves to XAUUSD
 
 
+def test_load_csvs_drops_timeframe_outliers(tmp_path):
+    """Mixed-timeframe defence: an M1 file accidentally dropped into an H1
+    archive must be auto-detected and excluded."""
+    from src.data_loader import load_csvs, synthesise_ohlcv
+
+    # 3 H1 files (~6,000 rows each, 1 year of H1)
+    h1_files = []
+    for year in range(2014, 2017):
+        df = synthesise_ohlcv(n=6000, seed=year, start=f"{year}-01-01")
+        p = tmp_path / f"H1_{year}.csv"
+        df.reset_index().rename(columns={"index": "datetime"}).to_csv(p, index=False)
+        h1_files.append(p)
+    # 1 M1 file (~525k rows, mislabelled as H1)
+    df_m1 = synthesise_ohlcv(n=300_000, seed=99, start="2013-01-01", freq="1min")
+    p_m1 = tmp_path / "H1_2013_oops_actually_M1.csv"
+    df_m1.reset_index().rename(columns={"index": "datetime"}).to_csv(p_m1, index=False)
+
+    merged, reports = load_csvs([p_m1, *h1_files])
+    # 3 kept, 1 dropped
+    assert len(reports) == 3
+    # Merged span shouldn't include the M1 file (2013)
+    assert merged.index[0].year >= 2014
+
+
 def test_load_mt4_mt5_export(tmp_path):
     """MetaTrader/MetaQuotes style export with <TICKER>,<DTYYYYMMDD>,<TIME>."""
     csv = (

@@ -409,6 +409,8 @@ def load_csvs(
     paths: Iterable[str | Path],
     *,
     timezone: Optional[str] = None,
+    drop_timeframe_outliers: bool = True,
+    outlier_factor: float = 3.0,
 ) -> tuple[pd.DataFrame, list[LoadReport]]:
     """Load several CSV files and return one chronologically sorted dataframe.
 
@@ -417,24 +419,62 @@ def load_csvs(
 
     Returns ``(merged_df, per_file_reports)``.  Duplicate timestamps (same
     bar reported in two files) are deduplicated, keeping the **last** value.
+
+    When ``drop_timeframe_outliers=True`` (default), any file whose bar
+    density (rows per day) is more than ``outlier_factor`` × the median
+    density across the loaded set is **excluded** with a warning.  This
+    catches accidentally-mixed timeframes (e.g. an M1 file dropped into an
+    H1 archive) before they corrupt the indicator.
     """
-    frames: list[pd.DataFrame] = []
-    reports: list[LoadReport] = []
+    path_list = list(paths)
+    raw: list[tuple[Path, pd.DataFrame, LoadReport]] = []
     bad: list[tuple[str, Exception]] = []
-    for p in paths:
+    for p in path_list:
         try:
             df, rpt = load_csv(p, timezone=timezone, sort=False, drop_duplicates=False)
-            frames.append(df)
-            reports.append(rpt)
+            raw.append((Path(p), df, rpt))
         except Exception as exc:  # noqa: BLE001
             bad.append((str(p), exc))
             log.error("[ERR-IO] failed to load %s: %s", p, exc)
-    if not frames:
+    if not raw:
         raise ValueError(
-            f"[ERR-DATA] no usable CSVs out of {len(list(paths))}: " + "; ".join(
+            f"[ERR-DATA] no usable CSVs out of {len(path_list)}: " + "; ".join(
                 f"{p}: {e}" for p, e in bad
             )
         )
+
+    # ---- Timeframe-outlier detection ---------------------------------
+    if drop_timeframe_outliers and len(raw) >= 3:
+        densities = []
+        for _, df, _ in raw:
+            span_days = max(
+                (df.index[-1] - df.index[0]).total_seconds() / 86400.0, 1e-6
+            )
+            densities.append(len(df) / span_days)
+        densities_arr = np.asarray(densities)
+        median = float(np.median(densities_arr))
+        if median > 0:
+            kept_raw = []
+            kept_reports: list[LoadReport] = []
+            for (p, df, rpt), d in zip(raw, densities_arr):
+                ratio = d / median if median else 1.0
+                if ratio > outlier_factor or ratio < 1.0 / outlier_factor:
+                    log.warning(
+                        "[WARN] dropping timeframe outlier: %s  "
+                        "(%.1f bars/day vs median %.1f, ratio=%.2fx)",
+                        p, d, median, ratio,
+                    )
+                    continue
+                kept_raw.append((p, df, rpt))
+                kept_reports.append(rpt)
+            raw = kept_raw
+            if not raw:
+                raise ValueError(
+                    "[ERR-DATA] all files were rejected as timeframe outliers"
+                )
+
+    frames = [df for _, df, _ in raw]
+    reports = [rpt for _, _, rpt in raw]
     merged = pd.concat(frames, axis=0)
     merged = merged[~merged.index.duplicated(keep="last")].sort_index()
     log.info(

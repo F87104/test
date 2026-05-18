@@ -19,10 +19,26 @@ from src.data_loader import infer_pip_size
 
 
 # These winners were found by scripts/optimize_best.py
+def _files(folder: str) -> list[Path]:
+    return sorted(Path(folder).rglob("*.csv"))
+
+
 WINNERS = {
+    "XAUUSD": {
+        "folder": "data/XAUUSD2014-2024",
+        "files":  _files("data/XAUUSD2014-2024"),
+        "params": dict(
+            level_kind="mid", lookback_3m=480, exclude_recent_3m=120,
+            lookback=5000, exclude_recent=760,
+            tp_rr=3.0, sl_atr_mult=2.0,
+            session_filter=None,
+            min_breakout_margin_atr=0.0,
+            breakeven_at_r=0.0, trailing_atr_mult=0.0,
+        ),
+    },
     "XAGUSD": {
         "folder": "data/SILVER2014-2024",
-        "files":  sorted(Path("data/SILVER2014-2024").glob("*.csv")),
+        "files":  _files("data/SILVER2014-2024"),
         "params": dict(
             level_kind="mid", lookback_3m=360, exclude_recent_3m=180,
             lookback=5000, exclude_recent=760,
@@ -32,15 +48,39 @@ WINNERS = {
             breakeven_at_r=0.0, trailing_atr_mult=0.0,
         ),
     },
-    "XAUUSD": {
-        "folder": "data/XAUUSD2014-2024",
-        "files":  sorted(Path("data/XAUUSD2014-2024").glob("*.csv")),
+    "GBPJPY": {
+        "folder": "data/GBYJPY2014-2024",
+        "files":  _files("data/GBYJPY2014-2024"),
         "params": dict(
-            level_kind="mid", lookback_3m=480, exclude_recent_3m=120,
+            level_kind="mid", lookback_3m=360, exclude_recent_3m=180,
+            lookback=5000, exclude_recent=760,
+            tp_rr=3.0, sl_atr_mult=2.5,
+            session_filter=("asia", "ny"),
+            min_breakout_margin_atr=0.0,
+            breakeven_at_r=0.0, trailing_atr_mult=0.0,
+        ),
+    },
+    "USDJPY": {
+        "folder": "data/USDJPY2014-2024",
+        "files":  _files("data/USDJPY2014-2024"),
+        "params": dict(
+            level_kind="mid", lookback_3m=480, exclude_recent_3m=180,
             lookback=5000, exclude_recent=760,
             tp_rr=3.0, sl_atr_mult=2.0,
-            session_filter=None,
+            session_filter=("asia", "ny"),
             min_breakout_margin_atr=0.0,
+            breakeven_at_r=0.0, trailing_atr_mult=0.0,
+        ),
+    },
+    "EURJPY": {
+        "folder": "data/EURJPY2014-2024",
+        "files":  _files("data/EURJPY2014-2024"),
+        "params": dict(
+            level_kind="mid", lookback_3m=360, exclude_recent_3m=60,
+            lookback=5000, exclude_recent=760,
+            tp_rr=3.0, sl_atr_mult=2.5,
+            session_filter=None,
+            min_breakout_margin_atr=0.5,
             breakeven_at_r=0.0, trailing_atr_mult=0.0,
         ),
     },
