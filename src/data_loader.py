@@ -63,17 +63,41 @@ def _normalise_columns(df: pd.DataFrame) -> pd.DataFrame:
     cols = {c: c.strip().lower() for c in df.columns}
     df = df.rename(columns=cols)
     df = df.rename(columns={k: v for k, v in PRICE_ALIASES.items() if k in df.columns})
-    if "datetime" not in df.columns:
-        for cand in DATETIME_CANDIDATES:
-            cand_l = cand.lower()
-            if cand_l in df.columns:
-                df = df.rename(columns={cand_l: "datetime"})
-                break
-        else:
-            # Fallback: combine separate <DATE>/<TIME> columns if present
-            if "<date>" in df.columns and "<time>" in df.columns:
-                df["datetime"] = df["<date>"].astype(str) + " " + df["<time>"].astype(str)
-                df = df.drop(columns=["<date>", "<time>"])
+
+    # Drop bookkeeping columns that some MetaTrader/MetaQuotes exports add.
+    for junk in ("<ticker>", "ticker", "<symbol>", "symbol"):
+        if junk in df.columns and "datetime" not in df.columns:
+            df = df.drop(columns=[junk])
+
+    if "datetime" in df.columns:
+        return df
+
+    # 1) Preferred: a *combined* DATE + TIME pair (MT4/MT5 style export).
+    #    Try this BEFORE matching a lone "time"/"<time>" column because some
+    #    MetaQuotes dumps use "<TIME>" as the HHMM column, not a full timestamp.
+    date_col = next(
+        (c for c in df.columns if c in ("<date>", "<dtyyyymmdd>", "date")), None,
+    )
+    time_col = next(
+        (c for c in df.columns if c in ("<time>", "<thhmmss>", "time")), None,
+    )
+    if date_col is not None and time_col is not None:
+        d = df[date_col].astype(str).str.strip()
+        t = df[time_col].astype(str).str.strip().str.replace(":", "", regex=False)
+        t = t.str.replace(r"\.0+$", "", regex=True)
+        # length 1-4 → HHMM (pad to 4), length 5-6 → HHMMSS (pad to 6)
+        t = t.where(t.str.len() > 4, t.str.zfill(4))
+        t = t.where(t.str.len() != 5, t.str.zfill(6))
+        df["datetime"] = d + " " + t
+        df = df.drop(columns=[date_col, time_col])
+        return df
+
+    # 2) Otherwise look for a single self-contained datetime column.
+    for cand in DATETIME_CANDIDATES:
+        cand_l = cand.lower()
+        if cand_l in df.columns:
+            df = df.rename(columns={cand_l: "datetime"})
+            break
     return df
 
 
@@ -109,6 +133,7 @@ def _parse_datetime(series: pd.Series) -> tuple[pd.Series, str]:
             "%Y/%m/%d %H:%M:%S",
             "%Y/%m/%d %H:%M",
             "%Y%m%d %H%M%S",
+            "%Y%m%d %H%M",         # MT4/MT5 combined: 20140101 2100
             "%Y-%m-%d",
             "%Y/%m/%d",
         ):

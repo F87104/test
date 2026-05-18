@@ -126,6 +126,27 @@ def test_symbol_inference_user_googledrive_patterns(tmp_path):
     assert infer_pip_size("GOLD") == 0.1     # alias resolves to XAUUSD
 
 
+def test_load_mt4_mt5_export(tmp_path):
+    """MetaTrader/MetaQuotes style export with <TICKER>,<DTYYYYMMDD>,<TIME>."""
+    csv = (
+        "<TICKER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n"
+        "XAGUSD,20140101,2100,19.426,19.430,19.420,19.426,20000\n"
+        "XAGUSD,20140102,0,19.500,19.530,19.480,19.520,7360000\n"   # HHMM=0 → 00:00
+        "XAGUSD,20140102,100,19.510,19.540,19.490,19.530,5640000\n"  # HHMM=100 → 01:00
+        "XAGUSD,20140102,2300,19.520,19.540,19.500,19.530,2300000\n"
+    )
+    p = tmp_path / "SILVER_H1_2014.csv"
+    p.write_text(csv, encoding="utf-8")
+    df, rpt = load_csv(p)
+    assert len(df) == 4
+    assert df.index[0].year == 2014
+    assert df.index[0].hour == 21
+    assert df.index[1].hour == 0    # "0"  → 00:00
+    assert df.index[2].hour == 1    # "100"→ 01:00
+    assert df.index[3].hour == 23   # "2300"→ 23:00
+    assert "open" in df.columns and "volume" in df.columns
+
+
 def test_synthesise_ohlcv_shape():
     df = synthesise_ohlcv(n=200, seed=1)
     assert len(df) == 200
