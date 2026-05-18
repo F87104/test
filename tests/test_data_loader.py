@@ -97,6 +97,35 @@ def test_symbol_and_pip_inference():
     assert infer_pip_size("NAS100") == 1.0
 
 
+def test_symbol_inference_user_googledrive_patterns(tmp_path):
+    """All symbol-name shapes the user has in their archive must resolve."""
+    # 1) Year-range glued to symbol (top-level CSV)
+    assert infer_symbol("data/EURJPY2014-2024.csv") == "EURJPY"
+    assert infer_symbol("data/USDJPY2014-2024.csv") == "USDJPY"
+    assert infer_symbol("data/XAUUSD2014-2024.csv") == "XAUUSD"
+    # 2) "GBY" typo for "GBP"
+    assert infer_symbol("data/GBYJPY2014-2024.csv") == "GBPJPY"
+    assert infer_symbol("data/GBYNZD2014-2024.csv") == "GBPNZD"
+    # 3) SILVER alias for XAGUSD
+    assert infer_symbol("data/SILVER2014-2024/silver_h1.csv") == "XAGUSD"
+    # 4) Spaces + timeframe + year in the filename
+    assert infer_symbol("data/GBY JPY H4 2024.csv") == "GBPJPY"
+    # 5) Symbol on parent folder, generic name on file
+    p = tmp_path / "EURJPY2014-2024" / "EURJPY_H1.csv"
+    p.parent.mkdir()
+    p.write_text("x")
+    assert infer_symbol(p) == "EURJPY"
+
+    # pip sizes for the cross-JPY set + GBPNZD + SILVER
+    for sym in ("EURJPY", "USDJPY", "AUDJPY", "CHFJPY", "GBPJPY", "NZDJPY"):
+        assert infer_pip_size(sym) == 0.01
+    assert infer_pip_size("GBPNZD") == 0.0001
+    assert infer_pip_size("NZDUSD") == 0.0001
+    assert infer_pip_size("EURUSD") == 0.0001
+    assert infer_pip_size("SILVER") == 0.01  # alias resolves to XAGUSD
+    assert infer_pip_size("GOLD") == 0.1     # alias resolves to XAUUSD
+
+
 def test_synthesise_ohlcv_shape():
     df = synthesise_ohlcv(n=200, seed=1)
     assert len(df) == 200

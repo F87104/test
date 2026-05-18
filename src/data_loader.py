@@ -7,6 +7,7 @@ seconds/milliseconds — all detected automatically.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Mapping, Optional
@@ -231,24 +232,113 @@ def load_csv(
 
 
 # ---------------------------------------------------------------------------
-def infer_symbol(path: str | Path) -> str:
-    """Best-effort symbol inference from filename.
+# ---------------------------------------------------------------------------
+# Symbol inference + normalisation
+# ---------------------------------------------------------------------------
+# Common aliases / known typos the user has in their archive ("GBY" instead
+# of "GBP", "SILVER" for XAGUSD, "GOLD" for XAUUSD, MT4 micro suffixes…)
+_SYMBOL_ALIASES: Mapping[str, str] = {
+    "GBY": "GBP",
+    "GBYJPY": "GBPJPY",
+    "GBYNZD": "GBPNZD",
+    "GBYUSD": "GBPUSD",
+    "SILVER": "XAGUSD",
+    "GOLD": "XAUUSD",
+    "XBT": "BTCUSD",
+    "XBTUSD": "BTCUSD",
+    "NAS": "NAS100",
+    "NDX": "NAS100",
+    "US100": "NAS100",
+    "USNAS100": "NAS100",
+}
 
-    Examples
-    --------
-    ``XAUUSD_H1_2014-2024.csv`` → ``XAUUSD``
-    ``btc-1h.csv``              → ``BTC``
+# Tokens that frequently appear in filenames but are not part of the symbol
+_NOISE_TOKENS = {
+    "DATA", "HISTORICAL", "HISTORY", "OHLC", "BARS",
+    "TICK", "MINUTE", "HOURLY", "DAILY",
+}
+
+_TIMEFRAME_RE = re.compile(
+    r"^(?:M1|M5|M15|M30|H1|H4|D1|W1|MN|1M|5M|15M|30M|60M|240M|1H|2H|4H|1D|1W|1MO|1MIN|5MIN|15MIN|30MIN|60MIN)$",
+    re.IGNORECASE,
+)
+
+
+def _clean_symbol_token(token: str) -> str:
+    s = re.sub(r"[^A-Za-z0-9]", "", token).upper()
+    return _SYMBOL_ALIASES.get(s, s)
+
+
+def infer_symbol(path: str | Path) -> str:
+    """Best-effort symbol inference from a path.
+
+    Handles the patterns observed in the user's Google Drive history dump:
+
+    - ``EURJPY2014-2024/EURJPY_H1.csv``   → ``EURJPY``
+    - ``SILVER2014-2024/silver_h4.csv``   → ``XAGUSD``   (SILVER alias)
+    - ``GBY JPY H4 2024.csv``             → ``GBPJPY``   (typo + spaces + TF)
+    - ``GBYNZD2014-2024.csv``             → ``GBPNZD``
+    - ``XAUUSD_H1_2014-2024.csv``         → ``XAUUSD``
+    - ``btc-1h.csv``                      → ``BTCUSD``
     """
-    stem = Path(path).stem
-    parts = [p for p in stem.replace("-", "_").split("_") if p]
+    p = Path(path)
+    parts = list(p.parents)[:3]  # check up to 3 parent folders for hints
+    candidates: list[str] = []
+
+    # 1) The stem itself
+    stem = p.stem
+    candidates.append(stem)
+
+    # 2) Any parent folder that "looks like" a symbol folder
+    for parent in parts:
+        candidates.append(parent.name)
+
+    for cand in candidates:
+        sym = _symbol_from_token(cand)
+        if sym and sym != "UNKNOWN":
+            return sym
+    return "UNKNOWN"
+
+
+_YEAR_RANGE_RE = re.compile(r"(19|20)\d{2}\s*[-_]\s*(19|20)?\d{2}")
+_SINGLE_YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
+
+
+def _symbol_from_token(token: str) -> str:
+    if not token:
+        return "UNKNOWN"
+    # Strip year ranges & single years: "EURJPY2014-2024" → "EURJPY"
+    t = _YEAR_RANGE_RE.sub(" ", token)
+    t = _SINGLE_YEAR_RE.sub(" ", t)
+    # Split on any non-alnum then drop noise / timeframe tokens
+    raw_parts = re.split(r"[^A-Za-z0-9]+", t)
+    parts = [
+        x.upper() for x in raw_parts
+        if x and x.upper() not in _NOISE_TOKENS and not _TIMEFRAME_RE.match(x)
+    ]
     if not parts:
         return "UNKNOWN"
-    return parts[0].upper()
+
+    joined = "".join(parts)
+    # Try alias map on whole string first
+    if joined in _SYMBOL_ALIASES:
+        return _SYMBOL_ALIASES[joined]
+    # "GBY JPY" → ["GBY", "JPY"] → "GBYJPY" → alias to "GBPJPY"
+    if len(parts) >= 2:
+        pair2 = (parts[0] + parts[1]).upper()
+        if pair2 in _SYMBOL_ALIASES:
+            return _SYMBOL_ALIASES[pair2]
+        if len(pair2) in (6, 7, 8) and pair2.isalpha():
+            return _clean_symbol_token(pair2)
+    head = parts[0]
+    if head in _SYMBOL_ALIASES:
+        return _SYMBOL_ALIASES[head]
+    return _clean_symbol_token(head)
 
 
 def infer_pip_size(symbol: str) -> float:
     """Return a reasonable pip size for the symbol family."""
-    s = symbol.upper()
+    s = _clean_symbol_token(symbol)
     if "JPY" in s:
         return 0.01
     if s.startswith(("XAU", "GOLD")):
@@ -259,7 +349,7 @@ def infer_pip_size(symbol: str) -> float:
         return 1.0
     if s in {"ETH", "ETHUSD", "ETHUSDT"}:
         return 0.1
-    if "NAS" in s or "NDX" in s or "SPX" in s or "DJI" in s:
+    if "NAS" in s or "NDX" in s or "SPX" in s or "DJI" in s or "US100" in s:
         return 1.0
     return 0.0001  # FX major
 

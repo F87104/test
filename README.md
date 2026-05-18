@@ -114,6 +114,25 @@ GUI: `tkinter` (標準ライブラリ + linux 別途)。
 
 ---
 
+## クラウド／リモート環境でのデータ受け渡し
+
+このプロジェクトは Cursor の Cloud Agent 環境（リモート Linux VM）でも動作しますが、
+その場合 **ローカル Mac の Google Drive (`/Users/.../マイドライブ/...`) には直接アクセスできません**。
+データは以下のいずれかでリポジトリの `data/` 以下に持ち込んでください：
+
+1. **ローカル Cursor からブランチをチェックアウト** → Google Drive のフォルダを `data/` にコピー → `git add data/ && git commit && git push`
+2. **ZIP でアップロード** — 1 個の zip を `data/` に置いて push（`--extract-zip` で自動展開）
+3. **公開 URL を提供** — GitHub Releases / S3 / Dropbox 公開リンク等から `wget` / `curl` で取得
+
+データが置かれれば、フォルダ階層・タイポ・タイムフレーム表記の揺らぎは
+自動で正規化されるので、以下の 1 行で全通貨検証が完了します：
+
+```bash
+python main.py --data-dir data/ --extract-zip
+```
+
+---
+
 ## 入力 CSV 形式
 
 ```
@@ -161,6 +180,26 @@ python main.py \
 
 ヒストリカルデータをまとめてフォルダ単位で投入する場合、`--data-dir` 一発で再帰的に
 **全 CSV を発見 → 個別バックテスト → クロスシンボル比較表** までを自動で行います。
+
+#### サポートされる命名パターン（自動正規化）
+
+ユーザーのアーカイブで実際に観測されるノイズも自動で吸収します：
+
+| ファイル名 / フォルダ名 | 認識結果 |
+| --- | --- |
+| `EURJPY2014-2024/EURJPY_H1.csv` | `EURJPY` (pip=0.01) |
+| `XAUUSD_H1_2014-2024.csv` | `XAUUSD` (pip=0.1) |
+| `SILVER2014-2024/silver_h1.csv` | `XAGUSD` (SILVER エイリアス) |
+| `GBYJPY2014-2024.csv` | `GBPJPY` (GBY→GBP タイポ補正) |
+| `GBYNZD2014-2024.csv` | `GBPNZD` |
+| `GBY JPY H4 2024.csv` | `GBPJPY` (空白 + タイムフレーム + 単年除去) |
+| `「新しいフォルダー」/` (空) | スキップ |
+| `.DS_Store`, `Thumbs.db` | スキップ |
+
+JPY クロス (EURJPY/USDJPY/AUDJPY/CHFJPY/GBPJPY/NZDJPY) は pip=0.01、
+FX major (EURUSD/NZDUSD/GBPNZD ほか) は pip=0.0001、
+XAUUSD=0.1、XAGUSD=0.01、BTC=1、NAS100=1 を自動付与。
+ZIP も `--extract-zip` で展開してから走査します。
 
 ```bash
 # フォルダ内の全 CSV を再帰的に検証
@@ -259,7 +298,7 @@ lookback, exclude_recent, lookback_3m, exclude_recent_3m
 python -m pytest tests/ -v
 ```
 
-27 ケース全通過：
+29 ケース全通過：
 
 - Pine 完全等価（vectorised vs reference）
 - 未来データ参照禁止

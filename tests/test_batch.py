@@ -86,3 +86,31 @@ def test_run_batch_empty_dir_raises(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         run_batch(d, cfg)
+
+
+def test_discover_csvs_skips_empty_and_junk_folders(tmp_path):
+    """Reproduces the user's archive shape: real CSV folders + an empty
+    「新しいフォルダー」folder + macOS .DS_Store junk."""
+    d = tmp_path / "data"
+    d.mkdir()
+    # Real CSV inside a year-suffixed folder
+    sub_a = d / "EURJPY2014-2024"
+    sub_a.mkdir()
+    _write(sub_a, "EURJPY_H1.csv", 200, 1)
+    sub_b = d / "GBYNZD2014-2024"
+    sub_b.mkdir()
+    _write(sub_b, "gbpnzd_H4.csv", 200, 2)
+    # Empty placeholder folder – must be silently ignored
+    (d / "新しいフォルダー").mkdir()
+    # Mac junk file
+    (d / ".DS_Store").write_text("junk")
+
+    found = discover_csvs(d)
+    syms = sorted({_sym(p) for p in found})
+    assert syms == ["EURJPY", "GBPNZD"]
+
+
+def _sym(p):
+    from src.data_loader import infer_symbol
+
+    return infer_symbol(p)

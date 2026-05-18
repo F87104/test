@@ -186,20 +186,45 @@ def discover_csvs(
 
     By default also extracts any *.zip first (handy for archive dumps from
     brokers, Dukascopy, MT4 history exports, etc.).
+
+    Robustness:
+      * empty sub-folders (e.g. an unused 「新しいフォルダー」) are silently
+        ignored
+      * the output directory (``results``) is excluded automatically
+      * Mac/Windows junk files (``.DS_Store``, ``Thumbs.db``) are excluded
     """
     d = Path(data_dir)
     if not d.exists():
         raise FileNotFoundError(f"[ERR-IO] data directory not found: {d}")
     if extract_zip:
         _extract_zips(d)
+    JUNK = {".DS_Store", "Thumbs.db", "desktop.ini"}
     candidates = [
         p for p in d.glob(pattern)
-        if p.is_file() and p.suffix.lower() in _CSV_EXTS
+        if p.is_file()
+        and p.suffix.lower() in _CSV_EXTS
+        and p.name not in JUNK
+        and not p.name.startswith(".")
     ]
     # Drop our own outputs / sample files so we don't accidentally re-process them
     candidates = [p for p in candidates if "results" not in p.parts]
     candidates = sorted(set(candidates))
+    # Helpful debug listing: symbol + size
+    from .data_loader import infer_pip_size, infer_symbol  # avoid cycle
+
     log.info("discovered %d data file(s) under %s", len(candidates), d)
+    for p in candidates:
+        try:
+            sz_mb = p.stat().st_size / 1_000_000
+            log.info(
+                "  - %s  →  symbol=%s  pip=%g  size=%.2f MB",
+                p.relative_to(d),
+                infer_symbol(p),
+                infer_pip_size(infer_symbol(p)),
+                sz_mb,
+            )
+        except Exception:
+            pass
     return candidates
 
 
