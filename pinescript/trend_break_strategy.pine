@@ -1,6 +1,8 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy)
+//  ★★ VERSION 2026-05-18-1335  最新版確認用 ★★
+//  右上テーブルに同じバージョン文字列が出るので、出てなければキャッシュ古い
 //
 //  Python リポジトリ:  cursor/pine-script-trend-break-backtester-51bc
 //  対応 Python 設定:   configs/best_<SYMBOL>.json
@@ -287,28 +289,22 @@ entry_size_val = switch entry_label_size
     => size.normal
 
 if show_entry_label and finalLong
-    txt_l = entry_label_compact ? str.tostring(close, format.mintick) : ("🟢 LONG\n@ " + str.tostring(close, format.mintick))
-    label.new(x=bar_index, y=low, text=txt_l,
-              xloc=xloc.bar_index, yloc=yloc.belowbar,
+    txt_l = entry_label_compact ? str.tostring(close, format.mintick) : "🟢 LONG @ " + str.tostring(close, format.mintick)
+    tip_l = "Long signal. close=" + str.tostring(close, format.mintick) + ", level=" + str.tostring(highLevel3m, format.mintick) + ", ATR=" + str.tostring(atrVal, format.mintick) + ", SL=" + str.tostring(close - use_sl_atr * atrVal, format.mintick) + ", TP=" + str.tostring(close + tp_rr * use_sl_atr * atrVal, format.mintick)
+    label.new(bar_index, low - atrVal * 0.5, txt_l,
+              xloc=xloc.bar_index, yloc=yloc.price,
               color=color.new(color.green, 0), textcolor=color.white,
               style=label.style_label_up, size=entry_size_val,
-              tooltip="シグナル発火バーの close = " + str.tostring(close, format.mintick) +
-                      "\n突破した中期ライン = " + str.tostring(highLevel3m, format.mintick) +
-                      "\nATR(14) = " + str.tostring(atrVal, format.mintick) +
-                      "\n推奨 SL = " + str.tostring(close - use_sl_atr * atrVal, format.mintick) +
-                      "\n推奨 TP (RR " + str.tostring(tp_rr, "#.##") + ") = " + str.tostring(close + tp_rr * use_sl_atr * atrVal, format.mintick))
+              tooltip=tip_l)
 
 if show_entry_label and finalShort
-    txt_s = entry_label_compact ? str.tostring(close, format.mintick) : ("🔴 SHORT\n@ " + str.tostring(close, format.mintick))
-    label.new(x=bar_index, y=high, text=txt_s,
-              xloc=xloc.bar_index, yloc=yloc.abovebar,
+    txt_s = entry_label_compact ? str.tostring(close, format.mintick) : "🔴 SHORT @ " + str.tostring(close, format.mintick)
+    tip_s = "Short signal. close=" + str.tostring(close, format.mintick) + ", level=" + str.tostring(lowLevel3m, format.mintick) + ", ATR=" + str.tostring(atrVal, format.mintick) + ", SL=" + str.tostring(close + use_sl_atr * atrVal, format.mintick) + ", TP=" + str.tostring(close - tp_rr * use_sl_atr * atrVal, format.mintick)
+    label.new(bar_index, high + atrVal * 0.5, txt_s,
+              xloc=xloc.bar_index, yloc=yloc.price,
               color=color.new(color.red, 0), textcolor=color.white,
               style=label.style_label_down, size=entry_size_val,
-              tooltip="シグナル発火バーの close = " + str.tostring(close, format.mintick) +
-                      "\n突破した中期ライン = " + str.tostring(lowLevel3m, format.mintick) +
-                      "\nATR(14) = " + str.tostring(atrVal, format.mintick) +
-                      "\n推奨 SL = " + str.tostring(close + use_sl_atr * atrVal, format.mintick) +
-                      "\n推奨 TP (RR " + str.tostring(tp_rr, "#.##") + ") = " + str.tostring(close - tp_rr * use_sl_atr * atrVal, format.mintick))
+              tooltip=tip_s)
 
 
 // =====================================================================================
@@ -388,9 +384,9 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 //  情報パネル (右上)
 // =====================================================================================
 if barstate.islast
-    var table info = table.new(position.top_right, 2, 12, frame_color=color.gray, frame_width=1)
-    table.cell(info, 0, 0, "戦略",          bgcolor=color.new(color.blue, 80), text_color=color.white, text_size=size.small)
-    table.cell(info, 1, 0, "TrendBreak v1", bgcolor=color.new(color.blue, 80), text_color=color.white, text_size=size.small)
+    var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
+    table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1335", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset,          text_size=size.small)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
