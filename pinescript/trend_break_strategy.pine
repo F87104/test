@@ -83,41 +83,46 @@ show_levels_only_when_unbroken = input.bool(true, "未ブレイクのライン�
 
 // =====================================================================================
 //  プリセット適用 (Python configs/best_*.json と完全一致)
+//  Pine v5 の switch 文で書く (多段三項演算子は構文エラーになる)
 // =====================================================================================
-preset_lookback_3m       = preset == "XAUUSD" ? 480
-                        : preset == "XAGUSD" ? 360
-                        : preset == "GBPJPY" ? 360
-                        : preset == "USDJPY" ? 480
-                        : preset == "EURJPY" ? 360
-                        : in_lookback_3m
+preset_lookback_3m = switch preset
+    "XAUUSD" => 480
+    "XAGUSD" => 360
+    "GBPJPY" => 360
+    "USDJPY" => 480
+    "EURJPY" => 360
+    => in_lookback_3m
 
-preset_exclude_recent_3m = preset == "XAUUSD" ? 120
-                        : preset == "XAGUSD" ? 180
-                        : preset == "GBPJPY" ? 180
-                        : preset == "USDJPY" ? 180
-                        : preset == "EURJPY" ? 60
-                        : in_exclude_recent_3m
+preset_exclude_recent_3m = switch preset
+    "XAUUSD" => 120
+    "XAGUSD" => 180
+    "GBPJPY" => 180
+    "USDJPY" => 180
+    "EURJPY" => 60
+    => in_exclude_recent_3m
 
-preset_sl_atr_mult       = preset == "GBPJPY" or preset == "EURJPY" ? 2.5
-                        : preset == "カスタム" ? sl_atr_mult
-                        : 2.0
+preset_sl_atr_mult = switch preset
+    "GBPJPY" => 2.5
+    "EURJPY" => 2.5
+    "カスタム" => sl_atr_mult
+    => 2.0
 
-preset_session_enabled   = preset == "XAGUSD" or preset == "GBPJPY" or preset == "USDJPY"
-preset_filter_asia       = preset == "EURJPY" or preset == "XAUUSD" ? true : true
-preset_filter_europe     = preset == "XAUUSD" or preset == "EURJPY" ? true : false
-preset_filter_ny         = true
-
-preset_margin            = preset == "EURJPY" ? 0.5 : 0.0
+preset_session_enabled = preset == "XAGUSD" or preset == "GBPJPY" or preset == "USDJPY"
+preset_filter_asia     = true
+preset_filter_europe   = false
+preset_filter_ny       = true
+preset_margin          = preset == "EURJPY" ? 0.5 : 0.0
 
 // 実際に使う値 (プリセット優先、カスタム時のみ入力値)
-lookback_3m       = preset == "カスタム" ? in_lookback_3m       : preset_lookback_3m
-exclude_recent_3m = preset == "カスタム" ? in_exclude_recent_3m : preset_exclude_recent_3m
-use_sl_atr        = preset == "カスタム" ? sl_atr_mult          : preset_sl_atr_mult
-use_session_on    = preset == "カスタム" ? session_filter_enabled : preset_session_enabled
-use_f_asia        = preset == "カスタム" ? filter_asia   : preset_filter_asia
-use_f_europe      = preset == "カスタム" ? filter_europe : preset_filter_europe
-use_f_ny          = preset == "カスタム" ? filter_ny     : preset_filter_ny
-use_margin        = preset == "カスタム" ? min_breakout_margin : preset_margin
+is_custom         = preset == "カスタム"
+lookback_3m       = is_custom ? in_lookback_3m         : preset_lookback_3m
+exclude_recent_3m = is_custom ? in_exclude_recent_3m   : preset_exclude_recent_3m
+use_sl_atr        = is_custom ? sl_atr_mult            : preset_sl_atr_mult
+use_session_on    = is_custom ? session_filter_enabled : preset_session_enabled
+use_f_asia        = is_custom ? filter_asia            : preset_filter_asia
+use_f_europe      = is_custom ? filter_europe          : preset_filter_europe
+use_f_ny          = is_custom ? filter_ny              : preset_filter_ny
+use_margin        = is_custom ? min_breakout_margin    : preset_margin
 
 
 // =====================================================================================
