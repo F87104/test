@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import json
+import zipfile
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Sequence
 
 import pandas as pd
 
@@ -155,4 +156,127 @@ def run_for_csvs(
     return pd.DataFrame(rows)
 
 
-__all__ = ["run_for_csv", "run_for_csvs"]
+# ---------------------------------------------------------------------------
+_CSV_EXTS = {".csv", ".txt", ".tsv"}
+
+
+def _extract_zips(data_dir: Path) -> int:
+    """Extract any *.zip in ``data_dir`` into the same directory.  Returns the
+    number of zips extracted (not the file count).
+    """
+    n = 0
+    for z in sorted(data_dir.glob("*.zip")):
+        log.info("extracting zip → %s", z)
+        try:
+            with zipfile.ZipFile(z) as zf:
+                zf.extractall(data_dir)
+            n += 1
+        except Exception as exc:  # noqa: BLE001
+            log.error("failed to extract %s: %s", z, exc)
+    return n
+
+
+def discover_csvs(
+    data_dir: str | Path,
+    *,
+    pattern: str = "**/*",
+    extract_zip: bool = True,
+) -> list[Path]:
+    """Find every OHLCV file in ``data_dir`` (recursive, follows pattern).
+
+    By default also extracts any *.zip first (handy for archive dumps from
+    brokers, Dukascopy, MT4 history exports, etc.).
+    """
+    d = Path(data_dir)
+    if not d.exists():
+        raise FileNotFoundError(f"[ERR-IO] data directory not found: {d}")
+    if extract_zip:
+        _extract_zips(d)
+    candidates = [
+        p for p in d.glob(pattern)
+        if p.is_file() and p.suffix.lower() in _CSV_EXTS
+    ]
+    # Drop our own outputs / sample files so we don't accidentally re-process them
+    candidates = [p for p in candidates if "results" not in p.parts]
+    candidates = sorted(set(candidates))
+    log.info("discovered %d data file(s) under %s", len(candidates), d)
+    return candidates
+
+
+def run_batch(
+    data_dir: str | Path,
+    cfg: FullConfig,
+    *,
+    pattern: str = "**/*",
+    extract_zip: bool = True,
+    per_symbol_pip: Optional[dict[str, float]] = None,
+    fail_fast: bool = False,
+) -> pd.DataFrame:
+    """Run a backtest for every CSV in ``data_dir`` and produce a cross-symbol
+    comparison table saved to ``<output_dir>/_batch_<ts>/cross_symbol.csv``.
+
+    Returns the comparison table as a DataFrame.
+    """
+    files = discover_csvs(data_dir, pattern=pattern, extract_zip=extract_zip)
+    if not files:
+        raise FileNotFoundError(
+            f"[ERR-IO] no CSV/TXT/TSV files found under {data_dir} (pattern={pattern!r})"
+        )
+
+    batch_dir = Path(cfg.run.output_dir) / f"_batch_{_ts()}"
+    batch_dir.mkdir(parents=True, exist_ok=True)
+
+    rows: list[dict] = []
+    log.info("=== batch start: %d file(s) ===", len(files))
+
+    for p in files:
+        try:
+            cfg_i = FullConfig.from_dict(json.loads(cfg.to_json()))
+            symbol = infer_symbol(p)
+            cfg_i.run.symbol = symbol
+            cfg_i.run.output_dir = str(batch_dir)
+            pip = (per_symbol_pip or {}).get(symbol)
+            summary = run_for_csv(p, cfg_i, pip_size=pip)
+            row = {
+                "file": str(p),
+                "symbol": summary["symbol"],
+                "rows": summary["rows"],
+                "data_from": summary["data_range"][0],
+                "data_to": summary["data_range"][1],
+                "out_dir": summary["artefacts"].get("out_dir"),
+                **{k: v for k, v in summary["metrics"].items()},
+            }
+            rows.append(row)
+            m = summary["metrics"]
+            log.info(
+                "[%s] trades=%d winrate=%.2f%% PF=%.2f DD=%.2f%% total_ret=%.2f%%",
+                symbol,
+                m["n_trades"],
+                m["win_rate"] * 100,
+                m["profit_factor"],
+                m["max_drawdown_pct"] * 100,
+                m["total_return_pct"] * 100,
+            )
+        except Exception as exc:  # noqa: BLE001
+            log.error("[ERROR] %s: %s", p, exc)
+            rows.append({"file": str(p), "error": str(exc)})
+            if fail_fast:
+                raise
+
+    table = pd.DataFrame(rows)
+    if not table.empty and "win_rate" in table.columns:
+        # Sort by net return (best first), nan last
+        table = table.sort_values("total_return_pct", ascending=False, na_position="last")
+
+    out_path = batch_dir / "cross_symbol.csv"
+    table.to_csv(out_path, index=False)
+    log.info("cross-symbol summary → %s", out_path)
+
+    # Also produce a JSON snapshot of the run configuration
+    with open(batch_dir / "batch_config.json", "w", encoding="utf-8") as f:
+        json.dump(json.loads(cfg.to_json()), f, ensure_ascii=False, indent=2)
+
+    return table
+
+
+__all__ = ["run_for_csv", "run_for_csvs", "discover_csvs", "run_batch"]

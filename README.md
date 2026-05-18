@@ -157,6 +157,49 @@ python main.py \
     --direction both --tp-rr 2.0 --risk-pct 1.0
 ```
 
+### ★ ディレクトリ内の **全通貨自動検証**（推奨）
+
+ヒストリカルデータをまとめてフォルダ単位で投入する場合、`--data-dir` 一発で再帰的に
+**全 CSV を発見 → 個別バックテスト → クロスシンボル比較表** までを自動で行います。
+
+```bash
+# フォルダ内の全 CSV を再帰的に検証
+python main.py --data-dir data/
+
+# ZIP も自動展開してから検証
+python main.py --data-dir data/ --extract-zip
+
+# 例: H1 タイムフレームの CSV だけに限定
+python main.py --data-dir data/ --data-pattern "**/*_H1.csv"
+
+# ファイル名から自動推論されたシンボルが「XAUUSD/GBPJPY/...」に
+# 対応しないときは --pip-size を指定してください（FX 以外）
+```
+
+実行後の出力:
+
+```
+results/_batch_<UTC>/
+├── cross_symbol.csv         # ★ 全通貨横断サマリ（リターン降順）
+├── batch_config.json        # 実行時の全パラメータ
+├── XAUUSD_<UTC>/
+│   ├── trades.csv  equity.csv  summary.json
+│   ├── breakdown_*.csv      # 9 種類の集計
+│   └── chart_*.png          # 価格+ライン+シグナル / Equity+DD / R 分布
+├── GBPJPY_<UTC>/...
+├── NAS100_<UTC>/...
+└── ...
+```
+
+`cross_symbol.csv` 例：
+
+```
+symbol  rows  n_trades win_rate profit_factor max_drawdown_pct total_return_pct sharpe expectancy_r
+NAS100  6000         4   75.00%         5.960           -1.00%            5.06%  2.424        1.250
+XAGUSD  6000         3   66.67%         4.000           -2.60%            3.00%  1.373        1.000
+...
+```
+
 各 CSV 別に `results/<SYMBOL>_<timestamp>/` フォルダが作成され：
 - `trades.csv` …… エントリー履歴（27 列）
 - `equity.csv` …… 各バーの口座残高
@@ -216,7 +259,7 @@ lookback, exclude_recent, lookback_3m, exclude_recent_3m
 python -m pytest tests/ -v
 ```
 
-24 ケース全通過：
+27 ケース全通過：
 
 - Pine 完全等価（vectorised vs reference）
 - 未来データ参照禁止
@@ -227,6 +270,7 @@ python -m pytest tests/ -v
 - CSV 自動判定（ISO / unix s / unix ms / 列名揺らぎ / OHLC 整合性 / dedupe）
 - バックテスト E2E（trades CSV / equity CSV / breakdown CSV / 3 種類のチャート / summary JSON）
 - メトリクス数値検証（PF, DD, expectancy）
+- バッチランナー: ディレクトリ走査 / 再帰ディスカバリ / クロスシンボル比較
 
 ---
 

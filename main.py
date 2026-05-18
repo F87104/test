@@ -15,6 +15,16 @@ Multi-file (results aggregated)::
 
     python main.py --csv data/XAUUSD_1h.csv data/BTCUSD_1h.csv
 
+**Auto-discover every CSV under a directory (recommended for "全通貨検証")::**
+
+    python main.py --data-dir data/
+
+    # …with arbitrary glob (e.g. only the H1 timeframe):
+    python main.py --data-dir data/ --data-pattern "**/*_H1.csv"
+
+    # …also extract any *.zip in the folder first:
+    python main.py --data-dir data/ --extract-zip
+
 Override Pine parameters::
 
     python main.py --csv data/foo.csv --lookback 4000 --exclude-recent 600
@@ -32,6 +42,8 @@ import json
 import logging
 import sys
 from pathlib import Path
+
+import pandas as pd
 
 from src.config import BacktestConfig, FullConfig, IndicatorConfig, RunConfig
 from src.data_loader import infer_pip_size, infer_symbol
@@ -119,6 +131,46 @@ def _cli_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cli_batch(args: argparse.Namespace) -> int:
+    setup_logging(level=logging.DEBUG if args.verbose else logging.INFO)
+    cfg = _build_cfg(args)
+    from src.runner import run_batch
+
+    if not Path(args.data_dir).exists():
+        print(f"[ERROR] data dir not found: {args.data_dir}", file=sys.stderr)
+        return 2
+
+    table = run_batch(
+        args.data_dir,
+        cfg,
+        pattern=args.data_pattern,
+        extract_zip=args.extract_zip,
+        fail_fast=args.fail_fast,
+    )
+    # Pretty print: subset of useful columns when present
+    cols = [
+        "symbol", "rows", "n_trades", "win_rate", "profit_factor",
+        "max_drawdown_pct", "total_return_pct", "sharpe", "expectancy_r",
+    ]
+    show = [c for c in cols if c in table.columns]
+    print("=" * 90)
+    print("Cross-symbol summary (sorted by total return)")
+    print("=" * 90)
+    if show and not table.empty:
+        # Format percent columns prettily
+        fmt = table.copy()
+        for c in ("win_rate", "max_drawdown_pct", "total_return_pct"):
+            if c in fmt.columns:
+                fmt[c] = fmt[c].map(lambda v: f"{v*100:.2f}%" if pd.notna(v) else "—")
+        for c in ("profit_factor", "sharpe", "expectancy_r"):
+            if c in fmt.columns:
+                fmt[c] = fmt[c].map(lambda v: f"{v:.3f}" if pd.notna(v) else "—")
+        print(fmt[show].to_string(index=False))
+    else:
+        print(table.to_string(index=False))
+    return 0
+
+
 def _cli_grid(args: argparse.Namespace) -> int:
     setup_logging(level=logging.DEBUG if args.verbose else logging.INFO)
     cfg = _build_cfg(args)
@@ -170,6 +222,14 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Pine Script 大トレンドブレイク検出 — Backtester")
     p.add_argument("--gui", action="store_true", help="launch tkinter GUI (falls back to CLI if no display)")
     p.add_argument("--csv", nargs="*", default=[], help="one or more OHLCV CSV files")
+    p.add_argument("--data-dir", default=None,
+                   help="auto-discover & backtest every CSV in this directory (recursive)")
+    p.add_argument("--data-pattern", default="**/*",
+                   help="glob pattern for --data-dir (default '**/*' = recursive)")
+    p.add_argument("--extract-zip", action="store_true",
+                   help="extract any *.zip in --data-dir before scanning")
+    p.add_argument("--fail-fast", action="store_true",
+                   help="abort the batch run on the first error (otherwise log and continue)")
     p.add_argument("--config", help="JSON config file (e.g. configs/default.json)")
     p.add_argument("--output-dir", default=None)
     p.add_argument("--timezone", default=None)
@@ -212,6 +272,8 @@ def main(argv: list[str] | None = None) -> int:
         return launch_gui()
     if args.grid:
         return _cli_grid(args)
+    if args.data_dir:
+        return _cli_batch(args)
     if args.csv:
         return _cli_run(args)
     p.print_help()
