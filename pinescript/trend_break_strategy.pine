@@ -1,7 +1,7 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-18-1355  決済ラベルに価格併記 (✕ WIN @ 4398.45 形式) ★★
+//  ★★ VERSION 2026-05-18-1400  決済ラベル堅牢化 (即時描画) ★★
 //
 //  ▶ 1時間足 (H1) 専用に設計されています。
 //     他の時間足にチャートを切り替えると、画面中央に大きく
@@ -363,6 +363,24 @@ plotshape(show_exit_shapes and last_was_win,  title="✕ WIN exit",  location=lo
 plotshape(show_exit_shapes and last_was_loss, title="✕ LOSS exit", location=location.belowbar,
           style=shape.xcross, color=color.new(color.red,  0), size=size.large, text="LOSS", textcolor=color.white)
 
+// ★★ 決済確定の瞬間に「✕ WIN @ price」ラベルを直接描画 ★★
+//    for ループに頼らず、確実に描画するための堅牢実装
+if trade_just_closed and strategy.closedtrades > 0
+    _idx       = strategy.closedtrades - 1
+    _exit_pr   = strategy.closedtrades.exit_price(_idx)
+    _pnl       = strategy.closedtrades.profit(_idx)
+    _is_win    = _pnl > 0
+    _col       = _is_win ? color.new(color.lime, 0) : color.new(color.red, 0)
+    _result    = _is_win ? "✕ WIN" : "✕ LOSS"
+    _sign      = _pnl >= 0 ? "+$" : "-$"
+    _text      = _result + " @ " + str.tostring(_exit_pr, format.mintick) +
+                 "\n(" + _sign + str.tostring(math.abs(_pnl), "#.00") + ")"
+    label.new(bar_index, _exit_pr, _text,
+              xloc=xloc.bar_index, yloc=yloc.price,
+              color=_col, textcolor=color.white,
+              style=_is_win ? label.style_label_down : label.style_label_up,
+              size=size.normal)
+
 // ---- B) for ループで「エントリー→決済」のラインを描く ----
 // ★ BUGFIX 2026-05-18-1350: bar_index reference の上限 (max_bars_back=5000)
 //   を超える古いトレードは描画スキップ (Pine RE10026 回避)
@@ -482,7 +500,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1355", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1400", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset,          text_size=size.small)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
