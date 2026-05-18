@@ -1,7 +1,7 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-18-1340  H1 専用化 + オープン中ポジション完全可視化 ★★
+//  ★★ VERSION 2026-05-18-1345  CRITICAL BUGFIX: SL/TP がロックされない致命バグ修正 ★★
 //
 //  ▶ 1時間足 (H1) 専用に設計されています。
 //     他の時間足にチャートを切り替えると、画面中央に大きく
@@ -269,7 +269,10 @@ if strategy.position_size < 0 and not na(locked_sl)
     strategy.exit("S-X", from_entry="S", stop=locked_sl, limit=locked_tp)
 
 // ポジションクローズ後はステートをリセット
-if strategy.position_size == 0
+// ★ BUGFIX 2026-05-18-1345: シグナルバー自身では reset しない (signal_bar が消える)
+//   位置 != 0 だった経歴がある (= locked_sl が既にセットされた) 状態で
+//   position_size == 0 に戻ったときだけリセットする。
+if strategy.position_size == 0 and not na(locked_sl)
     locked_sl  := na
     locked_tp  := na
     signal_bar := na
@@ -464,7 +467,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1340", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1345", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset,          text_size=size.small)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
