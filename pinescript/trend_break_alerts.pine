@@ -1,0 +1,227 @@
+//@version=5
+// =====================================================================================
+//  大トレンドブレイク アラート版  (Python 検証ツール完全互換 / Indicator)
+//
+//  用途:
+//    本物の売買ロジック (Strategy 版) と全く同じ条件で発火する「シグナルだけ」を
+//    出すインジケーター。TradingView の Alerts 機能で Email/PUSH/Webhook 通知を
+//    受け取り、ご自身で手動エントリーするための「半自動運用」専用。
+//
+//  Strategy 版との違い:
+//    - 売買発注しない (TradingView のチャート無料枠でも使える)
+//    - シグナルマーカー + 推奨 SL/TP/サイズを画面右上に表示
+//    - アラート文に SL/TP/RR がすべて入る → Webhook 連携で即注文可
+//
+//  対応 Python 設定:  configs/best_<SYMBOL>.json
+// =====================================================================================
+indicator(
+     title      = "Trend-Break Alerts (Python compatible)",
+     shorttitle = "TrendBreakAlert",
+     overlay    = true,
+     max_lines_count = 500,
+     max_labels_count = 500
+ )
+
+
+// =====================================================================================
+//  入力 (Strategy 版とまったく同じ — 設定一発移植可能)
+// =====================================================================================
+grp_pre  = "▼ プリセット (まず選ぶ)"
+preset   = input.string("XAUUSD", "通貨プリセット", options=["XAUUSD", "XAGUSD", "GBPJPY", "USDJPY", "EURJPY", "カスタム"], group=grp_pre)
+
+grp_ind  = "▼ インジケーター・パラメータ"
+in_lookback_3m       = input.int(480, "中期 lookback_3m", minval=10, group=grp_ind)
+in_exclude_recent_3m = input.int(120, "中期 exclude_recent_3m", minval=1, group=grp_ind)
+in_lookback          = input.int(5000, "長期 lookback", minval=10, group=grp_ind)
+in_exclude_recent    = input.int(760,  "長期 exclude_recent", minval=1, group=grp_ind)
+strict_warmup        = input.bool(true, "strict warm-up", group=grp_ind)
+level_kind = input.string("mid", "level_kind", options=["mid", "long", "confluence"], group=grp_ind)
+
+grp_risk = "▼ リスク管理 (アラート文に出る値)"
+sl_atr_mult        = input.float(2.0, "SL = entry ± N×ATR", minval=0.1, step=0.1, group=grp_risk)
+tp_rr              = input.float(3.0, "TP = RR×|entry-SL|", minval=0.1, step=0.1, group=grp_risk)
+atr_period         = input.int(14,    "ATR period", minval=2, group=grp_risk)
+account_equity     = input.float(10000.0, "口座残高想定 USD",   minval=1.0,  group=grp_risk)
+risk_per_trade_pct = input.float(1.0,     "1 トレードリスク %", minval=0.01, maxval=10.0, step=0.1, group=grp_risk)
+
+grp_filt = "▼ プリトレード・フィルタ"
+session_filter_enabled = input.bool(false, "セッションフィルタを有効化", group=grp_filt)
+filter_asia            = input.bool(true,  "  Asia (00-07,21-24 UTC)",  group=grp_filt)
+filter_europe          = input.bool(false, "  Europe (07-13 UTC)",       group=grp_filt)
+filter_ny              = input.bool(true,  "  NY (13-21 UTC)",           group=grp_filt)
+min_breakout_margin    = input.float(0.0, "min_breakout_margin_atr", minval=0.0, step=0.1, group=grp_filt)
+
+grp_dir  = "▼ 方向"
+allow_long  = input.bool(true, "ロング許可",   group=grp_dir)
+allow_short = input.bool(true, "ショート許可", group=grp_dir)
+
+
+// =====================================================================================
+//  プリセット (Python configs/best_*.json と完全一致)
+// =====================================================================================
+p_lookback_3m       = preset == "XAUUSD" ? 480 : preset == "XAGUSD" ? 360 : preset == "GBPJPY" ? 360 : preset == "USDJPY" ? 480 : preset == "EURJPY" ? 360 : in_lookback_3m
+p_exclude_recent_3m = preset == "XAUUSD" ? 120 : preset == "XAGUSD" ? 180 : preset == "GBPJPY" ? 180 : preset == "USDJPY" ? 180 : preset == "EURJPY" ? 60  : in_exclude_recent_3m
+p_sl_atr_mult       = preset == "GBPJPY" or preset == "EURJPY" ? 2.5 : (preset == "カスタム" ? sl_atr_mult : 2.0)
+p_session_enabled   = preset == "XAGUSD" or preset == "GBPJPY" or preset == "USDJPY"
+p_filter_asia       = true
+p_filter_europe     = false
+p_filter_ny         = true
+p_margin            = preset == "EURJPY" ? 0.5 : 0.0
+
+lookback_3m       = preset == "カスタム" ? in_lookback_3m       : p_lookback_3m
+exclude_recent_3m = preset == "カスタム" ? in_exclude_recent_3m : p_exclude_recent_3m
+use_sl_atr        = preset == "カスタム" ? sl_atr_mult          : p_sl_atr_mult
+use_session_on    = preset == "カスタム" ? session_filter_enabled : p_session_enabled
+use_f_asia        = preset == "カスタム" ? filter_asia   : p_filter_asia
+use_f_europe      = preset == "カスタム" ? filter_europe : p_filter_europe
+use_f_ny          = preset == "カスタム" ? filter_ny     : p_filter_ny
+use_margin        = preset == "カスタム" ? min_breakout_margin : p_margin
+
+
+// =====================================================================================
+//  インジケーター計算 (Strategy 版と完全同一)
+// =====================================================================================
+highLevel3m = ta.highest(high[1], lookback_3m)
+lowLevel3m  = ta.lowest (low[1],  lookback_3m)
+highLevel   = ta.highest(high[1], in_lookback)
+lowLevel    = ta.lowest (low[1],  in_lookback)
+midMedian3m = (highLevel3m + lowLevel3m) / 2.0
+
+recentHighMax3m = ta.highest(high[1], exclude_recent_3m)
+recentLowMin3m  = ta.lowest (low[1],  exclude_recent_3m)
+recentHighMax   = ta.highest(high[1], in_exclude_recent)
+recentLowMin    = ta.lowest (low[1],  in_exclude_recent)
+
+longCond3m  = close > highLevel3m and recentHighMax3m < highLevel3m
+shortCond3m = close < lowLevel3m  and recentLowMin3m  > lowLevel3m
+longCond    = close > highLevel   and recentHighMax   < highLevel
+shortCond   = close < lowLevel    and recentLowMin    > lowLevel
+
+longSig  = level_kind == "long" ? longCond  : level_kind == "mid" ? longCond3m  : (longCond  and longCond3m)
+shortSig = level_kind == "long" ? shortCond : level_kind == "mid" ? shortCond3m : (shortCond and shortCond3m)
+
+warmup_ok = bar_index >= math.max(lookback_3m, exclude_recent_3m) + 5
+longSig  := strict_warmup and not warmup_ok ? false : longSig
+shortSig := strict_warmup and not warmup_ok ? false : shortSig
+longSig  := allow_long  ? longSig  : false
+shortSig := allow_short ? shortSig : false
+
+
+// =====================================================================================
+//  フィルタ (Strategy 版と完全同一)
+// =====================================================================================
+h = hour(time, "UTC")
+sess_asia   = (h >= 0  and h < 7)  or (h >= 21 and h < 24)
+sess_europe = (h >= 7  and h < 13)
+sess_ny     = (h >= 13 and h < 21)
+sess_pass   = not use_session_on or ((sess_asia and use_f_asia) or (sess_europe and use_f_europe) or (sess_ny and use_f_ny))
+
+atrVal = ta.atr(atr_period)
+margin_long  = use_margin > 0 ? (close - highLevel3m) / atrVal : 10.0
+margin_short = use_margin > 0 ? (lowLevel3m  - close) / atrVal : 10.0
+margin_pass_long  = use_margin > 0 ? margin_long  >= use_margin : true
+margin_pass_short = use_margin > 0 ? margin_short >= use_margin : true
+
+finalLong  = longSig  and sess_pass and margin_pass_long
+finalShort = shortSig and sess_pass and margin_pass_short
+
+
+// =====================================================================================
+//  推奨 SL / TP / サイズ計算 (Python と同じ式)
+// =====================================================================================
+// シグナル発火バーで計算 (実際の約定は次バー始値)
+estEntry = close                                  // 暫定エントリー価格 (次バー始値で代替予定)
+slLong   = estEntry - use_sl_atr * atrVal
+slShort  = estEntry + use_sl_atr * atrVal
+tpLong   = estEntry + tp_rr * (estEntry - slLong)
+tpShort  = estEntry - tp_rr * (slShort - estEntry)
+
+risk_money = account_equity * (risk_per_trade_pct / 100.0)
+risk_long  = math.abs(estEntry - slLong)
+risk_short = math.abs(estEntry - slShort)
+size_long  = risk_money / math.max(risk_long,  1e-12)
+size_short = risk_money / math.max(risk_short, 1e-12)
+
+
+// =====================================================================================
+//  プロット
+// =====================================================================================
+plot(highLevel,   title="長期 高値ライン", color=color.new(color.green,  0), linewidth=2, style=plot.style_linebr)
+plot(lowLevel,    title="長期 安値ライン", color=color.new(color.red,    0), linewidth=2, style=plot.style_linebr)
+plot(highLevel3m, title="中期 高値ライン", color=color.new(color.yellow,  0), linewidth=2, style=plot.style_linebr)
+plot(lowLevel3m,  title="中期 安値ライン", color=color.new(color.fuchsia, 0), linewidth=2, style=plot.style_linebr)
+plot(midMedian3m, title="中期 中央値ライン", color=color.new(#2195f3, 0), linewidth=1)
+
+plotshape(finalLong,  title="LONG",  location=location.belowbar, style=shape.triangleup,   color=color.new(color.green, 0), size=size.normal, text="L")
+plotshape(finalShort, title="SHORT", location=location.abovebar, style=shape.triangledown, color=color.new(color.red,   0), size=size.normal, text="S")
+
+bgcolor(finalLong  ? color.new(color.green, 85) : na, title="LONG bg")
+bgcolor(finalShort ? color.new(color.red,   85) : na, title="SHORT bg")
+
+// シグナル発火時に SL/TP の水平線を一時的に描画
+var line slLine = na
+var line tpLine = na
+if finalLong
+    line.delete(slLine)
+    line.delete(tpLine)
+    slLine := line.new(bar_index, slLong, bar_index + 50, slLong, color=color.red,   width=2, style=line.style_dashed)
+    tpLine := line.new(bar_index, tpLong, bar_index + 50, tpLong, color=color.green, width=2, style=line.style_dashed)
+if finalShort
+    line.delete(slLine)
+    line.delete(tpLine)
+    slLine := line.new(bar_index, slShort, bar_index + 50, slShort, color=color.red,   width=2, style=line.style_dashed)
+    tpLine := line.new(bar_index, tpShort, bar_index + 50, tpShort, color=color.green, width=2, style=line.style_dashed)
+
+
+// =====================================================================================
+//  情報パネル (右上)
+// =====================================================================================
+if barstate.islast
+    var table info = table.new(position.top_right, 2, 11, frame_color=color.gray, frame_width=1)
+    table.cell(info, 0,  0, "TrendBreak Alerts v1", bgcolor=color.new(color.blue, 80), text_color=color.white, text_size=size.small)
+    table.cell(info, 1,  0, preset,                 bgcolor=color.new(color.blue, 80), text_color=color.white, text_size=size.small)
+    table.cell(info, 0,  1, "level_kind",    text_size=size.small)
+    table.cell(info, 1,  1, level_kind,      text_size=size.small)
+    table.cell(info, 0,  2, "lookback_3m",   text_size=size.small)
+    table.cell(info, 1,  2, str.tostring(lookback_3m),       text_size=size.small)
+    table.cell(info, 0,  3, "exclude_3m",    text_size=size.small)
+    table.cell(info, 1,  3, str.tostring(exclude_recent_3m), text_size=size.small)
+    table.cell(info, 0,  4, "highLevel3m",   text_size=size.small)
+    table.cell(info, 1,  4, str.tostring(highLevel3m, format.mintick), text_size=size.small)
+    table.cell(info, 0,  5, "lowLevel3m",    text_size=size.small)
+    table.cell(info, 1,  5, str.tostring(lowLevel3m,  format.mintick), text_size=size.small)
+    table.cell(info, 0,  6, "ATR(14)",       text_size=size.small)
+    table.cell(info, 1,  6, str.tostring(atrVal,      format.mintick), text_size=size.small)
+    table.cell(info, 0,  7, "推奨 SL (Long)",  text_size=size.small)
+    table.cell(info, 1,  7, str.tostring(slLong, format.mintick), text_size=size.small)
+    table.cell(info, 0,  8, "推奨 TP (Long)",  text_size=size.small)
+    table.cell(info, 1,  8, str.tostring(tpLong, format.mintick), text_size=size.small)
+    table.cell(info, 0,  9, "推奨 size (Long)", text_size=size.small)
+    table.cell(info, 1,  9, str.tostring(size_long, "#.####"),    text_size=size.small)
+    table.cell(info, 0, 10, "1R リスク額",     text_size=size.small)
+    table.cell(info, 1, 10, "$" + str.tostring(risk_money, "#.00"), text_size=size.small)
+
+
+// =====================================================================================
+//  アラート (リッチメッセージ — SL/TP/サイズ込みで Webhook 連携可)
+// =====================================================================================
+alert_long_msg  = "🟢 LONG  {{ticker}} @ {{close}}  " +
+     "SL=" + str.tostring(slLong, format.mintick) + "  " +
+     "TP=" + str.tostring(tpLong, format.mintick) + "  " +
+     "size=" + str.tostring(size_long, "#.####") + "  " +
+     "RR=1:" + str.tostring(tp_rr, "#.##") + "  " +
+     "ATR=" + str.tostring(atrVal, format.mintick) + "  " +
+     "{{time}}"
+alert_short_msg = "🔴 SHORT {{ticker}} @ {{close}}  " +
+     "SL=" + str.tostring(slShort, format.mintick) + "  " +
+     "TP=" + str.tostring(tpShort, format.mintick) + "  " +
+     "size=" + str.tostring(size_short, "#.####") + "  " +
+     "RR=1:" + str.tostring(tp_rr, "#.##") + "  " +
+     "ATR=" + str.tostring(atrVal, format.mintick) + "  " +
+     "{{time}}"
+
+alertcondition(finalLong,  title="🟢 LONG  signal (rich)",  message=alert_long_msg)
+alertcondition(finalShort, title="🔴 SHORT signal (rich)",  message=alert_short_msg)
+// シンプル版も用意
+alertcondition(finalLong,  title="🟢 LONG  signal (simple)",  message="{{ticker}} LONG @ {{close}}")
+alertcondition(finalShort, title="🔴 SHORT signal (simple)",  message="{{ticker}} SHORT @ {{close}}")
