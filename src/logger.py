@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -27,7 +27,7 @@ def setup_logging(
     second call replaces handlers so logs don't double-print.
     """
     Path(log_dir).mkdir(parents=True, exist_ok=True)
-    ts = datetime.utcnow().strftime("%Y%m%d_%H%M%SZ")
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
     name = f"run_{ts}" + (f"_{suffix}" if suffix else "") + ".log"
     path = Path(log_dir) / name
 
