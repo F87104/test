@@ -114,3 +114,71 @@ def _sym(p):
     from src.data_loader import infer_symbol
 
     return infer_symbol(p)
+
+
+def test_run_batch_groups_yearly_silver_files(tmp_path):
+    """Reproduces the user's SILVER2014-2024/ structure: 12 yearly files in
+    one folder must be concatenated into a single XAGUSD series and
+    backtested once."""
+    from src.runner import group_files_by_symbol, run_batch
+
+    d = tmp_path / "data"
+    silver_dir = d / "SILVER2014-2024"
+    silver_dir.mkdir(parents=True)
+
+    # Synthesize 12 consecutive yearly H1 CSVs
+    base_seed = 50
+    for year in range(2014, 2026):
+        n = 200
+        df = synthesise_ohlcv(n=n, seed=base_seed + (year - 2014),
+                              start=f"{year}-01-01")
+        df.reset_index().rename(columns={"index": "datetime"}).to_csv(
+            silver_dir / f"SILVER_H1_{year}.csv", index=False,
+        )
+    # Add another symbol folder to make sure cross-symbol grouping still works
+    xau_dir = d / "XAUUSD2014-2024"
+    xau_dir.mkdir()
+    for year in (2023, 2024):
+        df = synthesise_ohlcv(n=200, seed=base_seed + 100 + (year - 2023),
+                              start=f"{year}-01-01")
+        df.reset_index().rename(columns={"index": "datetime"}).to_csv(
+            xau_dir / f"XAUUSD_H1_{year}.csv", index=False,
+        )
+
+    files = sorted(d.rglob("*.csv"))
+    groups = group_files_by_symbol(files, data_dir=d)
+    # Exactly two groups, regardless of how many files each contains
+    assert set(groups.keys()) == {"XAGUSD", "XAUUSD"}
+    assert len(groups["XAGUSD"]) == 12
+    assert len(groups["XAUUSD"]) == 2
+
+    cfg = FullConfig(
+        indicator=IndicatorConfig(
+            lookback=400, exclude_recent=80, lookback_3m=80, exclude_recent_3m=20,
+            strict_warmup=True, pine_compat_mode="intended",
+        ),
+        backtest=BacktestConfig(
+            direction="both", sl_mode="atr", sl_atr_mult=2.0,
+            tp_mode="rr", tp_rr=2.0, atr_period=14,
+        ),
+        run=RunConfig(
+            output_dir=str(tmp_path / "out"),
+            log_dir=str(tmp_path / "logs"),
+            chart_max_bars=1500,
+        ),
+    )
+    table = run_batch(d, cfg)
+    # One row per group, not per file
+    assert len(table) == 2
+    assert set(table["symbol"]) == {"XAGUSD", "XAUUSD"}
+    # The XAGUSD row must show n_files=12 and rows == 12 * 200 (no dupes)
+    row = table[table["symbol"] == "XAGUSD"].iloc[0]
+    assert row["n_files"] == 12
+    assert row["rows"] == 12 * 200
+
+    batch_dirs = list((tmp_path / "out").glob("_batch_*"))
+    assert len(batch_dirs) == 1
+    # Only ONE sub-folder per symbol (proves grouping, not per-file output)
+    sub_xag = list(batch_dirs[0].glob("XAGUSD_*"))
+    assert len(sub_xag) == 1
+    assert (sub_xag[0] / "summary.json").exists()

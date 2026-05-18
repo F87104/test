@@ -146,11 +146,13 @@ def _cli_batch(args: argparse.Namespace) -> int:
         pattern=args.data_pattern,
         extract_zip=args.extract_zip,
         fail_fast=args.fail_fast,
+        group_by_folder=args.group_by_folder,
     )
     # Pretty print: subset of useful columns when present
     cols = [
-        "symbol", "rows", "n_trades", "win_rate", "profit_factor",
-        "max_drawdown_pct", "total_return_pct", "sharpe", "expectancy_r",
+        "group_key", "symbol", "n_files", "rows", "n_trades", "win_rate",
+        "profit_factor", "max_drawdown_pct", "total_return_pct",
+        "sharpe", "expectancy_r",
     ]
     show = [c for c in cols if c in table.columns]
     print("=" * 90)
@@ -230,6 +232,11 @@ def main(argv: list[str] | None = None) -> int:
                    help="extract any *.zip in --data-dir before scanning")
     p.add_argument("--fail-fast", action="store_true",
                    help="abort the batch run on the first error (otherwise log and continue)")
+    p.add_argument("--no-group-by-folder", dest="group_by_folder",
+                   action="store_false", default=True,
+                   help="treat every CSV as its own dataset instead of "
+                        "concatenating same-symbol files in the same folder "
+                        "(default: group, e.g. SILVER_H1_2014…2025.csv → 1 series)")
     p.add_argument("--config", help="JSON config file (e.g. configs/default.json)")
     p.add_argument("--output-dir", default=None)
     p.add_argument("--timezone", default=None)

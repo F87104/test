@@ -380,9 +380,52 @@ def synthesise_ohlcv(
     )
 
 
+def load_csvs(
+    paths: Iterable[str | Path],
+    *,
+    timezone: Optional[str] = None,
+) -> tuple[pd.DataFrame, list[LoadReport]]:
+    """Load several CSV files and return one chronologically sorted dataframe.
+
+    Useful for archives that split the same symbol into yearly files
+    (e.g. ``SILVER_H1_2014.csv … SILVER_H1_2025.csv``).
+
+    Returns ``(merged_df, per_file_reports)``.  Duplicate timestamps (same
+    bar reported in two files) are deduplicated, keeping the **last** value.
+    """
+    frames: list[pd.DataFrame] = []
+    reports: list[LoadReport] = []
+    bad: list[tuple[str, Exception]] = []
+    for p in paths:
+        try:
+            df, rpt = load_csv(p, timezone=timezone, sort=False, drop_duplicates=False)
+            frames.append(df)
+            reports.append(rpt)
+        except Exception as exc:  # noqa: BLE001
+            bad.append((str(p), exc))
+            log.error("[ERR-IO] failed to load %s: %s", p, exc)
+    if not frames:
+        raise ValueError(
+            f"[ERR-DATA] no usable CSVs out of {len(list(paths))}: " + "; ".join(
+                f"{p}: {e}" for p, e in bad
+            )
+        )
+    merged = pd.concat(frames, axis=0)
+    merged = merged[~merged.index.duplicated(keep="last")].sort_index()
+    log.info(
+        "merged %d file(s) → %d rows  range=[%s, %s]",
+        len(frames),
+        len(merged),
+        merged.index[0],
+        merged.index[-1],
+    )
+    return merged, reports
+
+
 __all__ = [
     "LoadReport",
     "load_csv",
+    "load_csvs",
     "infer_symbol",
     "infer_pip_size",
     "synthesise_ohlcv",

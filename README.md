@@ -195,6 +195,7 @@ python main.py \
 | `GBY JPY H4 2024.csv` | `GBPJPY` (空白 + タイムフレーム + 単年除去) |
 | `「新しいフォルダー」/` (空) | スキップ |
 | `.DS_Store`, `Thumbs.db` | スキップ |
+| `SILVER2014-2024/SILVER_H1_2014.csv … SILVER_H1_2025.csv` (12 ファイル) | **自動連結** → 単一 `XAGUSD` 時系列としてバックテスト |
 
 JPY クロス (EURJPY/USDJPY/AUDJPY/CHFJPY/GBPJPY/NZDJPY) は pip=0.01、
 FX major (EURUSD/NZDUSD/GBPNZD ほか) は pip=0.0001、
@@ -210,6 +211,10 @@ python main.py --data-dir data/ --extract-zip
 
 # 例: H1 タイムフレームの CSV だけに限定
 python main.py --data-dir data/ --data-pattern "**/*_H1.csv"
+
+# 例: 同フォルダ内の同シンボル CSV (年別分割) は既定で 1 系列に連結。
+#     ファイルごとに別データとして扱いたい場合は --no-group-by-folder。
+python main.py --data-dir data/ --no-group-by-folder
 
 # ファイル名から自動推論されたシンボルが「XAUUSD/GBPJPY/...」に
 # 対応しないときは --pip-size を指定してください（FX 以外）
@@ -298,7 +303,7 @@ lookback, exclude_recent, lookback_3m, exclude_recent_3m
 python -m pytest tests/ -v
 ```
 
-29 ケース全通過：
+30 ケース全通過：
 
 - Pine 完全等価（vectorised vs reference）
 - 未来データ参照禁止
@@ -310,6 +315,7 @@ python -m pytest tests/ -v
 - バックテスト E2E（trades CSV / equity CSV / breakdown CSV / 3 種類のチャート / summary JSON）
 - メトリクス数値検証（PF, DD, expectancy）
 - バッチランナー: ディレクトリ走査 / 再帰ディスカバリ / クロスシンボル比較
+- フォルダ内年別分割 CSV のグループ化（`SILVER_H1_2014..2025.csv` → 1 系列）
 
 ---
 
