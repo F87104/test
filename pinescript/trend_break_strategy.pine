@@ -1,7 +1,7 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-18-1350  古いトレードの描画スキップ (RE10026 回避) ★★
+//  ★★ VERSION 2026-05-18-1355  決済ラベルに価格併記 (✕ WIN @ 4398.45 形式) ★★
 //
 //  ▶ 1時間足 (H1) 専用に設計されています。
 //     他の時間足にチャートを切り替えると、画面中央に大きく
@@ -366,6 +366,7 @@ plotshape(show_exit_shapes and last_was_loss, title="✕ LOSS exit", location=lo
 // ---- B) for ループで「エントリー→決済」のラインを描く ----
 // ★ BUGFIX 2026-05-18-1350: bar_index reference の上限 (max_bars_back=5000)
 //   を超える古いトレードは描画スキップ (Pine RE10026 回避)
+// ★ ENHANCEMENT 2026-05-18-1355: 決済ラベルに価格を併記
 if show_exit_lines and barstate.islast
     total_closed = strategy.closedtrades
     start_i = math.max(0, total_closed - max_trades_drawn)
@@ -385,14 +386,19 @@ if show_exit_lines and barstate.islast
         line.new(x1=ent_bar, y1=ent_pr, x2=ext_bar, y2=ext_pr,
                  xloc=xloc.bar_index, color=col, width=2, style=line.style_solid)
 
+        // 決済ラベル ★ 価格を必ず併記 ★
+        // 例: "✕ WIN @ 4,398.45  (+$300.00)"
+        //     "✕ LOSS @ 4,253.20  (-$100.00)"
+        sign_str = pnl_m >= 0 ? "+$" : "-$"
+        result_str = is_win ? "✕ WIN" : "✕ LOSS"
+        exit_label_text = result_str + " @ " + str.tostring(ext_pr, format.mintick)
         if show_pnl_label
-            sign_str = pnl_m >= 0 ? "+$" : "-$"
-            txt = sign_str + str.tostring(math.abs(pnl_m), "#.00")
-            label.new(x=ext_bar, y=ext_pr, text=txt,
-                      xloc=xloc.bar_index, yloc=yloc.price,
-                      color=color.new(col, 30), textcolor=color.white,
-                      style=is_win ? label.style_label_down : label.style_label_up,
-                      size=size.small)
+            exit_label_text := exit_label_text + "\n(" + sign_str + str.tostring(math.abs(pnl_m), "#.00") + ")"
+        label.new(x=ext_bar, y=ext_pr, text=exit_label_text,
+                  xloc=xloc.bar_index, yloc=yloc.price,
+                  color=col, textcolor=color.white,
+                  style=is_win ? label.style_label_down : label.style_label_up,
+                  size=size.normal)
 
 // ---- C) 保有中ポジションの SL/TP/エントリー水平線 ----
 plot(show_open_sl_tp and strategy.position_size != 0 ? locked_sl : na,
@@ -476,7 +482,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1350", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-18-1355", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset,          text_size=size.small)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
