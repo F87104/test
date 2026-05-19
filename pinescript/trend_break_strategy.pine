@@ -1,7 +1,13 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-18-1615  7通貨対応 (+AUDJPY/CHFJPY) ★★
+//  ★★ VERSION 2026-05-19-0040  intra-bar repaint 修正 (確定バーのみシグナル) ★★
+//
+//   重要修正: 過去バージョンでは「形成中バーで一瞬発火 → バー確定で消滅」の
+//   現象が起きえました (intra-bar repaint)。
+//   このバージョンから plotshape / label / strategy.entry すべてに
+//   barstate.isconfirmed (バー確定済み) のチェックを入れて、
+//   一度発火したシグナルは消えないようにしています。
 //
 //   - プリセット 5 通貨 ×  保守 / 緩和  の 2 モードに対応
 //   - level_kind="any" (mid OR long) モード追加
@@ -298,9 +304,14 @@ margin_short = use_margin > 0 ? (lowLevel3m  - close) / atrVal : 10.0
 margin_pass_long  = use_margin > 0 ? margin_long  >= use_margin : true
 margin_pass_short = use_margin > 0 ? margin_short >= use_margin : true
 
-// 最終シグナル
-finalLong  = longSig  and sess_pass and margin_pass_long
-finalShort = shortSig and sess_pass and margin_pass_short
+// 最終シグナル (raw = 形成中バーでも反応)
+finalLong_raw  = longSig  and sess_pass and margin_pass_long
+finalShort_raw = shortSig and sess_pass and margin_pass_short
+
+// ★ NEW ★ confirmed = 確定バーのみで真 → リペイント防止
+//    バー形成中の瞬間的な「シグナル点滅」を排除
+finalLong  = finalLong_raw  and barstate.isconfirmed
+finalShort = finalShort_raw and barstate.isconfirmed
 
 
 // =====================================================================================
@@ -378,8 +389,18 @@ plot(plot_mid_level  ? lowLevel3m  : na, title="中期 安値ライン", color=c
 plot(plot_mid_median ? midMedian3m : na, title="中期 中央値ライン", color=color.new(#2195f3, 0), linewidth=1, style=plot.style_line)
 
 // シグナル発火マーカー (=エントリー候補。実約定は次バー始値)
+// 確定バーのシグナル (=実際にエントリーするマーカー)
 plotshape(finalLong,  title="LONG signal",  location=location.belowbar, style=shape.triangleup,   color=color.new(color.green, 0), size=size.small)
 plotshape(finalShort, title="SHORT signal", location=location.abovebar, style=shape.triangledown, color=color.new(color.red,   0), size=size.small)
+
+// 未確定バーの参考シグナル (薄い ◯ で表示・実発火ではない)
+//   バー形成中に「もしこのままで終わればシグナル発火」を見せる用
+plotshape(finalLong_raw  and barstate.isrealtime and not barstate.isconfirmed,
+     title="LONG (forming)",  location=location.belowbar, style=shape.circle,
+     color=color.new(color.green, 70), size=size.tiny)
+plotshape(finalShort_raw and barstate.isrealtime and not barstate.isconfirmed,
+     title="SHORT (forming)", location=location.abovebar, style=shape.circle,
+     color=color.new(color.red,   70), size=size.tiny)
 
 // 背景塗り潰し (シグナル発火バー)
 bgcolor(finalLong  ? color.new(color.green, 85) : na, title="LONG bg")
@@ -593,7 +614,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-18-1615", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-19-0040", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset + " / " + (is_relaxed ? "緩和" : "保守"), text_size=size.small, text_color=is_relaxed ? color.lime : color.aqua)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
