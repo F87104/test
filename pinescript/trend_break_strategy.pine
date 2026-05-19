@@ -1,11 +1,10 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-19-0100  CRITICAL FIX: 過去シグナル消滅バグ修正 ★★
+//  ★★ VERSION 2026-05-19-0105  シンタックスエラー修正 (継続行を1行化) ★★
 //
-//   直前バージョン (0040) で追加した barstate.isconfirmed が過去バーで
-//   false 評価されるケースがあり、過去シグナル全消滅の原因に。
-//   ishistory or isconfirmed の OR に変更して両ケースで動くように修正。
+//  - 過去シグナル消滅バグは ishistory or isconfirmed で修正済 (0100)
+//  - box.new / label.new の複数行記述で構文エラー出ていたため1行に圧縮
 //
 //   重要修正: 過去バージョンでは「形成中バーで一瞬発火 → バー確定で消滅」の
 //   現象が起きえました (intra-bar repaint)。
@@ -529,32 +528,22 @@ if show_exit_lines and barstate.islast
         is_win   = pnl_m > 0
         col      = is_win ? color.new(color.lime, 0) : color.new(color.red, 0)
 
-        // ★★ NEW ★★ トレード期間を半透明の box で表示
-        //   max_boxes_count=100 は label/line と独立カウントなので
-        //   labels が回転されても box は残る → 痕跡が確実に保持される
+        // ★★ NEW ★★ トレード期間を半透明の box で表示 (1行で記述・継続行エラー回避)
         box_top    = math.max(ent_pr, ext_pr)
         box_bottom = math.min(ent_pr, ext_pr)
-        box.new(left=ent_bar, top=box_top, right=ext_bar, bottom=box_bottom,
-                xloc=xloc.bar_index,
-                bgcolor=color.new(is_win ? color.lime : color.red, 85),
-                border_color=col, border_width=1)
+        box_bg     = color.new(is_win ? color.lime : color.red, 85)
+        box.new(ent_bar, box_top, ext_bar, box_bottom, xloc=xloc.bar_index, bgcolor=box_bg, border_color=col, border_width=1)
 
-        line.new(x1=ent_bar, y1=ent_pr, x2=ext_bar, y2=ext_pr,
-                 xloc=xloc.bar_index, color=col, width=2, style=line.style_solid)
+        line.new(ent_bar, ent_pr, ext_bar, ext_pr, xloc=xloc.bar_index, color=col, width=2, style=line.style_solid)
 
         // 決済ラベル ★ 価格を必ず併記 ★
-        // 例: "✕ WIN @ 4,398.45  (+$300.00)"
-        //     "✕ LOSS @ 4,253.20  (-$100.00)"
         sign_str = pnl_m >= 0 ? "+$" : "-$"
         result_str = is_win ? "✕ WIN" : "✕ LOSS"
         exit_label_text = result_str + " @ " + str.tostring(ext_pr, format.mintick)
         if show_pnl_label
             exit_label_text := exit_label_text + "\n(" + sign_str + str.tostring(math.abs(pnl_m), "#.00") + ")"
-        label.new(x=ext_bar, y=ext_pr, text=exit_label_text,
-                  xloc=xloc.bar_index, yloc=yloc.price,
-                  color=col, textcolor=color.white,
-                  style=is_win ? label.style_label_down : label.style_label_up,
-                  size=size.normal)
+        label_style = is_win ? label.style_label_down : label.style_label_up
+        label.new(ext_bar, ext_pr, exit_label_text, xloc=xloc.bar_index, yloc=yloc.price, color=col, textcolor=color.white, style=label_style, size=size.normal)
 
 // ---- C) 保有中ポジションの SL/TP/エントリー水平線 ----
 plot(show_open_sl_tp and strategy.position_size != 0 ? locked_sl : na,
@@ -638,7 +627,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-19-0100", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-19-0105", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset + " / " + (is_relaxed ? "緩和" : "保守"), text_size=size.small, text_color=is_relaxed ? color.lime : color.aqua)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
