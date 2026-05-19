@@ -1,7 +1,7 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-19-0040  intra-bar repaint 修正 (確定バーのみシグナル) ★★
+//  ★★ VERSION 2026-05-19-0050  トレード痕跡を box で永続化 (label 回転対策) ★★
 //
 //   重要修正: 過去バージョンでは「形成中バーで一瞬発火 → バー確定で消滅」の
 //   現象が起きえました (intra-bar repaint)。
@@ -55,7 +55,7 @@ strategy(
      calc_on_every_tick      = false,
      max_lines_count         = 500,
      max_labels_count        = 500,
-     max_boxes_count         = 100,
+     max_boxes_count         = 500,
      max_bars_back           = 5000
  )
 
@@ -515,6 +515,16 @@ if show_exit_lines and barstate.islast
         is_win   = pnl_m > 0
         col      = is_win ? color.new(color.lime, 0) : color.new(color.red, 0)
 
+        // ★★ NEW ★★ トレード期間を半透明の box で表示
+        //   max_boxes_count=100 は label/line と独立カウントなので
+        //   labels が回転されても box は残る → 痕跡が確実に保持される
+        box_top    = math.max(ent_pr, ext_pr)
+        box_bottom = math.min(ent_pr, ext_pr)
+        box.new(left=ent_bar, top=box_top, right=ext_bar, bottom=box_bottom,
+                xloc=xloc.bar_index,
+                bgcolor=color.new(is_win ? color.lime : color.red, 85),
+                border_color=col, border_width=1)
+
         line.new(x1=ent_bar, y1=ent_pr, x2=ext_bar, y2=ext_pr,
                  xloc=xloc.bar_index, color=col, width=2, style=line.style_solid)
 
@@ -614,7 +624,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-19-0040", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-19-0050", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset + " / " + (is_relaxed ? "緩和" : "保守"), text_size=size.small, text_color=is_relaxed ? color.lime : color.aqua)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
