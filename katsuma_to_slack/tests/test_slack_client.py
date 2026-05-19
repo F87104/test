@@ -4,7 +4,9 @@ from katsuma_to_slack.slack_client import (
     SlackPoster,
     build_mailmagazine_blocks,
     build_reminder_blocks,
+    build_worksheet_blocks,
 )
+from katsuma_to_slack.worksheet import Worksheet, review_prompt_for
 
 
 class _FakeResponse:
@@ -65,6 +67,13 @@ def test_api_post_propagates_error():
     assert res.error == "channel_not_found"
 
 
+def test_supports_threading_only_with_bot_token():
+    p_webhook = SlackPoster(webhook_url="https://hooks.example/x")
+    p_bot = SlackPoster(bot_token="xoxb", channel_id="C1")
+    assert p_webhook.supports_threading is False
+    assert p_bot.supports_threading is True
+
+
 def test_blocks_render_subject_and_summary():
     blocks = build_mailmagazine_blocks(
         subject="勝間和代の毎日メルマガ #100",
@@ -77,20 +86,51 @@ def test_blocks_render_subject_and_summary():
     assert "本日は『習慣の力』について。" in rendered
 
 
-def test_reminder_blocks_link_to_permalink():
+def test_worksheet_blocks_render_questions():
+    ws = Worksheet(
+        case_summary="今日のテーマ: *習慣の力*",
+        questions=[
+            "今日のメルマガを3行で要約してください。",
+            "もし自分が同じ状況なら、どう考え、どう行動しますか？",
+            "24時間以内に試せる一歩は？",
+        ],
+        action_prompt="スレッドに返信してください。",
+    )
+    blocks = build_worksheet_blocks(worksheet=ws)
+    rendered = str(blocks)
+    assert "今日のワーク" in rendered
+    assert "Q1." in rendered and "Q2." in rendered and "Q3." in rendered
+    assert "もし自分が同じ状況" in rendered
+    assert "スレッドに返信" in rendered
+
+
+def test_reminder_blocks_include_review_prompt_and_original_questions():
+    review = review_prompt_for(1)
+    blocks = build_reminder_blocks(
+        subject="勝間和代の毎日メルマガ #100",
+        interval_days=1,
+        permalink="https://slack.example/p1",
+        review=review,
+        original_questions=[
+            "今日のメルマガを3行で要約してください。",
+            "もし自分が同じ状況なら、どう考え、どう行動しますか？",
+        ],
+    )
+    rendered = str(blocks)
+    assert "行動編" in rendered
+    assert "https://slack.example/p1" in rendered
+    assert "あの日のワーク" in rendered
+    assert "もし自分が同じ状況" in rendered
+
+
+def test_reminder_blocks_work_without_permalink_or_review():
     blocks = build_reminder_blocks(
         subject="勝間和代の毎日メルマガ #100",
         interval_days=7,
-        permalink="https://slack.example/p1",
+        permalink=None,
+        review=None,
+        original_questions=None,
     )
     rendered = str(blocks)
     assert "7日後の復習" in rendered
-    assert "https://slack.example/p1" in rendered
-
-    blocks2 = build_reminder_blocks(
-        subject="勝間和代の毎日メルマガ #100",
-        interval_days=7,
-        permalink=None,
-    )
-    rendered2 = str(blocks2)
-    assert "7日後の復習" in rendered2
+    assert "勝間和代の毎日メルマガ #100" in rendered

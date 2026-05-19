@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from .worksheet import ReviewPrompt, Worksheet
+
 
 logger = logging.getLogger(__name__)
 
@@ -61,28 +63,114 @@ def build_mailmagazine_blocks(
     ]
 
 
+def build_worksheet_blocks(*, worksheet: Worksheet) -> List[Dict[str, Any]]:
+    """『今日のワーク』をスレッド返信として投げるためのブロック.
+
+    本文投稿とは別メッセージにすることで, ユーザーが各設問にスレッド返信しやすくする.
+    """
+    blocks: List[Dict[str, Any]] = [
+        {
+            "type": "header",
+            "text": {"type": "plain_text", "text": ":pencil: 今日のワーク"[:150]},
+        },
+    ]
+    if worksheet.case_summary:
+        blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": worksheet.case_summary[:2800]}}
+        )
+        blocks.append({"type": "divider"})
+
+    if worksheet.questions:
+        question_text = "\n".join(f"*Q{i + 1}.* {q}" for i, q in enumerate(worksheet.questions))
+        blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": question_text[:2800]}}
+        )
+
+    if worksheet.action_prompt:
+        blocks.append(
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f":arrow_right: {worksheet.action_prompt}"},
+                ],
+            }
+        )
+    blocks.append(
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": (
+                        ":bulb: 答え方の例:\n"
+                        "`Q1. ◯◯◯`\n"
+                        "`Q2. 賛成 / 根拠: △△`\n"
+                        "`Q3. もし自分なら…`\n"
+                        "`Q4. 今日 21:00 に □□ をやる`"
+                    ),
+                }
+            ],
+        }
+    )
+    return blocks
+
+
 def build_reminder_blocks(
     *,
     subject: str,
     interval_days: int,
     permalink: Optional[str],
+    review: Optional[ReviewPrompt] = None,
+    original_questions: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
-    head = f":alarm_clock: {interval_days}日後の復習: {subject}"[:150]
+    label = review.label if review else f"{interval_days}日後の復習"
+    head = f":alarm_clock: {label}: {subject}"[:150]
     if permalink:
-        body = (
-            f"<{permalink}|あの日のメルマガをもう一度読み返しましょう。>\n"
-            "*いま振り返って思うことを、このスレッドに追記してください。*"
-        )
+        link_line = f"<{permalink}|あの日のメルマガをもう一度開く>"
     else:
-        body = (
-            f"*{subject}*\n"
-            "あの日のメルマガをもう一度読み返しましょう。\n"
-            "*いま振り返って思うことを、このスレッドに追記してください。*"
-        )
-    return [
+        link_line = f"*{subject}* をもう一度読み返してみましょう。"
+
+    blocks: List[Dict[str, Any]] = [
         {"type": "header", "text": {"type": "plain_text", "text": head}},
-        {"type": "section", "text": {"type": "mrkdwn", "text": body}},
+        {"type": "section", "text": {"type": "mrkdwn", "text": link_line}},
     ]
+
+    if review and review.questions:
+        body = "\n".join(f"*Q{i + 1}.* {q}" for i, q in enumerate(review.questions))
+        blocks.append({"type": "divider"})
+        blocks.append(
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*振り返りの問い*\n{body}"[:2800]},
+            }
+        )
+
+    if original_questions:
+        original = "\n".join(f"・{q}" for q in original_questions[:5])
+        blocks.append(
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f":books: あの日のワーク（参照用）\n{original}"[:2800],
+                    }
+                ],
+            }
+        )
+
+    blocks.append(
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": ":speech_balloon: いま振り返って思うことを、このスレッドに追記してください。",
+                }
+            ],
+        }
+    )
+    return blocks
 
 
 class SlackPoster:
@@ -97,6 +185,10 @@ class SlackPoster:
         self.bot_token = bot_token
         self.channel_id = channel_id
         self.session = session or requests.Session()
+
+    @property
+    def supports_threading(self) -> bool:
+        return bool(self.bot_token and self.channel_id)
 
     def post_message(
         self,

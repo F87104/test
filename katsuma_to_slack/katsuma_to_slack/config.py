@@ -33,6 +33,12 @@ class Config:
 
     db_path: str = "./katsuma.sqlite3"
 
+    # ---- ワーク機能 ---- #
+    worksheet_mode: str = "template"  # template | llm | off
+    openai_api_key: Optional[str] = None
+    openai_model: str = "gpt-4o-mini"
+    openai_base_url: str = "https://api.openai.com/v1"
+
     @classmethod
     def from_env(cls, env: Optional[dict] = None) -> "Config":
         env = env if env is not None else os.environ
@@ -57,6 +63,10 @@ class Config:
             review_intervals_days=intervals,
             remind_hour=int(get("REMIND_HOUR", "8")),
             db_path=get("DB_PATH", "./katsuma.sqlite3"),
+            worksheet_mode=get("WORKSHEET_MODE", "template"),
+            openai_api_key=get("OPENAI_API_KEY") or None,
+            openai_model=get("OPENAI_MODEL", "gpt-4o-mini"),
+            openai_base_url=get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
         )
 
     def validate(self) -> None:
