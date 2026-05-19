@@ -1,7 +1,11 @@
 //@version=5
 // =====================================================================================
 //  大トレンドブレイク戦略  (Python 検証ツール完全互換版 / Strategy / H1 最適化済)
-//  ★★ VERSION 2026-05-19-0050  トレード痕跡を box で永続化 (label 回転対策) ★★
+//  ★★ VERSION 2026-05-19-0100  CRITICAL FIX: 過去シグナル消滅バグ修正 ★★
+//
+//   直前バージョン (0040) で追加した barstate.isconfirmed が過去バーで
+//   false 評価されるケースがあり、過去シグナル全消滅の原因に。
+//   ishistory or isconfirmed の OR に変更して両ケースで動くように修正。
 //
 //   重要修正: 過去バージョンでは「形成中バーで一瞬発火 → バー確定で消滅」の
 //   現象が起きえました (intra-bar repaint)。
@@ -308,10 +312,20 @@ margin_pass_short = use_margin > 0 ? margin_short >= use_margin : true
 finalLong_raw  = longSig  and sess_pass and margin_pass_long
 finalShort_raw = shortSig and sess_pass and margin_pass_short
 
-// ★ NEW ★ confirmed = 確定バーのみで真 → リペイント防止
-//    バー形成中の瞬間的な「シグナル点滅」を排除
-finalLong  = finalLong_raw  and barstate.isconfirmed
-finalShort = finalShort_raw and barstate.isconfirmed
+// ★ FIX 2026-05-19-0100 ★ リペイント防止 + 履歴バー対応
+//   barstate.isconfirmed 単独だと過去バーで false 判定されるケースがあり
+//   過去のシグナルが消える事象が報告された (CHFJPY)。
+//
+//   barstate.ishistory: 過去バーで true、リアルタイムバーで false
+//   barstate.isconfirmed: リアルタイムバーが閉じた瞬間に true
+//
+//   両者の OR を取れば:
+//     - 過去バー → ishistory=true → 常にシグナル評価される
+//     - リアルタイム形成中 → 両方 false → シグナル抑制 (リペイント回避)
+//     - リアルタイム確定時 → isconfirmed=true → シグナル発火
+bar_is_settled = barstate.ishistory or barstate.isconfirmed
+finalLong  = finalLong_raw  and bar_is_settled
+finalShort = finalShort_raw and bar_is_settled
 
 
 // =====================================================================================
@@ -395,10 +409,10 @@ plotshape(finalShort, title="SHORT signal", location=location.abovebar, style=sh
 
 // 未確定バーの参考シグナル (薄い ◯ で表示・実発火ではない)
 //   バー形成中に「もしこのままで終わればシグナル発火」を見せる用
-plotshape(finalLong_raw  and barstate.isrealtime and not barstate.isconfirmed,
+plotshape(finalLong_raw  and barstate.isrealtime and not bar_is_settled,
      title="LONG (forming)",  location=location.belowbar, style=shape.circle,
      color=color.new(color.green, 70), size=size.tiny)
-plotshape(finalShort_raw and barstate.isrealtime and not barstate.isconfirmed,
+plotshape(finalShort_raw and barstate.isrealtime and not bar_is_settled,
      title="SHORT (forming)", location=location.abovebar, style=shape.circle,
      color=color.new(color.red,   70), size=size.tiny)
 
@@ -624,7 +638,7 @@ alertcondition(finalShort, title="🔴 Short Signal", message="{{ticker}}: SHORT
 if barstate.islast
     var table info = table.new(position.top_right, 2, 13, frame_color=color.gray, frame_width=1)
     table.cell(info, 0, 0, "★ VERSION", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
-    table.cell(info, 1, 0, "2026-05-19-0050", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
+    table.cell(info, 1, 0, "2026-05-19-0100", bgcolor=color.new(color.orange, 0), text_color=color.white, text_size=size.normal)
     table.cell(info, 0, 1, "プリセット",    text_size=size.small)
     table.cell(info, 1, 1, preset + " / " + (is_relaxed ? "緩和" : "保守"), text_size=size.small, text_color=is_relaxed ? color.lime : color.aqua)
     table.cell(info, 0, 2, "level_kind",    text_size=size.small)
