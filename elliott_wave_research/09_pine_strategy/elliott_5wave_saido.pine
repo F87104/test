@@ -164,9 +164,10 @@ htf_short_ok = not i_use_ltf_filter
 // =====================================================================================
 atr14 = ta.atr(i_atr_len)
 
-// Pine v6 `nz()` does not accept `series bool`. Use safe defaults via na-check.
-bool prev_above = na(aboveCloud[1]) ? false : aboveCloud[1]
-bool prev_below = na(belowCloud[1]) ? false : belowCloud[1]
+// Pine v6 does not allow `nz()` or `na()` on `series bool` directly.
+// Persist the previous bar value with a `var bool`, then update at end of bar.
+var bool prev_above = false
+var bool prev_below = false
 crossUp   = aboveCloud and not prev_above
 crossDown = belowCloud and not prev_below
 
@@ -366,3 +367,11 @@ if i_show_labels and S_short_signal
     label.new(bar_index, high, "W5↓",
          style = label.style_label_down, color = color.new(color.red, 0),
          textcolor = color.white, size = size.small)
+
+// =====================================================================================
+// 7. STATE UPDATE FOR NEXT BAR (must be the very last thing in the script)
+//    Persist the current bar's cloud-relative state so that next bar's
+//    `crossUp` / `crossDown` work without using `nz()`/`na()` on series bool.
+// =====================================================================================
+prev_above := aboveCloud
+prev_below := belowCloud
