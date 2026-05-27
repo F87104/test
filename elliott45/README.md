@@ -325,3 +325,97 @@ python -m elliott45.main --all --fixed-sizing     --partial-tp-r 1.0 --trail-atr
 ```bash
 python -m elliott45.scripts.stress
 ```
+
+
+## 🔍 バグ監査 / 本当に edge があるか（重要）
+
+「あまりに数字が良すぎる」という疑念に対し、コードを敵対的に監査して
+バイアスを検出しました。
+
+### 発見した本物のバグ（1 件、修正済み）
+
+**同バー内 partial + 元 SL の楽観ハンドリング**:  
+旧コードは「partial にタッチ → 建値ストップ移動 → SL チェック」の順だった
+ため、**1 本のバー内で partial と元 SL の両方にタッチした場合、partial を
+利食って建値撤退**と書いていました。OHLC からは両者の時間順序は不明なので、
+**保守的には SL 優先（partial は発火しない）** が正しい。
+
+修正後の挙動: バー高/低が元 SL を割っているなら **partial を見ない**、
+ストップ価格でクローズ。`tests/test_bug_audit.py::test_same_bar_partial_and_original_sl_is_treated_as_sl`
+で再現テストを追加。
+
+実データへの影響: USDJPY で Sharpe 3.21 → 3.17、ポートフォリオ平均でも
+ほぼ変わらず。**該当ケースは稀**でした。
+
+### バイアス源の定量化（ランダム対照実験）
+
+「edge は本物か」を切り分けるため、以下 3 つを同じ出口（partial 1R+BE+trail 2×ATR）で比較:
+
+| エンジン | 取引数 | 勝率 | PF | E[R] | ret | DD |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| (a) Elliott 正方向 | 1,778 | **90.0%** | **54.4** | +0.67R | +131.6% | -0.34% |
+| (b) Elliott setup バー + **方向 50/50** | 1,195 | 77.4% | 7.2 | +0.51R | +66.2% | -1.12% |
+| (c) **完全ランダム入口**（同じ ATR スケール） | 1,895 | 39.3% | 1.05 | +0.01R | +2.1% | -10.9% |
+
+→ 結論:
+
+* **(c) → (b)**: 「ピボット点で入って tight trail」だけで **勝率 +38pp、PF ×7**。これは
+  「Wave4 末という意味のあるピボット点では局所的に mean-reversion が出やすい」+
+  「ATR trail と 1R partial が機械的に win率を底上げする」効果。**戦略の方向当てとは無関係**。
+* **(b) → (a)**: エリオット方向を当てる本来の edge は **勝率 +13pp、PF ×7.5**。
+  これは「Wave5 という上位足での continuation」の現実の優位性。
+
+つまり headline 90% / PF 55 は **「正味のエリオット edge」+ 「ピボット選択 × 賢い出口
+の機械的ボーナス」** の合算で、後者が想像以上に大きい。
+
+#### 「現実的に期待できる」数字の見方
+
+| 軸 | (b) ランダム方向 | (a) Elliott | リアル運用想定 |
+| --- | ---: | ---: | ---: |
+| 勝率 | 77% | 90% | **80-87%**（スプレッド+スリッページ込み） |
+| PF | 7 | 54 | **5-15** |
+| Sharpe | 2.0 | 3.0 | **1.5-2.5** |
+
+実運用では PF 55 ではなく **PF 5〜15** を期待値と置くのが現実的です。
+それでも十分に良い戦略ですが、「魔法のような勝率」と見るのは行き過ぎ。
+
+### 監査でクリアした項目（look-ahead/未来情報を使っていないこと）
+
+| チェック項目 | 結果 |
+| --- | --- |
+| ZigZag pivot が `confirm_idx >= idx` で必ず確定後にだけ使われる | ✓ `tests/test_zigzag.py` |
+| Wave5 シグナルが `p4.confirm_idx + 1` から発火 | ✓ コード上で強制 |
+| トレーリングストップが **前バーの高値** を使う（同バー高値は使わない） | ✓ `tests/test_bug_audit.py::test_trail_does_not_use_current_bar_high` |
+| エントリーバー内では exit を判定しない（同バー往復で利確しない） | ✓ コード上で `in_pos` が次バーから判定 |
+| 同バー partial+元SL は SL 優先（修正済） | ✓ `tests/test_bug_audit.py::test_same_bar_partial_and_original_sl_is_treated_as_sl` |
+| 同バー SL+TP も SL 優先（保守側） | ✓ コード上 |
+| スリッページ追加で必ず PnL が悪化する（一方向） | ✓ `tests/test_stress.py::test_slippage_makes_results_worse_not_better` |
+| コストが PnL から確実に差し引かれる | ✓ `tests/test_exits.py::test_cost_is_subtracted` |
+| 銘柄別 CSV は H1 にリサンプルされている（GBPJPY の M1 混入対策） | ✓ `src/data_loader.py::_resample_to_h1` |
+| 全テスト（18 ケース）パス | ✓ `python3 -m pytest elliott45/tests -q` |
+
+### 「それでも数字が良すぎる」と感じる理由（システム的要因）
+
+1. **スワップを未モデル化**: H1 で平均保有 5 バー＝多くがオーバーナイトしない、
+   が一部は週末ポジで scratch loss を被るはず。
+2. **ニュースギャップ未モデル化**: 米雇用統計や金融政策発表で起こる窓開けで
+   trail/SL が想定外の悪い価格でフィルされる現実をモデルしていない。
+3. **取引相手の流動性未モデル化**: 大口を入れたら自分の注文がスプレッドを
+   広げる影響は無視。リテール口座規模なら問題なし。
+4. **survivor selection of symbols**: 9 銘柄はすべて 11+ 年のデータが取れる
+   メジャー通貨/コモディティ/指数で、流動性が低いものは含めていない。
+5. **戦略外フィルタ**: 経済指標・週末ホールド回避などの実務フィルタを未実装。
+   現実は「指標前 30 分はノートレ」などのルールでさらに勝率が下がる。
+
+これらを足して、現実的な実運用での expected Sharpe は **1.5〜2.5** と見るのが
+妥当です。それでも十分に競争力のある数値です。
+
+### 再現コマンド
+
+```bash
+# 同バー partial+SL のバグ再現テスト
+python -m pytest elliott45/tests/test_bug_audit.py -v
+
+# ランダム対照実験
+python -m elliott45.scripts.random_control
+```

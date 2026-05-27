@@ -1,24 +1,33 @@
 """Event-driven backtester for Elliott Wave 4→5 setups.
 
-Causal rules:
+Causal rules (audited 2026-05):
   * A setup created at pivot4-confirm bar ``c`` is acted on starting at
     bar ``c+1`` (``entry_bar``).
-  * Each setup carries a trigger price (computed in ``elliott.py`` from
-    ``entry_buffer_frac``). If price touches it intra-bar within
-    ``max_pending_bars`` the trade fills at the trigger price.
-  * Once filled, the trade is monitored intra-bar. If SL and TP can both
-    be hit in the same bar we conservatively assume SL hit first.
-  * Optional exit improvements (all causal):
-      - ``partial_tp_r``      : at price = entry + R × multiple, close
-                                ``partial_tp_size`` fraction of the
-                                position and (optionally) move the stop
-                                to breakeven.
-      - ``move_be_at_partial``: when the partial TP triggers, move SL to
-                                the entry price.
-      - ``trail_atr_mult``    : after entry, trail a Chandelier-style stop
-                                using ATR (causal: uses previous bar ATR).
-  * Only one position open at a time. A new setup invalidates any older
-    still-pending setup. No commission/slippage/swap modelled.
+  * Each setup carries a trigger price. If price touches it intra-bar
+    within ``max_pending_bars`` the trade fills at the trigger price
+    (+slippage when configured).
+  * Intra-bar ordering on subsequent bars (CONSERVATIVE):
+      1. Apply the trailing stop update from the PRIOR bar (so the SL
+         level in force at bar open is correctly raised).
+      2. Snapshot ``sl_at_open`` and check it against bar high/low FIRST.
+         If touched, exit at that level — partial TP cannot fire on the
+         same bar (we don't know intra-bar order between an upper partial
+         and a lower SL, so we default to the SL).
+      3. Only if the SL didn't hit, look for partial TP on this bar.
+         A partial fire books the partial profit and moves SL to break-
+         even, but the new BE level only becomes effective on the NEXT
+         bar (mirroring the trail's bar-open semantics).
+      4. After partial handling, check TP against bar high/low. If it
+         hit, exit the remaining size at TP. (Partial < TP for longs by
+         construction, so the natural intra-bar order partial→TP is
+         physically plausible.)
+      5. Otherwise check the bar-count timeout and exit at close.
+  * Exits on the trade's own entry bar are NOT checked (we don't know
+    intra-bar order between trigger fill and subsequent SL/TP touches).
+    This bias is roughly symmetric.
+  * Only one position is open at a time. A new setup invalidates any
+    older still-pending setup. No swap is modelled; ``cost_per_trade``
+    and ``slippage_atr_mult`` cover spread + commission + execution slip.
 """
 
 from __future__ import annotations
@@ -46,7 +55,7 @@ class Trade:
     bars_held: int
     setup_w1: float
     setup_w3: float
-    reason: str  # "tp", "sl", "timeout", "trail", "partial+stop"
+    reason: str
 
 
 @dataclass
@@ -59,14 +68,16 @@ class BacktestConfig:
     fixed_sizing: bool = False
 
     # exit improvements
-    partial_tp_r: float = 0.0          # 0 disables; e.g. 1.0 = take half at +1R
-    partial_tp_size: float = 0.5       # fraction of position closed on partial
-    move_be_at_partial: bool = True    # move SL to breakeven when partial fires
-    trail_atr_mult: float = 0.0        # 0 disables; e.g. 3.0 = trail by 3×ATR
+    partial_tp_r: float = 0.0
+    partial_tp_size: float = 0.5
+    move_be_at_partial: bool = True
+    trail_atr_mult: float = 0.0
     trail_atr_period: int = 14
-    trail_after_partial_only: bool = False  # if True, only start trailing once partial fired
-    cost_per_trade: float = 0.0    # round-trip cost in price units (spread+commission); subtracted from pnl per unit
-    slippage_atr_mult: float = 0.0  # per-side ATR slippage applied AGAINST us on entry / SL / trail / partial
+    trail_after_partial_only: bool = False
+
+    # frictions
+    cost_per_trade: float = 0.0
+    slippage_atr_mult: float = 0.0
 
 
 @dataclass
@@ -90,8 +101,7 @@ def run_backtest(
     need_atr = cfg.trail_atr_mult > 0 or cfg.slippage_atr_mult > 0
     atr_arr = (
         atr_series_fn(df, cfg.trail_atr_period).to_numpy()
-        if need_atr
-        else None
+        if need_atr else None
     )
 
     triggers: list[float] = [s.trigger_price for s in setups]
@@ -110,7 +120,7 @@ def run_backtest(
     pos_entry_price = 0.0
     pos_qty_initial = 0.0
     pos_qty_open = 0.0
-    pos_sl = 0.0
+    pos_sl = 0.0       # SL level effective at bar open (updated by trail at top of each bar)
     pos_tp = 0.0
     pos_entry_bar = 0
     pos_entry_time = None
@@ -118,7 +128,7 @@ def run_backtest(
     pos_partial_done = False
     pos_partial_pnl = 0.0
     pos_partial_r = 0.0
-    pos_r_per_unit = 0.0     # |entry − initial SL|, the R denominator
+    pos_r_per_unit = 0.0
 
     def _close_position(i: int, exit_price: float, reason: str) -> None:
         nonlocal in_pos, equity
@@ -131,12 +141,11 @@ def run_backtest(
         total_pnl = pos_partial_pnl + pnl_remaining
         if cfg.cost_per_trade > 0:
             total_pnl -= cfg.cost_per_trade * pos_qty_initial
-        total_r = (
-            pos_partial_r
-            + (pnl_per_unit / pos_r_per_unit) * (pos_qty_open / pos_qty_initial)
-            if pos_r_per_unit > 0
-            else 0.0
-        )
+        total_r = pos_partial_r
+        if pos_r_per_unit > 0:
+            total_r += (pnl_per_unit / pos_r_per_unit) * (pos_qty_open / pos_qty_initial)
+            if cfg.cost_per_trade > 0:
+                total_r -= cfg.cost_per_trade / pos_r_per_unit
         s = setups[pos_setup_idx]
         trades.append(
             Trade(
@@ -167,14 +176,52 @@ def run_backtest(
         bar_low = low[i]
 
         if in_pos:
-            # 1) Partial TP check (intra-bar). Conservative: even if SL also
-            #    touches we let the partial fire only if its price is "closer"
-            #    to the previous close than the SL is.
+            # ---- Step 1: trailing stop update from PRIOR bar ----
+            # The trail level depends on bar i-1 close + ATR, so it is the
+            # level you would have placed before bar i opens.
             if (
-                cfg.partial_tp_r > 0
-                and not pos_partial_done
-                and pos_r_per_unit > 0
+                cfg.trail_atr_mult > 0
+                and atr_arr is not None
+                and (not cfg.trail_after_partial_only or pos_partial_done)
+                and i > 0
             ):
+                prev_atr = atr_arr[i - 1]
+                if not np.isnan(prev_atr) and prev_atr > 0:
+                    band = cfg.trail_atr_mult * prev_atr
+                    if pos_dir == "long":
+                        new_sl = high[i - 1] - band
+                        if new_sl > pos_sl:
+                            pos_sl = new_sl
+                    else:
+                        new_sl = low[i - 1] + band
+                        if new_sl < pos_sl:
+                            pos_sl = new_sl
+
+            # Slippage (applied AGAINST us on a stop fill).
+            stop_slip = 0.0
+            half_slip = 0.0
+            if cfg.slippage_atr_mult > 0 and atr_arr is not None and i > 0:
+                prev_atr = atr_arr[i - 1]
+                if not np.isnan(prev_atr):
+                    stop_slip = cfg.slippage_atr_mult * prev_atr
+                    half_slip = 0.5 * cfg.slippage_atr_mult * prev_atr
+
+            # ---- Step 2: SL check FIRST against bar-open SL (conservative) ----
+            sl_at_open = pos_sl
+            sl_hit = (
+                (pos_dir == "long" and bar_low <= sl_at_open)
+                or (pos_dir == "short" and bar_high >= sl_at_open)
+            )
+            if sl_hit:
+                exit_price = (
+                    sl_at_open - stop_slip if pos_dir == "long"
+                    else sl_at_open + stop_slip
+                )
+                reason = "sl" if not pos_partial_done else "partial+stop"
+                _close_position(i, exit_price, reason)
+
+            # ---- Step 3: partial TP (only if SL did not hit) ----
+            if in_pos and cfg.partial_tp_r > 0 and not pos_partial_done and pos_r_per_unit > 0:
                 if pos_dir == "long":
                     partial_price = pos_entry_price + cfg.partial_tp_r * pos_r_per_unit
                     partial_hit = bar_high >= partial_price
@@ -182,75 +229,40 @@ def run_backtest(
                     partial_price = pos_entry_price - cfg.partial_tp_r * pos_r_per_unit
                     partial_hit = bar_low <= partial_price
                 if partial_hit:
-                    half_slip = 0.0
-                    if cfg.slippage_atr_mult > 0 and atr_arr is not None:
-                        prev_atr = atr_arr[i - 1] if i > 0 else 0.0
-                        if not np.isnan(prev_atr):
-                            half_slip = 0.5 * cfg.slippage_atr_mult * prev_atr
-                    effective_partial = (
-                        partial_price - half_slip if pos_dir == "long" else partial_price + half_slip
+                    eff_partial = (
+                        partial_price - half_slip if pos_dir == "long"
+                        else partial_price + half_slip
                     )
                     closed_qty = pos_qty_initial * cfg.partial_tp_size
                     pnl_unit = (
-                        (effective_partial - pos_entry_price)
+                        (eff_partial - pos_entry_price)
                         if pos_dir == "long"
-                        else (pos_entry_price - effective_partial)
+                        else (pos_entry_price - eff_partial)
                     )
                     pos_partial_pnl += pnl_unit * closed_qty
-                    pos_partial_r += (pnl_unit / pos_r_per_unit) * (closed_qty / pos_qty_initial) if pos_r_per_unit > 0 else 0.0
+                    if pos_r_per_unit > 0:
+                        pos_partial_r += (pnl_unit / pos_r_per_unit) * (closed_qty / pos_qty_initial)
                     pos_qty_open -= closed_qty
                     pos_partial_done = True
                     if cfg.move_be_at_partial:
+                        # BE applies from NEXT bar, mirroring trail semantics.
                         pos_sl = pos_entry_price
 
-            # 2) Trailing stop (Chandelier) update — uses previous bar ATR so
-            #    it's causal within this bar.
-            if (
-                cfg.trail_atr_mult > 0
-                and atr_arr is not None
-                and (not cfg.trail_after_partial_only or pos_partial_done)
-            ):
-                prev_atr = atr_arr[i - 1] if i > 0 else np.nan
-                if not np.isnan(prev_atr) and prev_atr > 0:
-                    band = cfg.trail_atr_mult * prev_atr
-                    if pos_dir == "long":
-                        new_sl = high[i - 1] - band if i > 0 else pos_sl
-                        if new_sl > pos_sl:
-                            pos_sl = new_sl
-                    else:
-                        new_sl = low[i - 1] + band if i > 0 else pos_sl
-                        if new_sl < pos_sl:
-                            pos_sl = new_sl
+            # ---- Step 4: TP check ----
+            if in_pos:
+                tp_hit = (
+                    (pos_dir == "long" and bar_high >= pos_tp)
+                    or (pos_dir == "short" and bar_low <= pos_tp)
+                )
+                if tp_hit:
+                    _close_position(i, pos_tp, "tp")
 
-            # 3) Standard SL/TP/timeout exits.
-            sl_hit = (pos_dir == "long" and bar_low <= pos_sl) or (
-                pos_dir == "short" and bar_high >= pos_sl
-            )
-            tp_hit = (pos_dir == "long" and bar_high >= pos_tp) or (
-                pos_dir == "short" and bar_low <= pos_tp
-            )
-            exit_price: Optional[float] = None
-            reason = ""
-            stop_slip = 0.0
-            if cfg.slippage_atr_mult > 0 and atr_arr is not None:
-                prev_atr = atr_arr[i - 1] if i > 0 else 0.0
-                if not np.isnan(prev_atr):
-                    stop_slip = cfg.slippage_atr_mult * prev_atr
-            if sl_hit and tp_hit:
-                exit_price = pos_sl - stop_slip if pos_dir == "long" else pos_sl + stop_slip
-                reason = "sl" if not pos_partial_done else "partial+stop"
-            elif sl_hit:
-                exit_price = pos_sl - stop_slip if pos_dir == "long" else pos_sl + stop_slip
-                reason = "sl" if not pos_partial_done else "partial+stop"
-            elif tp_hit:
-                exit_price = pos_tp
-                reason = "tp"
-            elif (i - pos_entry_bar) >= cfg.max_hold_bars:
-                exit_price = close[i]
-                reason = "timeout"
-            if exit_price is not None:
-                _close_position(i, exit_price, reason)
+            # ---- Step 5: timeout ----
+            if in_pos and (i - pos_entry_bar) >= cfg.max_hold_bars:
+                _close_position(i, close[i], "timeout")
 
+        # Entry handling (after exits on the same bar — entries do NOT
+        # check exits on their own bar).
         if not in_pos and pending:
             pending.sort(key=lambda k: setups[k].entry_bar)
             candidate_idx = pending[-1]
@@ -265,11 +277,13 @@ def run_backtest(
                 )
                 if triggered:
                     slip = 0.0
-                    if cfg.slippage_atr_mult > 0 and atr_arr is not None:
-                        prev_atr = atr_arr[i - 1] if i > 0 else 0.0
+                    if cfg.slippage_atr_mult > 0 and atr_arr is not None and i > 0:
+                        prev_atr = atr_arr[i - 1]
                         if not np.isnan(prev_atr):
                             slip = cfg.slippage_atr_mult * prev_atr
-                    entry_price = trig + slip if s.direction == "long" else trig - slip
+                    entry_price = (
+                        trig + slip if s.direction == "long" else trig - slip
+                    )
                     risk = abs(entry_price - s.stop_price)
                     if risk > 0:
                         sizing_equity = cfg.starting_equity if cfg.fixed_sizing else equity
