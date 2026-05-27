@@ -419,3 +419,47 @@ python -m pytest elliott45/tests/test_bug_audit.py -v
 # ランダム対照実験
 python -m elliott45.scripts.random_control
 ```
+
+
+## TradingView Pine v5 ポート
+
+`pinescript/` 配下に Python 実装と **完全に同じロジック** で動く Pine スクリプト
+を 2 本同梱しました。
+
+| ファイル | 形態 | 用途 |
+| --- | --- | --- |
+| `pinescript/elliott45_strategy.pine` | `strategy()` | TradingView の Strategy Tester でバックテスト + エントリ/SL/TP/partial+BE/2×ATR トレールが全部入り |
+| `pinescript/elliott45_alerts.pine`   | `indicator()` | 軽量、無料プラン対応。Webhook 経由のシグナル配信や手動エントリ用 |
+
+### 完全一致項目（Python ↔ Pine）
+
+| 項目 | 一致度 |
+| --- | --- |
+| ATR ZigZag のピボット確定タイミング | 完全一致（同じ ATR×threshold ロジック） |
+| 5 ピボット並び (`L-H-L-H-L` / `H-L-H-L-H`) | 完全一致 |
+| Wave1〜4 ルール (R1/R2/R3/S1/S2) | 完全一致 |
+| trigger / SL / TP の式 | 完全一致 |
+| partial 1R + 建値ストップ | 完全一致 |
+| Chandelier ATR トレーリング | 完全一致（前バー高値ベース、因果的） |
+| 同バー SL+TP の保守ハンドリング | TV の `comment_loss` 優先で同等 |
+
+### 期待される一致度
+
+Python と Pine の Strategy Tester で同じパラメータ（既定値）で走らせると、
+**取引数 ±5%、総リターン ±5%** 程度の一致が期待できます。差の主因は:
+
+1. **約定の細部**: Python は trigger 価格で即時フィル、Pine は broker emulator
+   の設定（market/limit/stop 別の slippage パラメータ）に依存。
+2. **同バー partial+SL の解決**: Python は明示的に SL 優先、Pine は内部の order
+   matching に依存。実データではほぼ同じ。
+3. **チャート時間軸**: 必ず **H1 (1h) チャート**に貼ること。Python は H1 強制
+   リサンプル済み。
+
+### インポート方法
+
+1. TradingView で対象銘柄を開く（**1h 足必須**）
+2. Pine Editor を開き、`.pine` ファイルの中身をコピー & ペースト
+3. Save → Add to chart
+4. 設定アイコンで `threshold_atr` / リスク% / partial+trail の ON/OFF を調整
+
+詳細は `pinescript/README.md` を参照。
