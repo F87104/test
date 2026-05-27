@@ -590,6 +590,13 @@ def backtest(bars: List[Bar], cfg: Config) -> dict:
         long_sig = update_long()
         short_sig = update_short()
 
+        # Match Pine behavior: state ALWAYS resets after a wave-5 attempt
+        # (regardless of whether an open trade prevents entry).
+        if long_sig:
+            L.state = 0
+        if short_sig:
+            S.state = 0
+
         # ---------- Entry decisions ----------
         if open_trade is None:
             # Window filter
@@ -631,7 +638,6 @@ def backtest(bars: List[Bar], cfg: Config) -> dict:
                         tp = L.w4_price + fib1 * 1.618
                     else:
                         tp = math.nan
-                    # Position size by risk
                     entry = b.c + b.c * cfg.slippage_pct
                     risk_per_unit = entry - sl
                     if risk_per_unit > 0:
@@ -640,8 +646,6 @@ def backtest(bars: List[Bar], cfg: Config) -> dict:
                                            entry_price=entry, sl=sl, tp=tp, qty=qty)
                         trail = math.nan
                         half_done = False
-                # Reset state machine regardless of acceptance to avoid re-firing
-                L.state = 0
 
             elif short_sig and allow_short and in_window:
                 ok = True
@@ -680,7 +684,6 @@ def backtest(bars: List[Bar], cfg: Config) -> dict:
                                            entry_price=entry, sl=sl, tp=tp, qty=qty)
                         trail = math.nan
                         half_done = False
-                S.state = 0
 
         prev_above = above
         prev_below = below

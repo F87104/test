@@ -38,11 +38,20 @@ elliott_wave_research/
 │   ├── elliott_5wave_saido.pine
 │   └── README.md
 ├── 10_python_backtest/             … Python バックテスター + 検証結果
-│   ├── elliott_5wave_backtest.py
-│   ├── run_full_scan.py
+│   ├── elliott_5wave_backtest.py   V1 オリジナル
+│   ├── elliott_5wave_v2.py         V2 改善版 (フラクタル・ADX・通貨強弱)
+│   ├── run_full_scan.py            V1 全シンボル一括
+│   ├── debug_trace.py              状態遷移ログ・カウント可視化
+│   ├── run_m15_test.py             書籍推奨 M15 で検証
+│   ├── grid_search.py              グリッド最適化 + ウォークフォワード
 │   ├── README.md
 │   └── results/
-│       ├── scan_summary.csv
+│       ├── scan_summary.csv        V1 結果
+│       ├── scan_v2.csv             V2 バリアント結果
+│       ├── grid_USDJPY.csv         グリッド結果 (通貨別)
+│       ├── grid_AUDJPY.csv
+│       ├── grid_CHFJPY.csv
+│       ├── grid_SPX500.csv
 │       └── REPORT.md  ← まずここを読む
 └── raw_ocr/                        … OCR で抽出した一次テキスト（PDF 4 冊分）
     ├── elliott_all.txt
@@ -51,13 +60,16 @@ elliott_wave_research/
     └── dow_all.txt
 ```
 
-## 検証の現状（2026-05-27 重要訂正）
+## 検証の現状（2026-05-27 V2 検証完了）
 
 - 書籍の手法を Pine v6 (`09_pine_strategy/`) と Python (`10_python_backtest/`) の両方で再現済み。
-- リポジトリ既存の H1 CSV (2014–2026 / 9 通貨) で 10 バリアントを検証。
-- **結論（訂正後）**: 書籍記載のロジックを忠実に機械化した時点で、明確なエッジは検出されません。CHFJPY / SPX500 が辛うじてプラス、その他はほぼ横ばい〜マイナス。
-- 初版レポートで報告していた「USDJPY +18%, PF 3.62」等は CSV パースのバグに起因する誤り（時刻順ソートになっていた）。修正済み。
-- 詳細と訂正の経緯: [`10_python_backtest/results/REPORT.md`](10_python_backtest/results/REPORT.md)。
+- V1 (オリジナル) + V2 (改善版: フラクタル・最小波長・ADX・通貨強弱フィルタ・グリッド最適化・ウォークフォワード) で検証完了。
+- **結論**:
+  - 書籍記載のロジックを忠実に機械化した時点ではほぼエッジなし (V1 訂正版)
+  - V2 改善で in-sample PF 1.5–3.0 まで上がるが、ウォークフォワードで年率 +0.1〜0.2% に収束 (典型的過適合)
+  - **AUDJPY / CHFJPY / SPX500 で「ある年は機能、ある年は不発」**という挙動
+  - 書籍が「経験で身につける裁量が手法の核」と述べたことが定量的に裏付け
+- 詳細: [`10_python_backtest/results/REPORT.md`](10_python_backtest/results/REPORT.md)
 
 ## 中核ドキュメント
 
