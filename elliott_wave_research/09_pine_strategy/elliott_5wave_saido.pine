@@ -98,7 +98,7 @@ in_window = (not i_use_window) or (year >= i_start_y and year <= i_end_y)
 // =====================================================================================
 // 2. ICHIMOKU CLOUD
 // =====================================================================================
-donchian(int len) => (ta.highest(high, len) + ta.lowest(low, len)) / 2.0
+donchian(simple int len) => (ta.highest(high, len) + ta.lowest(low, len)) / 2.0
 
 f_tenkan  = donchian(i_tenkan)
 f_kijun   = donchian(i_kijun)
@@ -121,18 +121,19 @@ insideCloud = (not aboveCloud) and (not belowCloud)
 // =====================================================================================
 // 3. HIGHER TIMEFRAME TREND FILTER
 // =====================================================================================
-htf_ema(simple int len)        => ta.ema(close, len)
-htf_ema_prev(simple int len)   => ta.ema(close, len)[1]
-htf_donchian_func(simple int len) => (ta.highest(high, len) + ta.lowest(low, len)) / 2.0
+htf_ema_now(simple int len)  => ta.ema(close, len)
+htf_ema_prev(simple int len) => ta.ema(close, len)[1]
 htf_senkA_disp(simple int len_t, simple int len_k, simple int disp) =>
-    ((((ta.highest(high, len_t) + ta.lowest(low, len_t)) / 2.0) +
-      ((ta.highest(high, len_k) + ta.lowest(low, len_k)) / 2.0)) / 2.0)[disp]
+    float sa = (((ta.highest(high, len_t) + ta.lowest(low, len_t)) / 2.0) +
+                ((ta.highest(high, len_k) + ta.lowest(low, len_k)) / 2.0)) / 2.0
+    sa[disp]
 htf_senkB_disp(simple int len_b, simple int disp) =>
-    ((ta.highest(high, len_b) + ta.lowest(low, len_b)) / 2.0)[disp]
+    float sb = (ta.highest(high, len_b) + ta.lowest(low, len_b)) / 2.0
+    sb[disp]
 
 ltf_close    = request.security(syminfo.tickerid, i_long_tf, close,
                                 lookahead = barmerge.lookahead_off)
-ltf_ema_now  = request.security(syminfo.tickerid, i_long_tf, htf_ema(i_ltf_ema_len),
+ltf_ema_now  = request.security(syminfo.tickerid, i_long_tf, htf_ema_now(i_ltf_ema_len),
                                 lookahead = barmerge.lookahead_off)
 ltf_ema_prev = request.security(syminfo.tickerid, i_long_tf, htf_ema_prev(i_ltf_ema_len),
                                 lookahead = barmerge.lookahead_off)
@@ -163,8 +164,9 @@ htf_short_ok = not i_use_ltf_filter
 // =====================================================================================
 atr14 = ta.atr(i_atr_len)
 
-prev_above = nz(aboveCloud[1], false)
-prev_below = nz(belowCloud[1], false)
+// Pine v6 `nz()` does not accept `series bool`. Use safe defaults via na-check.
+bool prev_above = na(aboveCloud[1]) ? false : aboveCloud[1]
+bool prev_below = na(belowCloud[1]) ? false : belowCloud[1]
 crossUp   = aboveCloud and not prev_above
 crossDown = belowCloud and not prev_below
 
