@@ -120,8 +120,15 @@ def load_csv(path: str) -> List[Bar]:
                     if n in cols:
                         return cols[n]
                 return None
-            i_t   = col("datetime", "time", "date", "timestamp", "dtyyyymmdd")
-            i_t2  = col("time") if col("dtyyyymmdd") is not None else None
+            # If both date and time exist as separate columns, prefer date+time
+            i_date = col("dtyyyymmdd", "date")
+            i_time_only = col("time") if i_date is not None else None
+            if i_date is not None:
+                i_t = i_date
+                i_t2 = i_time_only
+            else:
+                i_t = col("datetime", "timestamp", "time")
+                i_t2 = None
             i_o   = col("open", "o")
             i_h   = col("high", "h")
             i_l   = col("low",  "l")

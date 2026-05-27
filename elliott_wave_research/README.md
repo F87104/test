@@ -51,11 +51,13 @@ elliott_wave_research/
     └── dow_all.txt
 ```
 
-## 検証の現状
+## 検証の現状（2026-05-27 重要訂正）
 
 - 書籍の手法を Pine v6 (`09_pine_strategy/`) と Python (`10_python_backtest/`) の両方で再現済み。
-- リポジトリ既存の H1 CSV (2014–2026 / 9 通貨) で 11 バリアントを検証。
-- **結論**: 通貨を選び、TP をトレールにすれば勝てる手法。USDJPY / CHFJPY / GBPJPY / XAUUSD / AUDJPY / SPX500 で 10 年通して有意な利益。詳細は [`10_python_backtest/results/REPORT.md`](10_python_backtest/results/REPORT.md)。
+- リポジトリ既存の H1 CSV (2014–2026 / 9 通貨) で 10 バリアントを検証。
+- **結論（訂正後）**: 書籍記載のロジックを忠実に機械化した時点で、明確なエッジは検出されません。CHFJPY / SPX500 が辛うじてプラス、その他はほぼ横ばい〜マイナス。
+- 初版レポートで報告していた「USDJPY +18%, PF 3.62」等は CSV パースのバグに起因する誤り（時刻順ソートになっていた）。修正済み。
+- 詳細と訂正の経緯: [`10_python_backtest/results/REPORT.md`](10_python_backtest/results/REPORT.md)。
 
 ## 中核ドキュメント
 
