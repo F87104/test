@@ -1,0 +1,1475 @@
+{
+  "scenarios": [
+    {
+      "symbol": "USDJPY",
+      "scenario": "frictionless",
+      "trades": 218,
+      "win": 0.9174,
+      "pf": 120.5,
+      "exp_r": 0.715,
+      "ret_pct": 155.81,
+      "dd_pct": -0.12,
+      "sharpe": 3.26
+    },
+    {
+      "symbol": "EURJPY",
+      "scenario": "frictionless",
+      "trades": 214,
+      "win": 0.8972,
+      "pf": 48.12,
+      "exp_r": 0.681,
+      "ret_pct": 145.63,
+      "dd_pct": -0.39,
+      "sharpe": 3.15
+    },
+    {
+      "symbol": "AUDJPY",
+      "scenario": "frictionless",
+      "trades": 160,
+      "win": 0.9125,
+      "pf": 66.11,
+      "exp_r": 0.762,
+      "ret_pct": 121.93,
+      "dd_pct": -0.24,
+      "sharpe": 2.77
+    },
+    {
+      "symbol": "CHFJPY",
+      "scenario": "frictionless",
+      "trades": 159,
+      "win": 0.9057,
+      "pf": 63.37,
+      "exp_r": 0.719,
+      "ret_pct": 114.38,
+      "dd_pct": -0.23,
+      "sharpe": 2.75
+    },
+    {
+      "symbol": "GBPJPY",
+      "scenario": "frictionless",
+      "trades": 238,
+      "win": 0.8739,
+      "pf": 50.05,
+      "exp_r": 0.674,
+      "ret_pct": 160.48,
+      "dd_pct": -0.28,
+      "sharpe": 3.16
+    },
+    {
+      "symbol": "XAUUSD",
+      "scenario": "frictionless",
+      "trades": 222,
+      "win": 0.8964,
+      "pf": 34.39,
+      "exp_r": 0.592,
+      "ret_pct": 131.5,
+      "dd_pct": -0.35,
+      "sharpe": 3.15
+    },
+    {
+      "symbol": "XAGUSD",
+      "scenario": "frictionless",
+      "trades": 179,
+      "win": 0.8715,
+      "pf": 31.05,
+      "exp_r": 0.54,
+      "ret_pct": 96.68,
+      "dd_pct": -0.35,
+      "sharpe": 2.92
+    },
+    {
+      "symbol": "NAS100",
+      "scenario": "frictionless",
+      "trades": 205,
+      "win": 0.9024,
+      "pf": 32.6,
+      "exp_r": 0.686,
+      "ret_pct": 140.71,
+      "dd_pct": -0.7,
+      "sharpe": 3.07
+    },
+    {
+      "symbol": "SPX500",
+      "scenario": "frictionless",
+      "trades": 183,
+      "win": 0.929,
+      "pf": 48.23,
+      "exp_r": 0.69,
+      "ret_pct": 126.19,
+      "dd_pct": -0.37,
+      "sharpe": 3.0
+    },
+    {
+      "symbol": "USDJPY",
+      "scenario": "realistic spread",
+      "trades": 218,
+      "win": 0.8899,
+      "pf": 75.99,
+      "exp_r": 0.715,
+      "ret_pct": 144.98,
+      "dd_pct": -0.15,
+      "sharpe": 3.21
+    },
+    {
+      "symbol": "EURJPY",
+      "scenario": "realistic spread",
+      "trades": 214,
+      "win": 0.8738,
+      "pf": 35.74,
+      "exp_r": 0.681,
+      "ret_pct": 136.57,
+      "dd_pct": -0.45,
+      "sharpe": 3.09
+    },
+    {
+      "symbol": "AUDJPY",
+      "scenario": "realistic spread",
+      "trades": 160,
+      "win": 0.9062,
+      "pf": 49.17,
+      "exp_r": 0.762,
+      "ret_pct": 114.36,
+      "dd_pct": -0.27,
+      "sharpe": 2.72
+    },
+    {
+      "symbol": "CHFJPY",
+      "scenario": "realistic spread",
+      "trades": 159,
+      "win": 0.8679,
+      "pf": 40.13,
+      "exp_r": 0.719,
+      "ret_pct": 104.08,
+      "dd_pct": -0.38,
+      "sharpe": 2.67
+    },
+    {
+      "symbol": "GBPJPY",
+      "scenario": "realistic spread",
+      "trades": 238,
+      "win": 0.8445,
+      "pf": 32.63,
+      "exp_r": 0.674,
+      "ret_pct": 149.74,
+      "dd_pct": -0.41,
+      "sharpe": 3.08
+    },
+    {
+      "symbol": "XAUUSD",
+      "scenario": "realistic spread",
+      "trades": 222,
+      "win": 0.8468,
+      "pf": 23.07,
+      "exp_r": 0.592,
+      "ret_pct": 119.71,
+      "dd_pct": -0.44,
+      "sharpe": 3.04
+    },
+    {
+      "symbol": "XAGUSD",
+      "scenario": "realistic spread",
+      "trades": 179,
+      "win": 0.7877,
+      "pf": 11.67,
+      "exp_r": 0.54,
+      "ret_pct": 74.47,
+      "dd_pct": -0.59,
+      "sharpe": 2.6
+    },
+    {
+      "symbol": "NAS100",
+      "scenario": "realistic spread",
+      "trades": 205,
+      "win": 0.8829,
+      "pf": 24.3,
+      "exp_r": 0.686,
+      "ret_pct": 130.63,
+      "dd_pct": -0.83,
+      "sharpe": 2.99
+    },
+    {
+      "symbol": "SPX500",
+      "scenario": "realistic spread",
+      "trades": 183,
+      "win": 0.8852,
+      "pf": 28.14,
+      "exp_r": 0.69,
+      "ret_pct": 112.48,
+      "dd_pct": -0.55,
+      "sharpe": 2.88
+    },
+    {
+      "symbol": "USDJPY",
+      "scenario": "strict spread",
+      "trades": 218,
+      "win": 0.8532,
+      "pf": 45.46,
+      "exp_r": 0.715,
+      "ret_pct": 134.15,
+      "dd_pct": -0.2,
+      "sharpe": 3.14
+    },
+    {
+      "symbol": "EURJPY",
+      "scenario": "strict spread",
+      "trades": 214,
+      "win": 0.8505,
+      "pf": 26.15,
+      "exp_r": 0.681,
+      "ret_pct": 127.52,
+      "dd_pct": -0.52,
+      "sharpe": 3.02
+    },
+    {
+      "symbol": "AUDJPY",
+      "scenario": "strict spread",
+      "trades": 160,
+      "win": 0.85,
+      "pf": 34.47,
+      "exp_r": 0.762,
+      "ret_pct": 106.78,
+      "dd_pct": -0.37,
+      "sharpe": 2.66
+    },
+    {
+      "symbol": "CHFJPY",
+      "scenario": "strict spread",
+      "trades": 159,
+      "win": 0.8428,
+      "pf": 29.59,
+      "exp_r": 0.719,
+      "ret_pct": 97.21,
+      "dd_pct": -0.47,
+      "sharpe": 2.61
+    },
+    {
+      "symbol": "GBPJPY",
+      "scenario": "strict spread",
+      "trades": 238,
+      "win": 0.8361,
+      "pf": 25.43,
+      "exp_r": 0.674,
+      "ret_pct": 142.58,
+      "dd_pct": -0.57,
+      "sharpe": 3.03
+    },
+    {
+      "symbol": "XAUUSD",
+      "scenario": "strict spread",
+      "trades": 222,
+      "win": 0.8018,
+      "pf": 15.28,
+      "exp_r": 0.592,
+      "ret_pct": 107.92,
+      "dd_pct": -0.54,
+      "sharpe": 2.91
+    },
+    {
+      "symbol": "XAGUSD",
+      "scenario": "strict spread",
+      "trades": 179,
+      "win": 0.6704,
+      "pf": 4.94,
+      "exp_r": 0.54,
+      "ret_pct": 52.25,
+      "dd_pct": -1.07,
+      "sharpe": 2.06
+    },
+    {
+      "symbol": "NAS100",
+      "scenario": "strict spread",
+      "trades": 205,
+      "win": 0.8537,
+      "pf": 17.2,
+      "exp_r": 0.686,
+      "ret_pct": 120.56,
+      "dd_pct": -1.55,
+      "sharpe": 2.89
+    },
+    {
+      "symbol": "SPX500",
+      "scenario": "strict spread",
+      "trades": 183,
+      "win": 0.8087,
+      "pf": 15.56,
+      "exp_r": 0.69,
+      "ret_pct": 98.77,
+      "dd_pct": -0.75,
+      "sharpe": 2.69
+    },
+    {
+      "symbol": "USDJPY",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 218,
+      "win": 0.789,
+      "pf": 21.34,
+      "exp_r": 0.635,
+      "ret_pct": 117.65,
+      "dd_pct": -0.52,
+      "sharpe": 2.96
+    },
+    {
+      "symbol": "EURJPY",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 214,
+      "win": 0.7944,
+      "pf": 16.96,
+      "exp_r": 0.613,
+      "ret_pct": 113.79,
+      "dd_pct": -0.59,
+      "sharpe": 2.88
+    },
+    {
+      "symbol": "AUDJPY",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 160,
+      "win": 0.825,
+      "pf": 21.44,
+      "exp_r": 0.689,
+      "ret_pct": 95.63,
+      "dd_pct": -0.49,
+      "sharpe": 2.56
+    },
+    {
+      "symbol": "CHFJPY",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 159,
+      "win": 0.7799,
+      "pf": 18.28,
+      "exp_r": 0.648,
+      "ret_pct": 86.41,
+      "dd_pct": -0.6,
+      "sharpe": 2.48
+    },
+    {
+      "symbol": "GBPJPY",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 238,
+      "win": 0.7983,
+      "pf": 16.6,
+      "exp_r": 0.605,
+      "ret_pct": 126.65,
+      "dd_pct": -0.79,
+      "sharpe": 2.88
+    },
+    {
+      "symbol": "XAUUSD",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 222,
+      "win": 0.7387,
+      "pf": 9.92,
+      "exp_r": 0.517,
+      "ret_pct": 92.01,
+      "dd_pct": -0.65,
+      "sharpe": 2.66
+    },
+    {
+      "symbol": "XAGUSD",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 179,
+      "win": 0.6313,
+      "pf": 3.53,
+      "exp_r": 0.475,
+      "ret_pct": 42.16,
+      "dd_pct": -1.23,
+      "sharpe": 1.73
+    },
+    {
+      "symbol": "NAS100",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 205,
+      "win": 0.7805,
+      "pf": 12.2,
+      "exp_r": 0.613,
+      "ret_pct": 106.29,
+      "dd_pct": -1.85,
+      "sharpe": 2.72
+    },
+    {
+      "symbol": "SPX500",
+      "scenario": "strict + 0.10xATR slip",
+      "trades": 183,
+      "win": 0.7705,
+      "pf": 10.56,
+      "exp_r": 0.613,
+      "ret_pct": 85.75,
+      "dd_pct": -0.88,
+      "sharpe": 2.5
+    },
+    {
+      "symbol": "USDJPY",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 218,
+      "win": 0.7523,
+      "pf": 13.39,
+      "exp_r": 0.571,
+      "ret_pct": 104.24,
+      "dd_pct": -0.72,
+      "sharpe": 2.8
+    },
+    {
+      "symbol": "EURJPY",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 214,
+      "win": 0.7336,
+      "pf": 11.16,
+      "exp_r": 0.545,
+      "ret_pct": 99.79,
+      "dd_pct": -0.69,
+      "sharpe": 2.7
+    },
+    {
+      "symbol": "AUDJPY",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 160,
+      "win": 0.7688,
+      "pf": 14.4,
+      "exp_r": 0.624,
+      "ret_pct": 85.81,
+      "dd_pct": -0.61,
+      "sharpe": 2.44
+    },
+    {
+      "symbol": "CHFJPY",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 159,
+      "win": 0.7358,
+      "pf": 11.29,
+      "exp_r": 0.575,
+      "ret_pct": 75.41,
+      "dd_pct": -0.72,
+      "sharpe": 2.3
+    },
+    {
+      "symbol": "GBPJPY",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 238,
+      "win": 0.7521,
+      "pf": 11.16,
+      "exp_r": 0.538,
+      "ret_pct": 111.48,
+      "dd_pct": -0.99,
+      "sharpe": 2.7
+    },
+    {
+      "symbol": "XAUUSD",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 222,
+      "win": 0.6937,
+      "pf": 6.82,
+      "exp_r": 0.454,
+      "ret_pct": 78.8,
+      "dd_pct": -0.76,
+      "sharpe": 2.42
+    },
+    {
+      "symbol": "XAGUSD",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 179,
+      "win": 0.581,
+      "pf": 2.52,
+      "exp_r": 0.405,
+      "ret_pct": 30.94,
+      "dd_pct": -1.39,
+      "sharpe": 1.35
+    },
+    {
+      "symbol": "NAS100",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 205,
+      "win": 0.7317,
+      "pf": 8.46,
+      "exp_r": 0.545,
+      "ret_pct": 93.08,
+      "dd_pct": -2.15,
+      "sharpe": 2.54
+    },
+    {
+      "symbol": "SPX500",
+      "scenario": "strict + 0.20xATR slip",
+      "trades": 183,
+      "win": 0.7268,
+      "pf": 7.42,
+      "exp_r": 0.545,
+      "ret_pct": 74.22,
+      "dd_pct": -1.04,
+      "sharpe": 2.29
+    },
+    {
+      "symbol": "USDJPY",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 218,
+      "win": 0.711,
+      "pf": 9.11,
+      "exp_r": 0.51,
+      "ret_pct": 91.77,
+      "dd_pct": -1.01,
+      "sharpe": 2.62
+    },
+    {
+      "symbol": "EURJPY",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 214,
+      "win": 0.6869,
+      "pf": 7.64,
+      "exp_r": 0.483,
+      "ret_pct": 87.07,
+      "dd_pct": -0.8,
+      "sharpe": 2.5
+    },
+    {
+      "symbol": "AUDJPY",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 160,
+      "win": 0.75,
+      "pf": 10.01,
+      "exp_r": 0.558,
+      "ret_pct": 75.67,
+      "dd_pct": -0.73,
+      "sharpe": 2.29
+    },
+    {
+      "symbol": "CHFJPY",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 159,
+      "win": 0.7044,
+      "pf": 7.85,
+      "exp_r": 0.512,
+      "ret_pct": 65.96,
+      "dd_pct": -0.84,
+      "sharpe": 2.13
+    },
+    {
+      "symbol": "GBPJPY",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 238,
+      "win": 0.6933,
+      "pf": 7.78,
+      "exp_r": 0.477,
+      "ret_pct": 97.29,
+      "dd_pct": -1.19,
+      "sharpe": 2.5
+    },
+    {
+      "symbol": "XAUUSD",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 222,
+      "win": 0.6396,
+      "pf": 4.84,
+      "exp_r": 0.395,
+      "ret_pct": 66.32,
+      "dd_pct": -0.93,
+      "sharpe": 2.14
+    },
+    {
+      "symbol": "XAGUSD",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 179,
+      "win": 0.514,
+      "pf": 1.91,
+      "exp_r": 0.347,
+      "ret_pct": 21.92,
+      "dd_pct": -2.29,
+      "sharpe": 0.99
+    },
+    {
+      "symbol": "NAS100",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 205,
+      "win": 0.7024,
+      "pf": 6.04,
+      "exp_r": 0.473,
+      "ret_pct": 78.84,
+      "dd_pct": -2.42,
+      "sharpe": 2.29
+    },
+    {
+      "symbol": "SPX500",
+      "scenario": "strict + 0.30xATR slip",
+      "trades": 183,
+      "win": 0.6557,
+      "pf": 5.21,
+      "exp_r": 0.468,
+      "ret_pct": 61.04,
+      "dd_pct": -1.4,
+      "sharpe": 2.02
+    }
+  ],
+  "portfolio": [
+    {
+      "scenario": "frictionless",
+      "mean_win": 0.9007,
+      "mean_pf": 54.94,
+      "mean_exp_r": 0.673,
+      "mean_ret_pct": 132.59,
+      "mean_dd_pct": -0.34,
+      "mean_sharpe": 3.03,
+      "total_trades": 1778
+    },
+    {
+      "scenario": "realistic spread",
+      "mean_win": 0.865,
+      "mean_pf": 35.65,
+      "mean_exp_r": 0.673,
+      "mean_ret_pct": 120.78,
+      "mean_dd_pct": -0.45,
+      "mean_sharpe": 2.92,
+      "total_trades": 1778
+    },
+    {
+      "scenario": "strict spread",
+      "mean_win": 0.8186,
+      "mean_pf": 23.79,
+      "mean_exp_r": 0.673,
+      "mean_ret_pct": 109.75,
+      "mean_dd_pct": -0.67,
+      "mean_sharpe": 2.78,
+      "total_trades": 1778
+    },
+    {
+      "scenario": "strict + 0.10xATR slip",
+      "mean_win": 0.7675,
+      "mean_pf": 14.54,
+      "mean_exp_r": 0.601,
+      "mean_ret_pct": 96.26,
+      "mean_dd_pct": -0.84,
+      "mean_sharpe": 2.6,
+      "total_trades": 1778
+    },
+    {
+      "scenario": "strict + 0.20xATR slip",
+      "mean_win": 0.7195,
+      "mean_pf": 9.62,
+      "mean_exp_r": 0.534,
+      "mean_ret_pct": 83.75,
+      "mean_dd_pct": -1.01,
+      "mean_sharpe": 2.39,
+      "total_trades": 1778
+    },
+    {
+      "scenario": "strict + 0.30xATR slip",
+      "mean_win": 0.673,
+      "mean_pf": 6.71,
+      "mean_exp_r": 0.469,
+      "mean_ret_pct": 71.76,
+      "mean_dd_pct": -1.29,
+      "mean_sharpe": 2.16,
+      "total_trades": 1778
+    }
+  ],
+  "yearly_toughest": {
+    "USDJPY": {
+      "2014": {
+        "trades": 18,
+        "win_rate": 0.7222,
+        "pf": 7.07,
+        "ret_pct_of_start_eq": 6.61
+      },
+      "2015": {
+        "trades": 17,
+        "win_rate": 0.5882,
+        "pf": 23.77,
+        "ret_pct_of_start_eq": 9.87
+      },
+      "2016": {
+        "trades": 17,
+        "win_rate": 0.5294,
+        "pf": 4.29,
+        "ret_pct_of_start_eq": 3.23
+      },
+      "2017": {
+        "trades": 23,
+        "win_rate": 0.6957,
+        "pf": 5.23,
+        "ret_pct_of_start_eq": 8.48
+      },
+      "2018": {
+        "trades": 20,
+        "win_rate": 0.8,
+        "pf": 14.56,
+        "ret_pct_of_start_eq": 9.54
+      },
+      "2019": {
+        "trades": 14,
+        "win_rate": 0.9286,
+        "pf": 40.36,
+        "ret_pct_of_start_eq": 7.54
+      },
+      "2020": {
+        "trades": 14,
+        "win_rate": 0.7857,
+        "pf": 20.41,
+        "ret_pct_of_start_eq": 7.38
+      },
+      "2021": {
+        "trades": 23,
+        "win_rate": 0.8261,
+        "pf": 10.23,
+        "ret_pct_of_start_eq": 11.77
+      },
+      "2022": {
+        "trades": 21,
+        "win_rate": 0.4762,
+        "pf": 3.79,
+        "ret_pct_of_start_eq": 5.2
+      },
+      "2023": {
+        "trades": 18,
+        "win_rate": 0.8333,
+        "pf": 14.14,
+        "ret_pct_of_start_eq": 6.14
+      },
+      "2024": {
+        "trades": 16,
+        "win_rate": 0.625,
+        "pf": 5.87,
+        "ret_pct_of_start_eq": 6.32
+      },
+      "2025": {
+        "trades": 10,
+        "win_rate": 0.9,
+        "pf": 39.0,
+        "ret_pct_of_start_eq": 6.33
+      },
+      "2026": {
+        "trades": 7,
+        "win_rate": 0.5714,
+        "pf": 8.34,
+        "ret_pct_of_start_eq": 3.37
+      }
+    },
+    "EURJPY": {
+      "2014": {
+        "trades": 17,
+        "win_rate": 0.7647,
+        "pf": 6.79,
+        "ret_pct_of_start_eq": 4.83
+      },
+      "2015": {
+        "trades": 16,
+        "win_rate": 0.625,
+        "pf": 6.42,
+        "ret_pct_of_start_eq": 5.09
+      },
+      "2016": {
+        "trades": 17,
+        "win_rate": 0.6471,
+        "pf": 8.3,
+        "ret_pct_of_start_eq": 8.5
+      },
+      "2017": {
+        "trades": 19,
+        "win_rate": 0.8947,
+        "pf": 32.59,
+        "ret_pct_of_start_eq": 13.91
+      },
+      "2018": {
+        "trades": 15,
+        "win_rate": 0.8,
+        "pf": 20.35,
+        "ret_pct_of_start_eq": 7.78
+      },
+      "2019": {
+        "trades": 16,
+        "win_rate": 0.75,
+        "pf": 8.65,
+        "ret_pct_of_start_eq": 5.29
+      },
+      "2020": {
+        "trades": 24,
+        "win_rate": 0.625,
+        "pf": 4.89,
+        "ret_pct_of_start_eq": 7.79
+      },
+      "2021": {
+        "trades": 20,
+        "win_rate": 0.7,
+        "pf": 5.47,
+        "ret_pct_of_start_eq": 7.45
+      },
+      "2022": {
+        "trades": 20,
+        "win_rate": 0.65,
+        "pf": 4.77,
+        "ret_pct_of_start_eq": 7.67
+      },
+      "2023": {
+        "trades": 17,
+        "win_rate": 0.5294,
+        "pf": 3.38,
+        "ret_pct_of_start_eq": 3.56
+      },
+      "2024": {
+        "trades": 14,
+        "win_rate": 0.6429,
+        "pf": 9.04,
+        "ret_pct_of_start_eq": 6.37
+      },
+      "2025": {
+        "trades": 15,
+        "win_rate": 0.6,
+        "pf": 11.92,
+        "ret_pct_of_start_eq": 6.17
+      },
+      "2026": {
+        "trades": 4,
+        "win_rate": 0.75,
+        "pf": 35.05,
+        "ret_pct_of_start_eq": 2.65
+      }
+    },
+    "AUDJPY": {
+      "2014": {
+        "trades": 17,
+        "win_rate": 0.8235,
+        "pf": 20.31,
+        "ret_pct_of_start_eq": 8.55
+      },
+      "2015": {
+        "trades": 10,
+        "win_rate": 0.6,
+        "pf": 4.96,
+        "ret_pct_of_start_eq": 3.09
+      },
+      "2016": {
+        "trades": 11,
+        "win_rate": 0.6364,
+        "pf": 7.08,
+        "ret_pct_of_start_eq": 4.0
+      },
+      "2017": {
+        "trades": 11,
+        "win_rate": 0.8182,
+        "pf": 33.7,
+        "ret_pct_of_start_eq": 7.71
+      },
+      "2018": {
+        "trades": 12,
+        "win_rate": 0.6667,
+        "pf": 10.71,
+        "ret_pct_of_start_eq": 6.02
+      },
+      "2019": {
+        "trades": 13,
+        "win_rate": 0.6154,
+        "pf": 5.46,
+        "ret_pct_of_start_eq": 6.18
+      },
+      "2020": {
+        "trades": 14,
+        "win_rate": 0.9286,
+        "pf": 36.05,
+        "ret_pct_of_start_eq": 6.66
+      },
+      "2021": {
+        "trades": 23,
+        "win_rate": 0.8696,
+        "pf": 9.34,
+        "ret_pct_of_start_eq": 8.93
+      },
+      "2022": {
+        "trades": 10,
+        "win_rate": 1.0,
+        "pf": null,
+        "ret_pct_of_start_eq": 9.23
+      },
+      "2023": {
+        "trades": 14,
+        "win_rate": 0.6429,
+        "pf": 4.86,
+        "ret_pct_of_start_eq": 4.54
+      },
+      "2024": {
+        "trades": 11,
+        "win_rate": 0.7273,
+        "pf": 12.41,
+        "ret_pct_of_start_eq": 5.78
+      },
+      "2025": {
+        "trades": 7,
+        "win_rate": 0.7143,
+        "pf": 4.78,
+        "ret_pct_of_start_eq": 3.67
+      },
+      "2026": {
+        "trades": 7,
+        "win_rate": 0.4286,
+        "pf": 4.61,
+        "ret_pct_of_start_eq": 1.3
+      }
+    },
+    "CHFJPY": {
+      "2014": {
+        "trades": 14,
+        "win_rate": 0.7143,
+        "pf": 9.62,
+        "ret_pct_of_start_eq": 5.12
+      },
+      "2015": {
+        "trades": 19,
+        "win_rate": 0.6842,
+        "pf": 6.42,
+        "ret_pct_of_start_eq": 5.54
+      },
+      "2016": {
+        "trades": 9,
+        "win_rate": 0.5556,
+        "pf": 6.74,
+        "ret_pct_of_start_eq": 3.7
+      },
+      "2017": {
+        "trades": 10,
+        "win_rate": 0.7,
+        "pf": 4.61,
+        "ret_pct_of_start_eq": 3.48
+      },
+      "2018": {
+        "trades": 12,
+        "win_rate": 0.8333,
+        "pf": 15.14,
+        "ret_pct_of_start_eq": 8.08
+      },
+      "2019": {
+        "trades": 11,
+        "win_rate": 0.8182,
+        "pf": 26.57,
+        "ret_pct_of_start_eq": 3.77
+      },
+      "2020": {
+        "trades": 14,
+        "win_rate": 0.6429,
+        "pf": 13.39,
+        "ret_pct_of_start_eq": 6.34
+      },
+      "2021": {
+        "trades": 13,
+        "win_rate": 0.7692,
+        "pf": 14.85,
+        "ret_pct_of_start_eq": 6.27
+      },
+      "2022": {
+        "trades": 17,
+        "win_rate": 0.8824,
+        "pf": 18.5,
+        "ret_pct_of_start_eq": 13.13
+      },
+      "2023": {
+        "trades": 11,
+        "win_rate": 0.6364,
+        "pf": 5.2,
+        "ret_pct_of_start_eq": 3.35
+      },
+      "2024": {
+        "trades": 11,
+        "win_rate": 0.7273,
+        "pf": 6.38,
+        "ret_pct_of_start_eq": 4.43
+      },
+      "2025": {
+        "trades": 12,
+        "win_rate": 0.5,
+        "pf": 1.82,
+        "ret_pct_of_start_eq": 1.47
+      },
+      "2026": {
+        "trades": 6,
+        "win_rate": 0.5,
+        "pf": 3.29,
+        "ret_pct_of_start_eq": 1.26
+      }
+    },
+    "GBPJPY": {
+      "2013": {
+        "trades": 11,
+        "win_rate": 0.7273,
+        "pf": 35.02,
+        "ret_pct_of_start_eq": 4.15
+      },
+      "2014": {
+        "trades": 17,
+        "win_rate": 0.5882,
+        "pf": 4.99,
+        "ret_pct_of_start_eq": 7.4
+      },
+      "2015": {
+        "trades": 14,
+        "win_rate": 0.8571,
+        "pf": 32.01,
+        "ret_pct_of_start_eq": 5.48
+      },
+      "2016": {
+        "trades": 27,
+        "win_rate": 0.8148,
+        "pf": 9.9,
+        "ret_pct_of_start_eq": 13.46
+      },
+      "2017": {
+        "trades": 24,
+        "win_rate": 0.5833,
+        "pf": 3.94,
+        "ret_pct_of_start_eq": 7.42
+      },
+      "2018": {
+        "trades": 21,
+        "win_rate": 0.7143,
+        "pf": 10.66,
+        "ret_pct_of_start_eq": 8.27
+      },
+      "2019": {
+        "trades": 18,
+        "win_rate": 0.6111,
+        "pf": 4.22,
+        "ret_pct_of_start_eq": 4.56
+      },
+      "2020": {
+        "trades": 14,
+        "win_rate": 0.7857,
+        "pf": 20.84,
+        "ret_pct_of_start_eq": 6.4
+      },
+      "2021": {
+        "trades": 22,
+        "win_rate": 0.7727,
+        "pf": 12.96,
+        "ret_pct_of_start_eq": 10.35
+      },
+      "2022": {
+        "trades": 18,
+        "win_rate": 0.7778,
+        "pf": 9.32,
+        "ret_pct_of_start_eq": 7.71
+      },
+      "2023": {
+        "trades": 18,
+        "win_rate": 0.6667,
+        "pf": 12.07,
+        "ret_pct_of_start_eq": 8.09
+      },
+      "2024": {
+        "trades": 14,
+        "win_rate": 0.7143,
+        "pf": 13.36,
+        "ret_pct_of_start_eq": 8.68
+      },
+      "2025": {
+        "trades": 17,
+        "win_rate": 0.4706,
+        "pf": 3.74,
+        "ret_pct_of_start_eq": 4.74
+      },
+      "2026": {
+        "trades": 3,
+        "win_rate": 0.3333,
+        "pf": 1.92,
+        "ret_pct_of_start_eq": 0.56
+      }
+    },
+    "XAUUSD": {
+      "2014": {
+        "trades": 21,
+        "win_rate": 0.7143,
+        "pf": 3.45,
+        "ret_pct_of_start_eq": 5.67
+      },
+      "2015": {
+        "trades": 20,
+        "win_rate": 0.65,
+        "pf": 3.74,
+        "ret_pct_of_start_eq": 6.74
+      },
+      "2016": {
+        "trades": 19,
+        "win_rate": 0.5789,
+        "pf": 4.8,
+        "ret_pct_of_start_eq": 4.88
+      },
+      "2017": {
+        "trades": 15,
+        "win_rate": 0.6,
+        "pf": 4.79,
+        "ret_pct_of_start_eq": 4.45
+      },
+      "2018": {
+        "trades": 8,
+        "win_rate": 0.625,
+        "pf": 2.21,
+        "ret_pct_of_start_eq": 1.53
+      },
+      "2019": {
+        "trades": 23,
+        "win_rate": 0.6522,
+        "pf": 3.94,
+        "ret_pct_of_start_eq": 5.37
+      },
+      "2020": {
+        "trades": 20,
+        "win_rate": 0.55,
+        "pf": 4.59,
+        "ret_pct_of_start_eq": 6.25
+      },
+      "2021": {
+        "trades": 14,
+        "win_rate": 0.6429,
+        "pf": 9.3,
+        "ret_pct_of_start_eq": 4.88
+      },
+      "2022": {
+        "trades": 19,
+        "win_rate": 0.6842,
+        "pf": 8.63,
+        "ret_pct_of_start_eq": 6.2
+      },
+      "2023": {
+        "trades": 21,
+        "win_rate": 0.5238,
+        "pf": 2.88,
+        "ret_pct_of_start_eq": 3.72
+      },
+      "2024": {
+        "trades": 24,
+        "win_rate": 0.7083,
+        "pf": 13.71,
+        "ret_pct_of_start_eq": 11.16
+      },
+      "2025": {
+        "trades": 10,
+        "win_rate": 0.7,
+        "pf": 4.24,
+        "ret_pct_of_start_eq": 2.34
+      },
+      "2026": {
+        "trades": 8,
+        "win_rate": 0.75,
+        "pf": 14.13,
+        "ret_pct_of_start_eq": 3.13
+      }
+    },
+    "XAGUSD": {
+      "2014": {
+        "trades": 18,
+        "win_rate": 0.5,
+        "pf": 1.35,
+        "ret_pct_of_start_eq": 1.29
+      },
+      "2015": {
+        "trades": 15,
+        "win_rate": 0.5333,
+        "pf": 1.89,
+        "ret_pct_of_start_eq": 1.54
+      },
+      "2016": {
+        "trades": 16,
+        "win_rate": 0.4375,
+        "pf": 1.04,
+        "ret_pct_of_start_eq": 0.14
+      },
+      "2017": {
+        "trades": 14,
+        "win_rate": 0.5714,
+        "pf": 2.06,
+        "ret_pct_of_start_eq": 1.68
+      },
+      "2018": {
+        "trades": 13,
+        "win_rate": 0.4615,
+        "pf": 0.57,
+        "ret_pct_of_start_eq": -1.3
+      },
+      "2019": {
+        "trades": 14,
+        "win_rate": 0.2143,
+        "pf": 0.64,
+        "ret_pct_of_start_eq": -0.67
+      },
+      "2020": {
+        "trades": 18,
+        "win_rate": 0.6111,
+        "pf": 3.7,
+        "ret_pct_of_start_eq": 3.4
+      },
+      "2021": {
+        "trades": 10,
+        "win_rate": 0.4,
+        "pf": 1.34,
+        "ret_pct_of_start_eq": 0.57
+      },
+      "2022": {
+        "trades": 18,
+        "win_rate": 0.6111,
+        "pf": 4.04,
+        "ret_pct_of_start_eq": 4.96
+      },
+      "2023": {
+        "trades": 15,
+        "win_rate": 0.5333,
+        "pf": 1.97,
+        "ret_pct_of_start_eq": 1.98
+      },
+      "2024": {
+        "trades": 15,
+        "win_rate": 0.6,
+        "pf": 5.14,
+        "ret_pct_of_start_eq": 4.16
+      },
+      "2025": {
+        "trades": 6,
+        "win_rate": 0.5,
+        "pf": 4.26,
+        "ret_pct_of_start_eq": 1.44
+      },
+      "2026": {
+        "trades": 7,
+        "win_rate": 0.7143,
+        "pf": 7.1,
+        "ret_pct_of_start_eq": 2.73
+      }
+    },
+    "NAS100": {
+      "2014": {
+        "trades": 1,
+        "win_rate": 1.0,
+        "pf": null,
+        "ret_pct_of_start_eq": 1.09
+      },
+      "2015": {
+        "trades": 19,
+        "win_rate": 0.5789,
+        "pf": 2.99,
+        "ret_pct_of_start_eq": 6.74
+      },
+      "2016": {
+        "trades": 16,
+        "win_rate": 0.5625,
+        "pf": 2.51,
+        "ret_pct_of_start_eq": 3.26
+      },
+      "2017": {
+        "trades": 21,
+        "win_rate": 0.7143,
+        "pf": 3.67,
+        "ret_pct_of_start_eq": 5.03
+      },
+      "2018": {
+        "trades": 23,
+        "win_rate": 0.8696,
+        "pf": 10.75,
+        "ret_pct_of_start_eq": 13.76
+      },
+      "2019": {
+        "trades": 17,
+        "win_rate": 0.4706,
+        "pf": 2.99,
+        "ret_pct_of_start_eq": 2.95
+      },
+      "2020": {
+        "trades": 17,
+        "win_rate": 0.7647,
+        "pf": 5.63,
+        "ret_pct_of_start_eq": 7.01
+      },
+      "2021": {
+        "trades": 15,
+        "win_rate": 0.6667,
+        "pf": 10.06,
+        "ret_pct_of_start_eq": 6.92
+      },
+      "2022": {
+        "trades": 16,
+        "win_rate": 0.6875,
+        "pf": 7.15,
+        "ret_pct_of_start_eq": 5.66
+      },
+      "2023": {
+        "trades": 20,
+        "win_rate": 0.8,
+        "pf": 20.02,
+        "ret_pct_of_start_eq": 9.47
+      },
+      "2024": {
+        "trades": 21,
+        "win_rate": 0.7619,
+        "pf": 8.81,
+        "ret_pct_of_start_eq": 8.34
+      },
+      "2025": {
+        "trades": 16,
+        "win_rate": 0.6875,
+        "pf": 12.7,
+        "ret_pct_of_start_eq": 6.46
+      },
+      "2026": {
+        "trades": 3,
+        "win_rate": 1.0,
+        "pf": null,
+        "ret_pct_of_start_eq": 2.16
+      }
+    },
+    "SPX500": {
+      "2014": {
+        "trades": 3,
+        "win_rate": 0.6667,
+        "pf": 2.76,
+        "ret_pct_of_start_eq": 0.67
+      },
+      "2015": {
+        "trades": 19,
+        "win_rate": 0.6316,
+        "pf": 7.42,
+        "ret_pct_of_start_eq": 6.3
+      },
+      "2016": {
+        "trades": 12,
+        "win_rate": 0.5833,
+        "pf": 2.82,
+        "ret_pct_of_start_eq": 2.51
+      },
+      "2017": {
+        "trades": 12,
+        "win_rate": 0.75,
+        "pf": 3.35,
+        "ret_pct_of_start_eq": 3.16
+      },
+      "2018": {
+        "trades": 23,
+        "win_rate": 0.4783,
+        "pf": 2.6,
+        "ret_pct_of_start_eq": 5.33
+      },
+      "2019": {
+        "trades": 16,
+        "win_rate": 0.5625,
+        "pf": 3.74,
+        "ret_pct_of_start_eq": 4.2
+      },
+      "2020": {
+        "trades": 13,
+        "win_rate": 0.5385,
+        "pf": 3.34,
+        "ret_pct_of_start_eq": 3.71
+      },
+      "2021": {
+        "trades": 13,
+        "win_rate": 0.6923,
+        "pf": 15.96,
+        "ret_pct_of_start_eq": 8.47
+      },
+      "2022": {
+        "trades": 12,
+        "win_rate": 0.6667,
+        "pf": 6.55,
+        "ret_pct_of_start_eq": 3.43
+      },
+      "2023": {
+        "trades": 24,
+        "win_rate": 0.7083,
+        "pf": 5.68,
+        "ret_pct_of_start_eq": 7.14
+      },
+      "2024": {
+        "trades": 19,
+        "win_rate": 0.7368,
+        "pf": 7.4,
+        "ret_pct_of_start_eq": 7.38
+      },
+      "2025": {
+        "trades": 14,
+        "win_rate": 0.9286,
+        "pf": 133.69,
+        "ret_pct_of_start_eq": 7.97
+      },
+      "2026": {
+        "trades": 3,
+        "win_rate": 0.6667,
+        "pf": 17.34,
+        "ret_pct_of_start_eq": 0.79
+      }
+    }
+  },
+  "mc_dd_toughest": {
+    "USDJPY": {
+      "samples": 1000,
+      "median_dd_pct": -0.74,
+      "p95_dd_pct": -1.14,
+      "p99_dd_pct": -1.38,
+      "worst_dd_pct": -1.76
+    },
+    "EURJPY": {
+      "samples": 1000,
+      "median_dd_pct": -0.9,
+      "p95_dd_pct": -1.41,
+      "p99_dd_pct": -1.75,
+      "worst_dd_pct": -2.34
+    },
+    "AUDJPY": {
+      "samples": 1000,
+      "median_dd_pct": -0.69,
+      "p95_dd_pct": -1.08,
+      "p99_dd_pct": -1.36,
+      "worst_dd_pct": -1.8
+    },
+    "CHFJPY": {
+      "samples": 1000,
+      "median_dd_pct": -0.78,
+      "p95_dd_pct": -1.18,
+      "p99_dd_pct": -1.42,
+      "worst_dd_pct": -1.86
+    },
+    "GBPJPY": {
+      "samples": 1000,
+      "median_dd_pct": -0.77,
+      "p95_dd_pct": -1.23,
+      "p99_dd_pct": -1.5,
+      "worst_dd_pct": -1.76
+    },
+    "XAUUSD": {
+      "samples": 1000,
+      "median_dd_pct": -1.13,
+      "p95_dd_pct": -1.76,
+      "p99_dd_pct": -2.22,
+      "worst_dd_pct": -2.76
+    },
+    "XAGUSD": {
+      "samples": 1000,
+      "median_dd_pct": -2.33,
+      "p95_dd_pct": -3.81,
+      "p99_dd_pct": -4.68,
+      "worst_dd_pct": -6.4
+    },
+    "NAS100": {
+      "samples": 1000,
+      "median_dd_pct": -1.13,
+      "p95_dd_pct": -1.88,
+      "p99_dd_pct": -2.4,
+      "worst_dd_pct": -3.42
+    },
+    "SPX500": {
+      "samples": 1000,
+      "median_dd_pct": -1.14,
+      "p95_dd_pct": -1.8,
+      "p99_dd_pct": -2.2,
+      "worst_dd_pct": -3.17
+    }
+  },
+  "risk_sensitivity_toughest": [
+    {
+      "risk": 0.01,
+      "mean_ret_pct": 108.32,
+      "mean_dd_pct": -1.49
+    },
+    {
+      "risk": 0.02,
+      "mean_ret_pct": 345.36,
+      "mean_dd_pct": -2.97
+    },
+    {
+      "risk": 0.03,
+      "mean_ret_pct": 869.54,
+      "mean_dd_pct": -4.43
+    },
+    {
+      "risk": 0.05,
+      "mean_ret_pct": 4652.2,
+      "mean_dd_pct": -7.33
+    }
+  ]
+}

@@ -81,6 +81,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--trail-atr-period", type=int, default=14)
     p.add_argument("--trail-after-partial-only", action="store_true")
     p.add_argument("--cost-per-trade", type=float, default=0.0, help="Round-trip cost in price units (spread + commission)")
+    p.add_argument("--slippage-atr-mult", type=float, default=0.0, help="One-sided ATR slippage applied AGAINST us on entry/SL/trail/partial")
 
     p.add_argument("--trades-out", default=None,
                    help="Optional CSV path to dump trade log")
@@ -143,6 +144,7 @@ def run_one(symbol: str, args: argparse.Namespace) -> tuple[Optional[dict], list
         trail_atr_period=args.trail_atr_period,
         trail_after_partial_only=args.trail_after_partial_only,
         cost_per_trade=args.cost_per_trade,
+        slippage_atr_mult=args.slippage_atr_mult,
     )
     result = run_backtest(df, setups, cfg)
     metrics = compute(result, args.starting_equity)

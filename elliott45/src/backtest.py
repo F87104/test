@@ -66,6 +66,7 @@ class BacktestConfig:
     trail_atr_period: int = 14
     trail_after_partial_only: bool = False  # if True, only start trailing once partial fired
     cost_per_trade: float = 0.0    # round-trip cost in price units (spread+commission); subtracted from pnl per unit
+    slippage_atr_mult: float = 0.0  # per-side ATR slippage applied AGAINST us on entry / SL / trail / partial
 
 
 @dataclass
@@ -86,9 +87,10 @@ def run_backtest(
     close = df["close"].to_numpy()
     times = df["datetime"].to_numpy()
 
+    need_atr = cfg.trail_atr_mult > 0 or cfg.slippage_atr_mult > 0
     atr_arr = (
         atr_series_fn(df, cfg.trail_atr_period).to_numpy()
-        if cfg.trail_atr_mult > 0
+        if need_atr
         else None
     )
 
@@ -180,14 +182,22 @@ def run_backtest(
                     partial_price = pos_entry_price - cfg.partial_tp_r * pos_r_per_unit
                     partial_hit = bar_low <= partial_price
                 if partial_hit:
+                    half_slip = 0.0
+                    if cfg.slippage_atr_mult > 0 and atr_arr is not None:
+                        prev_atr = atr_arr[i - 1] if i > 0 else 0.0
+                        if not np.isnan(prev_atr):
+                            half_slip = 0.5 * cfg.slippage_atr_mult * prev_atr
+                    effective_partial = (
+                        partial_price - half_slip if pos_dir == "long" else partial_price + half_slip
+                    )
                     closed_qty = pos_qty_initial * cfg.partial_tp_size
                     pnl_unit = (
-                        (partial_price - pos_entry_price)
+                        (effective_partial - pos_entry_price)
                         if pos_dir == "long"
-                        else (pos_entry_price - partial_price)
+                        else (pos_entry_price - effective_partial)
                     )
                     pos_partial_pnl += pnl_unit * closed_qty
-                    pos_partial_r += cfg.partial_tp_r * (closed_qty / pos_qty_initial)
+                    pos_partial_r += (pnl_unit / pos_r_per_unit) * (closed_qty / pos_qty_initial) if pos_r_per_unit > 0 else 0.0
                     pos_qty_open -= closed_qty
                     pos_partial_done = True
                     if cfg.move_be_at_partial:
@@ -221,11 +231,16 @@ def run_backtest(
             )
             exit_price: Optional[float] = None
             reason = ""
+            stop_slip = 0.0
+            if cfg.slippage_atr_mult > 0 and atr_arr is not None:
+                prev_atr = atr_arr[i - 1] if i > 0 else 0.0
+                if not np.isnan(prev_atr):
+                    stop_slip = cfg.slippage_atr_mult * prev_atr
             if sl_hit and tp_hit:
-                exit_price = pos_sl
+                exit_price = pos_sl - stop_slip if pos_dir == "long" else pos_sl + stop_slip
                 reason = "sl" if not pos_partial_done else "partial+stop"
             elif sl_hit:
-                exit_price = pos_sl
+                exit_price = pos_sl - stop_slip if pos_dir == "long" else pos_sl + stop_slip
                 reason = "sl" if not pos_partial_done else "partial+stop"
             elif tp_hit:
                 exit_price = pos_tp
@@ -249,7 +264,12 @@ def run_backtest(
                     or (s.direction == "short" and bar_low <= trig)
                 )
                 if triggered:
-                    entry_price = trig
+                    slip = 0.0
+                    if cfg.slippage_atr_mult > 0 and atr_arr is not None:
+                        prev_atr = atr_arr[i - 1] if i > 0 else 0.0
+                        if not np.isnan(prev_atr):
+                            slip = cfg.slippage_atr_mult * prev_atr
+                    entry_price = trig + slip if s.direction == "long" else trig - slip
                     risk = abs(entry_price - s.stop_price)
                     if risk > 0:
                         sizing_equity = cfg.starting_equity if cfg.fixed_sizing else equity
