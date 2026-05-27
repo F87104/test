@@ -46,9 +46,9 @@ var int   extIdx   = bar_index
 var float altPrice = low
 var int   altIdx   = bar_index
 
-var float pP = array.new_float(5, na)
-var int   pI = array.new_int  (5, 0)
-var int   pK = array.new_int  (5, 0)
+var array<float> pP = array.new_float(5, na)
+var array<int>   pI = array.new_int  (5, 0)
+var array<int>   pK = array.new_int  (5, 0)
 
 confirmedThisBar = false
 newPivotPrice    = float(na)

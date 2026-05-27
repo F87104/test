@@ -81,9 +81,9 @@ var int   extIdx   = bar_index
 var float altPrice = low
 var int   altIdx   = bar_index
 
-var float pP = array.new_float(5, na)   // pivot price
-var int   pI = array.new_int  (5, 0)    // bar index of extreme
-var int   pK = array.new_int  (5, 0)    // +1 = H, -1 = L
+var array<float> pP = array.new_float(5, na)   // pivot price
+var array<int>   pI = array.new_int  (5, 0)    // bar index of extreme
+var array<int>   pK = array.new_int  (5, 0)    // +1 = H, -1 = L
 
 confirmedThisBar = false
 newPivotPrice = float(na)
@@ -311,7 +311,6 @@ if inPos and not posExitsSubmitted
              comment_profit = "Partial",
              alert_profit = longSide ? "PARTIAL_LONG" : "PARTIAL_SHORT")
     strategy.exit("Main", from_entry = fromTag,
-         qty   = na,                 // remaining size
          stop  = posStop,
          limit = posTarget,
          comment_loss  = "SL",
@@ -325,7 +324,6 @@ if inPos and posExitsSubmitted
     longSide = posDir == 1
     fromTag  = longSide ? "L" : "S"
     strategy.exit("Main", from_entry = fromTag,
-         qty   = na,
          stop  = posStop,
          limit = posTarget,
          comment_loss  = "SL",
