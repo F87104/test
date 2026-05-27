@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from elliott45.src.backtest import BacktestConfig, run_backtest  # noqa: E402
 from elliott45.src.data_loader import available_symbols, load_symbol  # noqa: E402
 from elliott45.src.elliott import WaveParams, detect_setups  # noqa: E402
+from elliott45.src.filters import FilterConfig, apply_filters  # noqa: E402
 from elliott45.src.metrics import compute  # noqa: E402
 
 
@@ -56,6 +57,30 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--fixed-sizing", action="store_true", help="Size each trade off the starting equity (no compounding)")
     p.add_argument("--stop-buffer-frac", type=float, default=0.5)
     p.add_argument("--entry-buffer-frac", type=float, default=0.2)
+    # --- filters (off by default) ---
+    p.add_argument("--filter-trend", action="store_true", help="Only longs above EMA, only shorts below")
+    p.add_argument("--trend-ema-period", type=int, default=200)
+    p.add_argument("--filter-atr-regime", action="store_true")
+    p.add_argument("--atr-low-pct", type=float, default=0.20)
+    p.add_argument("--atr-high-pct", type=float, default=0.97)
+    p.add_argument("--filter-w3-strength", action="store_true")
+    p.add_argument("--w3-min-ratio", type=float, default=1.272)
+    p.add_argument("--filter-alternation", action="store_true")
+    p.add_argument("--alternation-min-diff", type=float, default=0.20)
+    p.add_argument("--filter-min-rr", action="store_true")
+    p.add_argument("--min-rr", type=float, default=1.50)
+
+    # --- exit improvements ---
+    p.add_argument("--partial-tp-r", type=float, default=0.0,
+                   help="Take part of position at this R-multiple; 0 = disabled")
+    p.add_argument("--partial-tp-size", type=float, default=0.5)
+    p.add_argument("--no-be-at-partial", action="store_true",
+                   help="Do NOT move SL to breakeven when partial fires")
+    p.add_argument("--trail-atr-mult", type=float, default=0.0,
+                   help="Chandelier-style trailing stop in ATR units; 0 = disabled")
+    p.add_argument("--trail-atr-period", type=int, default=14)
+    p.add_argument("--trail-after-partial-only", action="store_true")
+    p.add_argument("--cost-per-trade", type=float, default=0.0, help="Round-trip cost in price units (spread + commission)")
 
     p.add_argument("--trades-out", default=None,
                    help="Optional CSV path to dump trade log")
@@ -89,6 +114,21 @@ def run_one(symbol: str, args: argparse.Namespace) -> tuple[Optional[dict], list
         atr_period=args.atr_period,
         params=params,
     )
+    raw_setup_count = len(setups)
+    fcfg = FilterConfig(
+        use_trend=args.filter_trend,
+        trend_ema_period=args.trend_ema_period,
+        use_atr_regime=args.filter_atr_regime,
+        atr_low_pct=args.atr_low_pct,
+        atr_high_pct=args.atr_high_pct,
+        use_w3_strength=args.filter_w3_strength,
+        w3_min_ratio=args.w3_min_ratio,
+        use_alternation=args.filter_alternation,
+        alternation_min_diff=args.alternation_min_diff,
+        use_min_rr=args.filter_min_rr,
+        min_rr=args.min_rr,
+    )
+    setups = apply_filters(df, setups, fcfg)
     cfg = BacktestConfig(
         starting_equity=args.starting_equity,
         risk_per_trade=args.risk_per_trade,
@@ -96,6 +136,13 @@ def run_one(symbol: str, args: argparse.Namespace) -> tuple[Optional[dict], list
         max_hold_bars=args.max_hold_bars,
         allow_short=not args.no_short,
         fixed_sizing=args.fixed_sizing,
+        partial_tp_r=args.partial_tp_r,
+        partial_tp_size=args.partial_tp_size,
+        move_be_at_partial=not args.no_be_at_partial,
+        trail_atr_mult=args.trail_atr_mult,
+        trail_atr_period=args.trail_atr_period,
+        trail_after_partial_only=args.trail_after_partial_only,
+        cost_per_trade=args.cost_per_trade,
     )
     result = run_backtest(df, setups, cfg)
     metrics = compute(result, args.starting_equity)
@@ -105,7 +152,7 @@ def run_one(symbol: str, args: argparse.Namespace) -> tuple[Optional[dict], list
     years = (span_end - span_start).total_seconds() / (365.25 * 24 * 3600)
     print(
         f"[{symbol}] bars={len(df):>6}  span={span_start.date()}..{span_end.date()} ({years:.1f}y)  "
-        f"setups={len(setups):>4}  trades={metrics.trades:>3}  "
+        f"setups={len(setups):>4}/{raw_setup_count:<4}  trades={metrics.trades:>3}  "
         f"win={metrics.win_rate*100:5.1f}%  PF={metrics.profit_factor:5.2f}  "
         f"E[R]={metrics.expectancy_r:+5.2f}R  ret={metrics.total_return_pct:+7.2f}%  "
         f"DD={metrics.max_drawdown_pct:6.2f}%  Sharpe={metrics.sharpe_annual:+5.2f}"
@@ -116,6 +163,7 @@ def run_one(symbol: str, args: argparse.Namespace) -> tuple[Optional[dict], list
         "bars": int(len(df)),
         "span_years": round(years, 2),
         "setups": len(setups),
+        "raw_setups": raw_setup_count,
         **metrics.as_dict(),
     }
     return summary, result.trades
