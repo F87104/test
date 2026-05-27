@@ -417,26 +417,76 @@ plot(tgtPrice,  "target",  display=display.none)
 
 
 // -----------------------------------------------------------------------------
-// Diagnostics panel (top-right) - useful when troubleshooting Pine vs Python
+// Diagnostics panel - guaranteed visible. Should be in TOP-LEFT corner of the
+// chart pane. If you don't see it after pasting, the script wasn't reloaded.
 // -----------------------------------------------------------------------------
+SCRIPT_VERSION = "v2.1 bugfix 2026-05-27"
+
 var int diagSetups = 0
 var int diagFills  = 0
+var int diagDirSwitch = 0
 if setupLong or setupShort
     diagSetups := diagSetups + 1
 if filledLong or filledShort
     diagFills := diagFills + 1
+// Detect direction switch (long pending becomes short pending or v.v.)
+var bool diagLastDir = true
+if (setupLong or setupShort) and pendIsLong != diagLastDir
+    diagDirSwitch := diagDirSwitch + 1
+diagLastDir := setupLong ? true : setupShort ? false : diagLastDir
 
-var table diagTbl = table.new(position.top_right, 2, 6, border_width = 1)
-if barstate.islast
-    table.cell(diagTbl, 0, 0, "setups",          bgcolor=color.new(color.gray, 70), text_color=color.white)
-    table.cell(diagTbl, 1, 0, str.tostring(diagSetups))
-    table.cell(diagTbl, 0, 1, "trades (fills)",  bgcolor=color.new(color.gray, 70), text_color=color.white)
-    table.cell(diagTbl, 1, 1, str.tostring(diagFills))
-    table.cell(diagTbl, 0, 2, "fills / setups",  bgcolor=color.new(color.gray, 70), text_color=color.white)
-    table.cell(diagTbl, 1, 2, diagSetups > 0 ? str.tostring(diagFills * 100 / diagSetups) + "%" : "n/a")
-    table.cell(diagTbl, 0, 3, "in position",     bgcolor=color.new(color.gray, 70), text_color=color.white)
-    table.cell(diagTbl, 1, 3, inPos ? "YES (" + (posDir == 1 ? "L" : "S") + ")" : "no")
-    table.cell(diagTbl, 0, 4, "pending",         bgcolor=color.new(color.gray, 70), text_color=color.white)
-    table.cell(diagTbl, 1, 4, pendOn ? (pendIsLong ? "L " : "S ") + str.tostring(pendBarsLeft) + " bars" : "none")
-    table.cell(diagTbl, 0, 5, "posStop / posTgt", bgcolor=color.new(color.gray, 70), text_color=color.white)
-    table.cell(diagTbl, 1, 5, inPos ? str.tostring(posStop, "#.###") + " / " + str.tostring(posTarget, "#.###") : "-")
+// Build table on every bar so it is visible right from the chart start.
+var table diagTbl = table.new(position.top_left, 2, 8,
+     bgcolor      = color.new(color.black, 20),
+     border_color = color.new(color.yellow, 0),
+     border_width = 2,
+     frame_color  = color.new(color.yellow, 0),
+     frame_width  = 2)
+
+ratioStr = diagSetups > 0
+     ? str.tostring(math.round(diagFills * 100.0 / diagSetups)) + "%"
+     : "n/a"
+ratioColor = diagSetups == 0
+     ? color.gray
+     : (diagFills <= diagSetups
+         ? color.new(color.green, 30)
+         : color.new(color.red, 0))
+
+table.cell(diagTbl, 0, 0, "ELLIOTT 4->5",      bgcolor=color.new(color.yellow, 0),
+     text_color=color.black, text_size=size.normal)
+table.cell(diagTbl, 1, 0, SCRIPT_VERSION,       bgcolor=color.new(color.yellow, 0),
+     text_color=color.black, text_size=size.small)
+table.cell(diagTbl, 0, 1, "setups detected",   bgcolor=color.new(color.gray, 50),
+     text_color=color.white)
+table.cell(diagTbl, 1, 1, str.tostring(diagSetups),
+     bgcolor=color.new(color.black, 20), text_color=color.white)
+table.cell(diagTbl, 0, 2, "trades (fills)",     bgcolor=color.new(color.gray, 50),
+     text_color=color.white)
+table.cell(diagTbl, 1, 2, str.tostring(diagFills),
+     bgcolor=color.new(color.black, 20), text_color=color.white)
+table.cell(diagTbl, 0, 3, "fills / setups",     bgcolor=color.new(color.gray, 50),
+     text_color=color.white)
+table.cell(diagTbl, 1, 3, ratioStr,
+     bgcolor=ratioColor, text_color=color.white,
+     tooltip="should be <= 100%. If higher = stray entries bug = fix not applied")
+table.cell(diagTbl, 0, 4, "dir switches",       bgcolor=color.new(color.gray, 50),
+     text_color=color.white)
+table.cell(diagTbl, 1, 4, str.tostring(diagDirSwitch),
+     bgcolor=color.new(color.black, 20), text_color=color.white)
+table.cell(diagTbl, 0, 5, "in position",        bgcolor=color.new(color.gray, 50),
+     text_color=color.white)
+table.cell(diagTbl, 1, 5,
+     inPos ? "YES (" + (posDir == 1 ? "L" : "S") + ")" : "flat",
+     bgcolor=inPos ? color.new(color.blue, 50) : color.new(color.black, 20),
+     text_color=color.white)
+table.cell(diagTbl, 0, 6, "pending",            bgcolor=color.new(color.gray, 50),
+     text_color=color.white)
+table.cell(diagTbl, 1, 6,
+     pendOn ? (pendIsLong ? "LONG " : "SHORT ") + str.tostring(pendBarsLeft) + " bars" : "none",
+     bgcolor=pendOn ? color.new(color.orange, 50) : color.new(color.black, 20),
+     text_color=color.white)
+table.cell(diagTbl, 0, 7, "posStop / posTgt",   bgcolor=color.new(color.gray, 50),
+     text_color=color.white)
+table.cell(diagTbl, 1, 7,
+     inPos ? str.tostring(posStop, "#.###") + " / " + str.tostring(posTarget, "#.###") : "-",
+     bgcolor=color.new(color.black, 20), text_color=color.white)
