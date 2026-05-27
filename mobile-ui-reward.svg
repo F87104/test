@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bgReward" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f9f4ea"/>
+      <stop offset="100%" stop-color="#efe6d6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#bgReward)"/>
+
+  <rect x="84" y="120" width="912" height="1680" rx="78" fill="#11131a"/>
+  <rect x="114" y="180" width="852" height="1545" rx="58" fill="#f8f3ea"/>
+  <rect x="420" y="205" width="240" height="20" rx="10" fill="#333843"/>
+
+  <text x="160" y="300" fill="#22242b" font-size="46" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x5831;&#x916C;&#x4EA4;&#x63DB;&#x6240;</text>
+  <text x="160" y="350" fill="#7b7468" font-size="28" font-family="Noto Sans JP, sans-serif">&#x4EA4;&#x63DB;&#x53EF;&#x80FD; 132pt&#xFF08;&#x7D2F;&#x8A08; 228pt / &#x4F7F;&#x7528; 96pt&#xFF09;</text>
+
+  <rect x="150" y="395" width="780" height="170" rx="28" fill="#ffffff" stroke="#e3d9c7"/>
+  <text x="182" y="455" fill="#1f2530" font-size="36" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x9650;&#x5B9A;&#x30C6;&#x30F3;&#x30D7;&#x30EC;&#x89E3;&#x653E;</text>
+  <text x="182" y="495" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">&#x5FC5;&#x8981; 70pt / &#x6240;&#x6301; 1&#x500B;</text>
+  <rect x="680" y="430" width="220" height="90" rx="20" fill="#2e6ee7"/>
+  <text x="745" y="485" fill="#ffffff" font-size="34" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x4EA4;&#x63DB;</text>
+
+  <rect x="150" y="585" width="780" height="170" rx="28" fill="#ffffff" stroke="#e3d9c7"/>
+  <text x="182" y="645" fill="#1f2530" font-size="36" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x512A;&#x5148;&#x30EC;&#x30D3;&#x30E5;&#x30FC;&#x6A29;</text>
+  <text x="182" y="685" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">&#x5FC5;&#x8981; 40pt / &#x6240;&#x6301; 0&#x500B;</text>
+  <rect x="680" y="620" width="220" height="90" rx="20" fill="#2e6ee7"/>
+  <text x="745" y="675" fill="#ffffff" font-size="34" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x4EA4;&#x63DB;</text>
+
+  <rect x="150" y="775" width="780" height="190" rx="28" fill="#fffdf7" stroke="#d8c39b" stroke-width="3"/>
+  <text x="182" y="835" fill="#7e5a21" font-size="30" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x89E3;&#x653E;&#x6E08;&#x307F;&#x7279;&#x5178;</text>
+  <text x="182" y="880" fill="#1f2530" font-size="34" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x7279;&#x5225;&#x8B1B;&#x7FA9;&#xFF1A;&#x6210;&#x679C;&#x5C0E;&#x7DDA;&#x306E;&#x8A2D;&#x8A08;</text>
+  <text x="182" y="920" fill="#7a7469" font-size="25" font-family="Noto Sans JP, sans-serif">&#x5831;&#x916C;&#x300C;&#x9650;&#x5B9A;&#x30C6;&#x30F3;&#x30D7;&#x30EC;&#x89E3;&#x653E;&#x300D;&#x3067;&#x5229;&#x7528;&#x53EF;&#x80FD;</text>
+
+  <rect x="150" y="1000" width="780" height="280" rx="28" fill="#ffffff" stroke="#e3d9c7"/>
+  <text x="182" y="1060" fill="#1f2530" font-size="34" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x4EA4;&#x63DB;&#x5C65;&#x6B74;</text>
+  <text x="182" y="1110" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">05/04 08:42 &#x3000;&#x9650;&#x5B9A;&#x30C6;&#x30F3;&#x30D7;&#x30EC;&#x89E3;&#x653E; &#x3000;-70pt</text>
+  <text x="182" y="1150" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">05/02 21:10 &#x3000;&#x512A;&#x5148;&#x30EC;&#x30D3;&#x30E5;&#x30FC;&#x6A29; &#x3000;-40pt</text>
+  <text x="182" y="1190" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">04/29 19:03 &#x3000;&#x30E1;&#x30F3;&#x30BF;&#x30FC;Q&amp;A&#x30C1;&#x30B1;&#x30C3;&#x30C8; &#x3000;-120pt</text>
+
+  <rect x="150" y="1460" width="780" height="120" rx="24" fill="#f2ead9"/>
+  <text x="182" y="1528" fill="#6f685d" font-size="26" font-family="Noto Sans JP, sans-serif">&#x30D2;&#x30F3;&#x30C8;&#xFF1A;&#x4EA4;&#x63DB;&#x3067;&#x5B66;&#x7FD2;&#x30FB;&#x5B9F;&#x884C;&#x30B3;&#x30B9;&#x30C8;&#x3092;&#x4E0B;&#x3052;&#x3089;&#x308C;&#x307E;&#x3059;</text>
+
+  <rect x="114" y="1670" width="852" height="120" rx="0" fill="#fff9f0"/>
+  <text x="200" y="1742" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">&#x30DB;&#x30FC;&#x30E0;</text>
+  <text x="390" y="1742" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">&#x30DE;&#x30C3;&#x30C1;</text>
+  <text x="575" y="1742" fill="#2e6ee7" font-size="26" font-family="Noto Sans JP, sans-serif" font-weight="700">&#x5831;&#x916C;</text>
+  <text x="760" y="1742" fill="#7a7469" font-size="26" font-family="Noto Sans JP, sans-serif">&#x8B1B;&#x7FA9;</text>
+</svg>

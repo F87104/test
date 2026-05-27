@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>メモ魔塾2.0（仮） | 成果がちゃんと評価される実践コミュニティ</title>
+    <meta
+      name="description"
+      content="ポイント獲得の速報テロップと週間ランキングを備えた、ゲーム型コミュニティの実装モック。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="popquest-theme">
+    <header class="site-header">
+      <div class="container nav">
+        <div class="brand">
+          <span class="brand-mark">SS</span>
+          <div>
+            <p class="brand-name">メモ魔塾2.0（仮）</p>
+            <p class="brand-sub">成果がちゃんと評価される実践コミュニティ</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="tutorialStartButton" class="button button-small button-ghost" type="button">❓ 使い方</button>
+          <button id="toggleAutoFeedButton" class="button button-small" type="button">📣 速報ON</button>
+          <button id="resetButton" class="button button-small button-ghost" type="button">♻ リセット</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container page-main">
+      <section class="game-lobby panel" id="gameLobby">
+        <div class="lobby-hud">
+          <div class="lobby-hud-top">
+            <div class="lobby-player-meta">
+              <p class="lobby-player-name">メモ魔トレーナー</p>
+              <p id="lobbyLevelValue" class="lobby-level-chip">Lv.1</p>
+            </div>
+            <div class="lobby-wallet">
+              <p id="lobbyGemValue" class="lobby-wallet-value">10000G</p>
+              <p id="lobbyPointValue" class="lobby-wallet-sub">0 pt</p>
+            </div>
+          </div>
+          <div class="lobby-bars">
+            <div class="lobby-bar-card">
+              <div class="lobby-bar-header">
+                <p class="lobby-bar-label">達成ゲージ</p>
+                <p id="lobbyStaminaValue" class="lobby-bar-value">0 / 100</p>
+              </div>
+              <div class="lobby-bar-track">
+                <div id="lobbyStaminaBar" class="lobby-bar-fill"></div>
+              </div>
+            </div>
+            <div class="lobby-bar-card">
+              <div class="lobby-bar-header">
+                <p class="lobby-bar-label">リーグ</p>
+                <p id="lobbyLeagueValue" class="lobby-bar-value">ブロンズ</p>
+              </div>
+              <div class="lobby-chip-row">
+                <span id="lobbyNextStepValue" class="lobby-step-chip">クエスト開始</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lobby-hero">
+          <div class="lobby-hero-stage">
+            <img class="lobby-mob mob-demon" src="./assets/rpg-lobby/mob-demon.png" alt="" aria-hidden="true" />
+            <img class="lobby-mob mob-ogre" src="./assets/rpg-lobby/mob-ogre.png" alt="" aria-hidden="true" />
+            <img class="lobby-mob mob-golem" src="./assets/rpg-lobby/mob-golem.png" alt="" aria-hidden="true" />
+            <img class="lobby-mob mob-robot" src="./assets/rpg-lobby/mob-robot.png" alt="" aria-hidden="true" />
+            <img class="lobby-slime" src="./assets/rpg-lobby/mob-slime.png" alt="" aria-hidden="true" />
+          </div>
+        </div>
+        <div class="lobby-main-action">
+          <button id="lobbyMainActionButton" class="button lobby-main-action-button" type="button">今日のクエストを開始</button>
+          <p id="lobbyMainActionHint" class="panel-note">まず1つだけ進めましょう</p>
+        </div>
+      </section>
+
+      <section class="lobby-tabs panel" id="lobbyTabNav">
+        <button class="lobby-tab active" type="button" data-lobby-tab="home">
+          <span class="lobby-tab-icon">👤</span><span class="lobby-tab-label">マイページ</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="quest">
+          <span class="lobby-tab-icon">⚔️</span><span class="lobby-tab-label">クエスト</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="monster">
+          <span class="lobby-tab-icon">🐲</span><span class="lobby-tab-label">モンスター</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="reward">
+          <span class="lobby-tab-icon">💎</span><span class="lobby-tab-label">ショップ</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="friend">
+          <span class="lobby-tab-icon">🤝</span><span class="lobby-tab-label">フレンド</span>
+        </button>
+        <button class="lobby-tab" type="button" data-lobby-tab="other">
+          <span class="lobby-tab-icon">📜</span><span class="lobby-tab-label">その他</span>
+        </button>
+      </section>
+
+      <div id="dashboardContent" class="lobby-panels">
+      <section class="top-summary-grid lobby-panel" data-lobby-panel="overview">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>あなたの現在地</h2>
+            <p class="panel-note">トップ画面でレベルと成長を確認</p>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <p class="stat-label">レベル</p>
+              <p id="playerLevel" class="stat-value">Lv.1</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">ストリーク</p>
+              <p id="playerStreak" class="stat-value">0日</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">経験値</p>
+              <p id="playerXp" class="stat-value">0 / 100 経験値</p>
+            </div>
+          </div>
+          <div class="xp-wrap" aria-label="経験値バー">
+            <div id="playerXpBar" class="xp-bar"></div>
+          </div>
+        </article>
+
+        <article class="panel task-panel">
+          <div class="panel-header">
+            <h2>今日の最重要タスク</h2>
+            <p class="panel-note">迷わず、まず1つ実行</p>
+          </div>
+          <p id="dailyFocusTitle" class="task-title">タスクを準備中...</p>
+          <p id="dailyFocusDescription" class="task-hint"></p>
+          <div class="task-meta">
+            <span id="dailyFocusReward" class="task-chip">推奨報酬: +0pt</span>
+            <span id="dailyFocusStatus" class="task-chip task-chip-muted">未着手</span>
+          </div>
+          <button id="dailyFocusAction" class="button button-small" type="button">最短ルートで実行する</button>
+        </article>
+
+        <article id="mvpCard" class="panel mvp-panel" aria-label="今週のMVP">
+          <div class="panel-header">
+            <h2>今週のMVP</h2>
+            <p class="panel-note">週間1位に贈る称号</p>
+          </div>
+          <div class="mvp-card">
+            <div class="mvp-crown" aria-hidden="true">👑</div>
+            <p id="mvpNickname" class="mvp-nickname">---ちゃん</p>
+            <p id="mvpTitle" class="mvp-title">称号: 週間スター</p>
+            <p id="mvpPoints" class="mvp-points">0 pt</p>
+            <p id="mvpMessage" class="mvp-message">今週の行動でMVPを目指そう</p>
+            <div class="mvp-sparkles" aria-hidden="true">
+              <span>✦</span><span>✧</span><span>✦</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>週間リーグ</h2>
+            <p id="currentLeagueLabel" class="panel-note">ブロンズリーグ</p>
+          </div>
+          <div class="league-badges">
+            <span id="badgeBronze" class="league-badge bronze">ブロンズ</span>
+            <span id="badgeSilver" class="league-badge silver">シルバー</span>
+            <span id="badgeGold" class="league-badge gold">ゴールド</span>
+          </div>
+          <div class="progress-wrap league-progress" aria-label="リーグ進捗バー">
+            <div id="leagueProgressBar" class="progress-bar"></div>
+          </div>
+          <p id="leagueProgressText" class="panel-note"></p>
+        </article>
+      </section>
+
+      <section class="panel insight-panel lobby-panel" data-lobby-panel="overview">
+        <div class="panel-header">
+          <h2>成果インサイト（4週トレンド）</h2>
+          <p id="weeklyReviewUpdatedAt" class="panel-note"></p>
+        </div>
+        <div class="insight-grid">
+          <article class="insight-card">
+            <p class="insight-label">成長速度</p>
+            <p id="insightVelocityValue" class="insight-value">-</p>
+            <p id="insightVelocityMeta" class="insight-meta">-</p>
+            <p id="insightVelocityTrend" class="insight-trend">-</p>
+          </article>
+          <article class="insight-card">
+            <p class="insight-label">継続信頼度</p>
+            <p id="insightConsistencyValue" class="insight-value">-</p>
+            <p id="insightConsistencyMeta" class="insight-meta">-</p>
+            <p id="insightConsistencyTrend" class="insight-trend">-</p>
+          </article>
+          <article class="insight-card">
+            <p class="insight-label">コミュニティ健全性</p>
+            <p id="insightHealthValue" class="insight-value">-</p>
+            <p id="insightHealthMeta" class="insight-meta">-</p>
+            <p id="insightHealthTrend" class="insight-trend">-</p>
+          </article>
+        </div>
+        <p id="insightNarrative" class="insight-narrative">解析中...</p>
+      </section>
+
+      <section class="panel review-panel lobby-panel" data-lobby-panel="overview">
+        <div class="panel-header">
+          <h2>週間レビュー（自動生成）</h2>
+          <div class="review-header-meta">
+            <p id="weeklyReviewUpdatedAt" class="panel-note">更新: -</p>
+            <span id="weeklyReviewGrade" class="review-grade">評価: -</span>
+          </div>
+        </div>
+        <div class="review-kpi-grid">
+          <article class="review-kpi">
+            <p class="review-label">総合スコア</p>
+            <p id="weeklyReviewScore" class="review-kpi-value">-</p>
+            <p id="weeklyReviewDelta" class="review-kpi-sub">-</p>
+          </article>
+          <article class="review-kpi">
+            <p class="review-label">目標達成率</p>
+            <div class="review-progress-track" aria-label="週間目標達成率">
+              <div id="weeklyReviewTargetBar" class="review-progress-fill"></div>
+            </div>
+            <p id="weeklyReviewTargetText" class="review-kpi-sub">-</p>
+          </article>
+        </div>
+        <div class="review-grid">
+          <div class="review-item">
+            <p class="review-label">今週の進捗</p>
+            <p id="weeklyMetricProgress" class="review-value">-</p>
+          </div>
+          <div class="review-item">
+            <p class="review-label">良かった点</p>
+            <p id="weeklyReviewSummary" class="review-value">-</p>
+          </div>
+          <div class="review-item">
+            <p class="review-label">改善ポイント</p>
+            <p id="weeklyMetricConsistency" class="review-value">-</p>
+          </div>
+          <div class="review-item">
+            <p class="review-label">来週の一手</p>
+            <p id="weeklyMetricNext" class="review-value">-</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ticker-section lobby-panel" data-lobby-panel="overview">
+        <div class="ticker-label">速報</div>
+        <div class="ticker-window">
+          <ul id="tickerTrack" class="ticker-track"></ul>
+        </div>
+      </section>
+
+      <section class="board-grid lobby-panel" data-lobby-panel="quest">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>週間ランキング（ニックネーム）</h2>
+            <p id="lastUpdated" class="panel-note"></p>
+          </div>
+          <div class="ranking-tabs">
+            <button class="ranking-tab active" type="button" data-ranking-tab="overall">総合</button>
+            <button class="ranking-tab" type="button" data-ranking-tab="rookie">新人</button>
+            <button class="ranking-tab" type="button" data-ranking-tab="growth">成長率</button>
+            <button class="ranking-tab" type="button" data-ranking-tab="contribution">貢献</button>
+          </div>
+          <ol id="rankingList" class="ranking-list"></ol>
+        </article>
+
+        <article class="panel award-panel">
+          <div class="panel-header">
+            <h2>ポイント付与フォーム</h2>
+            <p class="panel-note">1クリックで速報に反映</p>
+          </div>
+          <form id="awardForm" class="award-form">
+            <div class="award-form-grid">
+              <label class="field">
+                <span class="field-label">名前</span>
+                <input id="nameInput" name="name" type="text" maxlength="20" placeholder="例: 田中さん" required />
+              </label>
+              <label class="field">
+                <span class="field-label">獲得ポイント</span>
+                <input
+                  id="pointsInput"
+                  name="points"
+                  type="number"
+                  min="1"
+                  max="500"
+                  value="10"
+                  required
+                />
+              </label>
+            </div>
+            <div class="quick-points" aria-label="クイックポイント選択">
+              <button class="quick-point-chip active" type="button" data-quick-point="10">+10</button>
+              <button class="quick-point-chip" type="button" data-quick-point="20">+20</button>
+              <button class="quick-point-chip" type="button" data-quick-point="50">+50</button>
+              <button class="quick-point-chip" type="button" data-quick-point="100">+100</button>
+            </div>
+            <label class="field">
+              <span class="field-label">理由</span>
+              <select id="reasonInput" name="reason">
+                <option value="デイリー報告">デイリー報告</option>
+                <option value="週次課題提出">週次課題提出</option>
+                <option value="初案件獲得">初案件獲得</option>
+                <option value="他メンバー支援">他メンバー支援</option>
+                <option value="公開フィードバック登壇">公開フィードバック登壇</option>
+              </select>
+            </label>
+            <p id="awardPreview" class="award-preview">送信プレビュー: 田中さん が デイリー報告 で 10pt獲得</p>
+            <div class="award-submit-row">
+              <p class="award-helper">入力後すぐにランキングと速報へ反映されます</p>
+              <button class="button award-submit-button" type="submit">速報を投稿する</button>
+            </div>
+            <div id="awardToast" class="award-toast" role="status" aria-live="polite"></div>
+          </form>
+        </article>
+      </section>
+
+      <section class="gamify-grid lobby-panel" data-lobby-panel="reward">
+        <article id="reactivationCard" class="panel reactivation-card" hidden>
+          <div class="panel-header">
+            <h2>復帰ミッション</h2>
+            <p class="panel-note">3日以上未活動の方向け</p>
+          </div>
+          <p id="reactivationMessage" class="focus-description">最近の活動が止まっています。まずは1つ再開しましょう。</p>
+          <ul class="weekly-review-list">
+            <li id="reactivationTask1">講座を1本視聴完了する</li>
+            <li id="reactivationTask2">ポイント投稿を1回実行する</li>
+          </ul>
+          <button id="reactivationActionButton" class="button button-small" type="button">再開ミッションを実行</button>
+        </article>
+        <article class="panel">
+          <div class="panel-header">
+            <h2>デイリークエスト</h2>
+            <p class="panel-note">毎日クリアで追加ポイント</p>
+          </div>
+          <ul id="questList" class="quest-list"></ul>
+          <div class="panel-header badge-header">
+            <h2>バッジ</h2>
+            <p class="panel-note">達成条件を満たすと解放</p>
+          </div>
+          <ul id="badgeList" class="badge-list"></ul>
+        </article>
+        <article class="panel">
+          <div class="panel-header reward-header">
+            <h2>報酬交換所</h2>
+            <p id="rewardBalance" class="panel-note"></p>
+          </div>
+          <div id="rewardList" class="reward-list"></div>
+        </article>
+      </section>
+
+      <section class="learning-grid lobby-panel" data-lobby-panel="lecture">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>学習進捗</h2>
+            <p id="learningSummary" class="panel-note"></p>
+          </div>
+
+          <div class="progress-wrap" aria-label="学習進捗バー">
+            <div id="learningProgressBar" class="progress-bar"></div>
+          </div>
+
+          <p id="learningPoints" class="learning-points"></p>
+
+          <p class="panel-note learning-note">
+            Vimeo再生完了を自動判定してポイント付与（手動ボタン不要）
+          </p>
+          <div id="lectureList" class="lecture-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>学習者設定</h2>
+            <p class="panel-note">講座視聴で付与されるポイント先</p>
+          </div>
+          <form id="learnerForm" class="award-form">
+            <label>
+              学習者名
+              <input id="learnerNameInput" type="text" maxlength="20" value="あなた" required />
+            </label>
+            <button class="button" type="submit">学習者名を保存</button>
+            <button id="resetLearningButton" class="button button-ghost" type="button">
+              学習進捗をリセット
+            </button>
+          </form>
+        </article>
+      </section>
+
+      <section class="panel mission-panel lobby-panel" data-lobby-panel="match">
+        <div class="panel-header">
+          <h2>志マッチ（Mission Match）</h2>
+          <p class="panel-note">同じ志・補完スキルの仲間を見つけてチームを作る</p>
+        </div>
+        <div class="mission-grid">
+          <article class="mission-card">
+            <h3>あなたの志プロフィール</h3>
+            <form id="missionProfileForm" class="award-form">
+              <label class="field">
+                <span class="field-label">テーマ</span>
+                <input id="missionThemeInput" type="text" maxlength="80" placeholder="例: 教育×AI" required />
+              </label>
+              <label class="field">
+                <span class="field-label">3ヶ月ゴール</span>
+                <input id="missionGoalInput" type="text" maxlength="160" placeholder="例: 有料講座を1本リリース" required />
+              </label>
+              <div class="award-form-grid">
+                <label class="field">
+                  <span class="field-label">週の稼働時間</span>
+                  <input id="missionHoursInput" type="number" min="1" max="80" required />
+                </label>
+                <label class="field">
+                  <span class="field-label">提供できる役割</span>
+                  <input id="missionOfferRoleInput" type="text" maxlength="80" placeholder="例: 企画/設計" required />
+                </label>
+              </div>
+              <label class="field">
+                <span class="field-label">欲しい役割</span>
+                <input id="missionSeekRoleInput" type="text" maxlength="80" placeholder="例: 集客/セールス" required />
+              </label>
+              <label class="field">
+                <span class="field-label">補足メモ</span>
+                <textarea id="missionNoteInput" rows="3" maxlength="240" placeholder="温度感・やり方など"></textarea>
+              </label>
+              <button class="button button-small" type="submit">プロフィールを保存</button>
+            </form>
+          </article>
+
+          <article class="mission-card">
+            <div class="panel-header">
+              <h3>今週のマッチ候補</h3>
+              <button id="missionRefreshButton" class="button button-small button-ghost" type="button">再提案</button>
+            </div>
+            <ul id="missionMatchesList" class="mission-match-list"></ul>
+            <form id="missionTeamForm" class="award-form">
+              <label class="field">
+                <span class="field-label">チーム名</span>
+                <input id="missionTeamNameInput" type="text" maxlength="80" placeholder="例: スタートダッシュ隊" required />
+              </label>
+              <label class="field">
+                <span class="field-label">最初のミッション</span>
+                <input id="missionTeamMissionInput" type="text" maxlength="120" placeholder="例: LP案を3日で作成" required />
+              </label>
+              <p id="missionTeamSelection" class="panel-note">候補を選択してください</p>
+              <button class="button button-small" type="submit">チームを作成</button>
+            </form>
+          </article>
+
+          <article class="mission-card">
+            <h3>あなたのチーム</h3>
+            <ul id="missionTeamsList" class="mission-team-list"></ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="rules panel lobby-panel" data-lobby-panel="overview">
+        <div class="panel-header">
+          <h2>ルール（サンプル）</h2>
+        </div>
+        <ul>
+          <li>ランキングは毎週月曜 00:00 にリセット（このモックは手動リセット対応）。</li>
+          <li>表示名はランダムなニックネーム。獲得ポイントは即時反映。</li>
+          <li>速報テロップに「誰が何ポイント獲得/消費したか」を表示。</li>
+          <li>Vimeo講座動画を再生完了すると、初回のみ自動でポイントを獲得して学習進捗に反映。</li>
+          <li>完了条件は「95%以上視聴」かつ「最低再生時間を満たす」判定。</li>
+          <li>表示されるポイントは換金不可・譲渡不可のコミュニティクレジット。</li>
+        </ul>
+      </section>
+      </div>
+    </main>
+
+    <div id="tutorialOverlay" class="onboarding-overlay" hidden>
+      <section class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+        <p id="tutorialStep" class="onboarding-step">Step 1 / 6</p>
+        <h3 id="tutorialTitle" class="onboarding-title">ようこそ！</h3>
+        <p id="tutorialCopy" class="onboarding-copy">このサイトの使い方を1分で案内します。</p>
+        <div class="onboarding-target">
+          <p id="tutorialTargetLabel" class="panel-note">対象: ホーム</p>
+          <button id="tutorialGoButton" class="button button-small button-ghost" type="button">対象へ移動</button>
+        </div>
+        <div class="onboarding-actions">
+          <button id="tutorialSkipButton" class="button button-small button-ghost" type="button">スキップ</button>
+          <div class="onboarding-primary-actions">
+            <button id="tutorialPrevButton" class="button button-small button-ghost" type="button">戻る</button>
+            <button id="tutorialNextButton" class="button button-small" type="button">次へ</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>© 2026 メモ魔塾2.0（仮）</p>
+        <p class="footer-note">実装モック: 速報テロップ + 週間ランキング + 手動付与フォーム</p>
+      </div>
+    </footer>
+
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <script type="module" src="./app-client.js"></script>
+  </body>
+</html>
