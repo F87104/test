@@ -1,0 +1,45 @@
+{
+  "indicator": {
+    "lookback": 5000,
+    "exclude_recent": 760,
+    "lookback_3m": 360,
+    "exclude_recent_3m": 180,
+    "strict_warmup": true,
+    "pine_compat_mode": "intended"
+  },
+  "backtest": {
+    "direction": "both",
+    "level_kind": "mid",
+    "entry_fill": "next_open",
+    "one_position_only": true,
+    "sl_mode": "atr",
+    "sl_atr_mult": 2.0,
+    "sl_fixed_pct": 0.01,
+    "tp_mode": "rr",
+    "tp_rr": 3.0,
+    "tp_atr_mult": 4.0,
+    "atr_period": 14,
+    "time_exit_bars": 0,
+    "cost_pips": 0.0,
+    "slippage_pips": 0.0,
+    "pip_size": 0.01,
+    "initial_equity": 10000.0,
+    "risk_per_trade_pct": 1.0,
+    "session_filter": ["asia", "ny"],
+    "min_breakout_margin_atr": 0.0,
+    "min_body_strength": 0.0,
+    "atr_pct_band": null,
+    "breakeven_at_r": 0.0,
+    "trailing_atr_mult": 0.0
+  },
+  "run": {
+    "symbol": "XAGUSD",
+    "timezone": "UTC",
+    "save_chart": true,
+    "save_trades_csv": true,
+    "save_equity_csv": true,
+    "output_dir": "results",
+    "log_dir": "logs",
+    "chart_max_bars": 6000
+  }
+}

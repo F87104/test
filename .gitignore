@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.idea/
+.vscode/
+.env
+*.egg-info/
+build/
+dist/
+
+# runtime artefacts (keep folders themselves with .gitkeep)
+results/*
+!results/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# user-supplied data
+data/*.csv
+data/*.zip
+!data/.gitkeep
+!data/sample_*.csv
