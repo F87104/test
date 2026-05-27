@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "katsuma_to_slack"
+version = "0.1.0"
+description = "Forward Kazuyo Katsuma's daily mail magazine from Gmail to Slack with spaced-repetition review reminders."
+requires-python = ">=3.10"
+readme = "README.md"
+dependencies = [
+  "requests>=2.31.0",
+  "python-dotenv>=1.0.1",
+  "beautifulsoup4>=4.12.3",
+  "PyYAML>=6.0.1",
+]
+
+[project.scripts]
+katsuma-to-slack = "katsuma_to_slack.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["katsuma_to_slack*"]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
