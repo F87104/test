@@ -34,12 +34,28 @@ elliott_wave_research/
 │   └── OPEN_QUESTIONS.md
 ├── 08_backtest_ideas/              … この手法をバックテストするための仕様メモ
 │   └── BACKTEST_SPEC.md
+├── 09_pine_strategy/               … Pine v6 戦略 (TradingView)
+│   ├── elliott_5wave_saido.pine
+│   └── README.md
+├── 10_python_backtest/             … Python バックテスター + 検証結果
+│   ├── elliott_5wave_backtest.py
+│   ├── run_full_scan.py
+│   ├── README.md
+│   └── results/
+│       ├── scan_summary.csv
+│       └── REPORT.md  ← まずここを読む
 └── raw_ocr/                        … OCR で抽出した一次テキスト（PDF 4 冊分）
     ├── elliott_all.txt
     ├── ch1_all.txt
     ├── method_all.txt
     └── dow_all.txt
 ```
+
+## 検証の現状
+
+- 書籍の手法を Pine v6 (`09_pine_strategy/`) と Python (`10_python_backtest/`) の両方で再現済み。
+- リポジトリ既存の H1 CSV (2014–2026 / 9 通貨) で 11 バリアントを検証。
+- **結論**: 通貨を選び、TP をトレールにすれば勝てる手法。USDJPY / CHFJPY / GBPJPY / XAUUSD / AUDJPY / SPX500 で 10 年通して有意な利益。詳細は [`10_python_backtest/results/REPORT.md`](10_python_backtest/results/REPORT.md)。
 
 ## 中核ドキュメント
 

@@ -1,0 +1,366 @@
+//@version=6
+// =====================================================================================
+//  Elliott 5-Wave Targeting Strategy - "Saido" Reproduction
+//  ---------------------------------------------------------------------------------
+//  Faithful Pine v6 reproduction of the trading method described in
+//    F87104/sai : エリオット波動.pdf (Chapter 4) + 手法.pdf (§55, §56)
+//
+//  CORE IDEA (5波狙い / "Targeting Wave 5"):
+//    * Detect Elliott 5-wave impulse on the chart timeframe ("mid TF") by tracking
+//      price's relation to the Ichimoku Kumo (cloud).
+//    * Validate with Elliott's 3 absolute rules + optional Fibonacci retracement filter.
+//    * Optionally filter with a higher TF trend (cloud or EMA-slope).
+//    * Enter when wave-4 finishes and wave-5 starts (cloud break confirmation).
+//    * Stop-loss: wave-2 terminal (or wave-1 start).
+//    * Take-profit: Fibonacci expansion 61.8 / 161.8, ATR trail, or hybrid (default).
+//
+//  DISCRETIONARY PARTS THAT BECAME PARAMETERS:
+//    * "angle of flag / tolerance of wicks" -> Fib retrace min/max & strict rule toggles
+//    * "judgment of entry" -> cloud break flag + optional swing breakout filter
+//    * "currency strength" -> external trend filter on higher TF (EMA50 slope / cloud)
+//
+//  Result of empirical sweep (see ../10_python_backtest/results/REPORT.md):
+//    Best generic settings: TP=Hybrid, HTF=OFF, Fib=ON, w3-rule=ON, dir=Both
+//    Best yielding pairs (H1, 2014-2025): USDJPY, CHFJPY, GBPJPY, XAUUSD, AUDJPY, SPX500
+//
+//  Original book:  「FX 環境認識の定石」Chapter 4
+// =====================================================================================
+
+strategy("Elliott 5-Wave Targeting (Saido)",
+     overlay              = true,
+     initial_capital      = 100000,
+     default_qty_type     = strategy.percent_of_equity,
+     default_qty_value    = 5,
+     commission_type      = strategy.commission.percent,
+     commission_value     = 0.002,
+     pyramiding           = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick   = false)
+
+// =====================================================================================
+// 1. INPUTS
+// =====================================================================================
+g_dir = "1. Direction"
+i_direction = input.string("Both", "Trade Direction",
+     options = ["Long", "Short", "Both"], group = g_dir)
+
+g_tf = "2. Multi-Timeframe (Long TF trend filter)"
+i_use_ltf_filter = input.bool(false, "Use higher-TF trend filter (off recommended)", group = g_tf)
+i_long_tf        = input.timeframe("D", "Higher TF (trend)",        group = g_tf)
+i_ltf_kind       = input.string("Cloud", "Higher TF filter type",
+     options = ["Cloud", "EMA50_slope"], group = g_tf)
+i_ltf_ema_len    = input.int(50, "Higher TF EMA length",            group = g_tf)
+
+g_ich = "3. Ichimoku Cloud (wave detection)"
+i_tenkan      = input.int(9,  "Tenkan length",   group = g_ich)
+i_kijun       = input.int(26, "Kijun length",    group = g_ich)
+i_senkouB_len = input.int(52, "Senkou B length", group = g_ich)
+i_displace    = input.int(26, "Displacement",    group = g_ich)
+
+g_rules = "4. Elliott Strict Rules"
+i_rule_w3_not_shortest = input.bool(true, "Wave 3 length >= Wave 1 length", group = g_rules)
+i_rule_w2_no_break     = input.bool(true, "Wave 2 does not breach Wave 1 start", group = g_rules)
+i_rule_w4_no_break     = input.bool(true, "Wave 4 does not breach Wave 1 end",  group = g_rules)
+
+g_fib = "5. Fibonacci Retracement Filter"
+i_use_fib    = input.bool(true,   "Enable Fib retrace filter", group = g_fib)
+i_w2_min_pct = input.float(38.2, "Wave 2 min retrace %", group = g_fib)
+i_w2_max_pct = input.float(90.0, "Wave 2 max retrace %", group = g_fib)
+i_w4_min_pct = input.float(20.0, "Wave 4 min retrace %", group = g_fib)
+i_w4_max_pct = input.float(70.0, "Wave 4 max retrace %", group = g_fib)
+
+g_entry = "6. Entry Trigger"
+i_entry_require_swing = input.bool(false, "Require recent swing breakout", group = g_entry)
+i_swing_lookback      = input.int(5, "Swing lookback bars", group = g_entry)
+
+g_exit = "7. Exit / Risk"
+i_sl_mode           = input.string("Wave2", "SL placement",
+     options = ["Wave2", "Wave1Start"], group = g_exit)
+i_sl_buffer_atr     = input.float(0.2, "SL buffer (× ATR)", group = g_exit)
+i_atr_len           = input.int(14, "ATR length", group = g_exit)
+i_tp_mode           = input.string("Trail_ATR", "TP mode",
+     options = ["Fib_61_8", "Fib_161_8", "Trail_ATR"],
+     group = g_exit)
+i_trail_atr_mult    = input.float(2.0, "Trail ATR multiplier", group = g_exit)
+i_max_bars_in_trade = input.int(200, "Max bars in trade (force exit)", group = g_exit)
+i_cloud_flip_exit   = input.bool(true, "Exit on cloud flip against position", group = g_exit)
+
+g_session = "8. Backtest Window"
+i_use_window = input.bool(false, "Restrict backtest window", group = g_session)
+i_start_y    = input.int(2015, "Start year", group = g_session)
+i_end_y      = input.int(2099, "End year",   group = g_session)
+
+g_dbg = "9. Display"
+i_show_labels = input.bool(true, "Show wave-5 entry labels", group = g_dbg)
+
+in_window = (not i_use_window) or (year >= i_start_y and year <= i_end_y)
+
+// =====================================================================================
+// 2. ICHIMOKU CLOUD
+// =====================================================================================
+donchian(int len) => (ta.highest(high, len) + ta.lowest(low, len)) / 2.0
+
+f_tenkan  = donchian(i_tenkan)
+f_kijun   = donchian(i_kijun)
+f_senkouA = (f_tenkan + f_kijun) / 2.0
+f_senkouB = donchian(i_senkouB_len)
+
+plot(f_senkouA, "Senkou A", color = color.new(color.green, 70), offset = i_displace)
+plot(f_senkouB, "Senkou B", color = color.new(color.red,   70), offset = i_displace)
+
+// Cloud value AT THE CURRENT BAR = Senkou values computed `i_displace` bars ago
+cA_now = f_senkouA[i_displace]
+cB_now = f_senkouB[i_displace]
+cloudTop = na(cA_now) or na(cB_now) ? na : math.max(cA_now, cB_now)
+cloudBot = na(cA_now) or na(cB_now) ? na : math.min(cA_now, cB_now)
+
+aboveCloud = not na(cloudTop) and close > cloudTop
+belowCloud = not na(cloudBot) and close < cloudBot
+insideCloud = (not aboveCloud) and (not belowCloud)
+
+// =====================================================================================
+// 3. HIGHER TIMEFRAME TREND FILTER
+// =====================================================================================
+htf_ema(simple int len)        => ta.ema(close, len)
+htf_ema_prev(simple int len)   => ta.ema(close, len)[1]
+htf_donchian_func(simple int len) => (ta.highest(high, len) + ta.lowest(low, len)) / 2.0
+htf_senkA_disp(simple int len_t, simple int len_k, simple int disp) =>
+    ((((ta.highest(high, len_t) + ta.lowest(low, len_t)) / 2.0) +
+      ((ta.highest(high, len_k) + ta.lowest(low, len_k)) / 2.0)) / 2.0)[disp]
+htf_senkB_disp(simple int len_b, simple int disp) =>
+    ((ta.highest(high, len_b) + ta.lowest(low, len_b)) / 2.0)[disp]
+
+ltf_close    = request.security(syminfo.tickerid, i_long_tf, close,
+                                lookahead = barmerge.lookahead_off)
+ltf_ema_now  = request.security(syminfo.tickerid, i_long_tf, htf_ema(i_ltf_ema_len),
+                                lookahead = barmerge.lookahead_off)
+ltf_ema_prev = request.security(syminfo.tickerid, i_long_tf, htf_ema_prev(i_ltf_ema_len),
+                                lookahead = barmerge.lookahead_off)
+ltf_sa       = request.security(syminfo.tickerid, i_long_tf,
+                                htf_senkA_disp(i_tenkan, i_kijun, i_displace),
+                                lookahead = barmerge.lookahead_off)
+ltf_sb       = request.security(syminfo.tickerid, i_long_tf,
+                                htf_senkB_disp(i_senkouB_len, i_displace),
+                                lookahead = barmerge.lookahead_off)
+
+ltf_top = na(ltf_sa) or na(ltf_sb) ? na : math.max(ltf_sa, ltf_sb)
+ltf_bot = na(ltf_sa) or na(ltf_sb) ? na : math.min(ltf_sa, ltf_sb)
+
+htf_long_ok = not i_use_ltf_filter
+   or (i_ltf_kind == "Cloud"       and not na(ltf_top) and ltf_close > ltf_top)
+   or (i_ltf_kind == "EMA50_slope" and not na(ltf_ema_now) and not na(ltf_ema_prev)
+        and ltf_ema_now > ltf_ema_prev and ltf_close > ltf_ema_now)
+
+htf_short_ok = not i_use_ltf_filter
+   or (i_ltf_kind == "Cloud"       and not na(ltf_bot) and ltf_close < ltf_bot)
+   or (i_ltf_kind == "EMA50_slope" and not na(ltf_ema_now) and not na(ltf_ema_prev)
+        and ltf_ema_now < ltf_ema_prev and ltf_close < ltf_ema_now)
+
+// =====================================================================================
+// 4. WAVE STATE MACHINE
+//    state 0 = idle, 1..4 = currently inside wave N
+//    Long setup and short setup tracked independently.
+// =====================================================================================
+atr14 = ta.atr(i_atr_len)
+
+prev_above = nz(aboveCloud[1], false)
+prev_below = nz(belowCloud[1], false)
+crossUp   = aboveCloud and not prev_above
+crossDown = belowCloud and not prev_below
+
+// ---------------- LONG SETUP STATE ----------------
+var int   L_state   = 0
+var float L_w0      = na    // wave-1 start (low)
+var float L_w1      = na    // wave-1 end   (high)
+var float L_w2      = na    // wave-2 end   (low)
+var float L_w3      = na    // wave-3 end   (high)
+var float L_w4      = na    // wave-4 end   (low)
+
+bool L_long_signal = false
+
+if barstate.isconfirmed
+    if L_state == 0
+        if crossUp
+            L_w0   := ta.lowest(low, i_kijun)
+            L_w1   := high
+            L_state := 1
+    else if L_state == 1
+        if high > nz(L_w1, high)
+            L_w1 := high
+        if crossDown or insideCloud
+            L_w2   := low
+            L_state := 2
+    else if L_state == 2
+        if low < nz(L_w2, low)
+            L_w2 := low
+        if i_rule_w2_no_break and not na(L_w0) and L_w2 <= L_w0
+            L_state := 0
+        else if crossUp
+            L_w3   := high
+            L_state := 3
+    else if L_state == 3
+        if high > nz(L_w3, high)
+            L_w3 := high
+        if crossDown or insideCloud
+            L_w4   := low
+            L_state := 4
+    else if L_state == 4
+        if low < nz(L_w4, low)
+            L_w4 := low
+        if i_rule_w4_no_break and not na(L_w1) and L_w4 <= L_w1
+            // wave-4 overlapping wave-1 end => invalidate
+            L_state := 0
+        else if crossUp
+            // Wave-5 confirmed (entry candidate)
+            float w1_len = L_w1 - L_w0
+            float w3_len = L_w3 - L_w2
+            bool ok_w3 = (not i_rule_w3_not_shortest)
+                          or (not na(w1_len) and not na(w3_len) and w3_len >= w1_len)
+            float w2p = (not na(w1_len) and w1_len > 0) ? 100.0 * (L_w1 - L_w2) / w1_len : na
+            float w4p = (not na(w3_len) and w3_len > 0) ? 100.0 * (L_w3 - L_w4) / w3_len : na
+            bool ok_fib = (not i_use_fib) or (not na(w2p) and not na(w4p)
+                          and w2p >= i_w2_min_pct and w2p <= i_w2_max_pct
+                          and w4p >= i_w4_min_pct and w4p <= i_w4_max_pct)
+            bool ok_swing = (not i_entry_require_swing)
+                          or close > ta.highest(high, i_swing_lookback)[1]
+            if ok_w3 and ok_fib and ok_swing and htf_long_ok and in_window
+                L_long_signal := true
+            L_state := 0
+
+// ---------------- SHORT SETUP STATE (mirror) ----------------
+var int   S_state   = 0
+var float S_w0      = na    // wave-1 start (high)
+var float S_w1      = na    // wave-1 end   (low)
+var float S_w2      = na    // wave-2 end   (high)
+var float S_w3      = na    // wave-3 end   (low)
+var float S_w4      = na    // wave-4 end   (high)
+
+bool S_short_signal = false
+
+if barstate.isconfirmed
+    if S_state == 0
+        if crossDown
+            S_w0   := ta.highest(high, i_kijun)
+            S_w1   := low
+            S_state := 1
+    else if S_state == 1
+        if low < nz(S_w1, low)
+            S_w1 := low
+        if crossUp or insideCloud
+            S_w2   := high
+            S_state := 2
+    else if S_state == 2
+        if high > nz(S_w2, high)
+            S_w2 := high
+        if i_rule_w2_no_break and not na(S_w0) and S_w2 >= S_w0
+            S_state := 0
+        else if crossDown
+            S_w3   := low
+            S_state := 3
+    else if S_state == 3
+        if low < nz(S_w3, low)
+            S_w3 := low
+        if crossUp or insideCloud
+            S_w4   := high
+            S_state := 4
+    else if S_state == 4
+        if high > nz(S_w4, high)
+            S_w4 := high
+        if i_rule_w4_no_break and not na(S_w1) and S_w4 >= S_w1
+            S_state := 0
+        else if crossDown
+            float w1_len = S_w0 - S_w1
+            float w3_len = S_w2 - S_w3
+            bool ok_w3 = (not i_rule_w3_not_shortest)
+                          or (not na(w1_len) and not na(w3_len) and w3_len >= w1_len)
+            float w2p = (not na(w1_len) and w1_len > 0) ? 100.0 * (S_w2 - S_w1) / w1_len : na
+            float w4p = (not na(w3_len) and w3_len > 0) ? 100.0 * (S_w4 - S_w3) / w3_len : na
+            bool ok_fib = (not i_use_fib) or (not na(w2p) and not na(w4p)
+                          and w2p >= i_w2_min_pct and w2p <= i_w2_max_pct
+                          and w4p >= i_w4_min_pct and w4p <= i_w4_max_pct)
+            bool ok_swing = (not i_entry_require_swing)
+                          or close < ta.lowest(low, i_swing_lookback)[1]
+            if ok_w3 and ok_fib and ok_swing and htf_short_ok and in_window
+                S_short_signal := true
+            S_state := 0
+
+// =====================================================================================
+// 5. TRADE ENTRY / EXIT
+// =====================================================================================
+allow_long  = (i_direction == "Long"  or i_direction == "Both")
+allow_short = (i_direction == "Short" or i_direction == "Both")
+
+// --- LONG ENTRY ---
+if L_long_signal and allow_long and strategy.position_size == 0
+    sl_base = i_sl_mode == "Wave2" ? L_w2 : L_w0
+    sl_L    = sl_base - i_sl_buffer_atr * atr14
+    fib_1w  = L_w1 - L_w0
+    tp_L    = i_tp_mode == "Fib_61_8"  ? L_w4 + fib_1w * 0.618 :
+              i_tp_mode == "Fib_161_8" ? L_w4 + fib_1w * 1.618 :
+              na
+    strategy.entry("L", strategy.long, comment = "W5_long")
+    if not na(tp_L)
+        strategy.exit("L_exit", from_entry = "L", stop = sl_L, limit = tp_L)
+    else
+        strategy.exit("L_exit", from_entry = "L", stop = sl_L)
+
+// --- SHORT ENTRY ---
+if S_short_signal and allow_short and strategy.position_size == 0
+    sl_base = i_sl_mode == "Wave2" ? S_w2 : S_w0
+    sl_S    = sl_base + i_sl_buffer_atr * atr14
+    fib_1w  = S_w0 - S_w1
+    tp_S    = i_tp_mode == "Fib_61_8"  ? S_w4 - fib_1w * 0.618 :
+              i_tp_mode == "Fib_161_8" ? S_w4 - fib_1w * 1.618 :
+              na
+    strategy.entry("S", strategy.short, comment = "W5_short")
+    if not na(tp_S)
+        strategy.exit("S_exit", from_entry = "S", stop = sl_S, limit = tp_S)
+    else
+        strategy.exit("S_exit", from_entry = "S", stop = sl_S)
+
+// --- ATR TRAILING (Trail_ATR mode) ---
+var float trail_long  = na
+var float trail_short = na
+trail_dist = i_trail_atr_mult * atr14
+
+if strategy.position_size > 0 and i_tp_mode == "Trail_ATR"
+    new_trail = close - trail_dist
+    trail_long := na(trail_long) ? new_trail : math.max(trail_long, new_trail)
+    if low <= trail_long
+        strategy.close("L", comment = "Trail")
+else
+    trail_long := na
+
+if strategy.position_size < 0 and i_tp_mode == "Trail_ATR"
+    new_trail = close + trail_dist
+    trail_short := na(trail_short) ? new_trail : math.min(trail_short, new_trail)
+    if high >= trail_short
+        strategy.close("S", comment = "Trail")
+else
+    trail_short := na
+
+// --- CLOUD-FLIP EXIT (book: "5波中に雲を割ったら手仕舞い") ---
+if i_cloud_flip_exit
+    if strategy.position_size > 0 and belowCloud and not prev_below
+        strategy.close("L", comment = "CloudFlip")
+    if strategy.position_size < 0 and aboveCloud and not prev_above
+        strategy.close("S", comment = "CloudFlip")
+
+// --- MAX BARS IN TRADE (safety) ---
+if strategy.position_size != 0
+    int held = bar_index - strategy.opentrades.entry_bar_index(0)
+    if held > i_max_bars_in_trade
+        strategy.close_all(comment = "MaxBars")
+
+// =====================================================================================
+// 6. DISPLAY
+// =====================================================================================
+if i_show_labels and L_long_signal
+    label.new(bar_index, low, "W5↑",
+         style = label.style_label_up, color = color.new(color.green, 0),
+         textcolor = color.white, size = size.small)
+
+if i_show_labels and S_short_signal
+    label.new(bar_index, high, "W5↓",
+         style = label.style_label_down, color = color.new(color.red, 0),
+         textcolor = color.white, size = size.small)
