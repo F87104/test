@@ -1,0 +1,229 @@
+//@version=5
+// =============================================================================
+// Elliott Wave 4 -> 5 Alerts (indicator-only, lightweight)
+//
+// Same detection logic as elliott45_strategy.pine but as an indicator()
+// so it works on free TradingView plans for alerts. Drops the position
+// tracking / partial / trailing logic - emits ONE alert per confirmed
+// Wave 4 setup so you can route via webhook to your execution layer.
+// =============================================================================
+
+indicator("Elliott Wave 4->5 Alerts [Python-equivalent]",
+     overlay      = true,
+     max_lines_count   = 500,
+     max_labels_count  = 500)
+
+grpZ = "ZigZag"
+zzThr   = input.float(3.0, "threshold_atr",         minval=0.5, step=0.1, group=grpZ)
+atrLen  = input.int(14,    "atr_period",            minval=2,                 group=grpZ)
+
+grpW = "Elliott Wave gates"
+r2Min   = input.float(0.236, "wave2 retrace min", minval=0.0, maxval=1.0, group=grpW)
+r2Max   = input.float(0.886, "wave2 retrace max", minval=0.0, maxval=1.0, group=grpW)
+r4Min   = input.float(0.118, "wave4 retrace min", minval=0.0, maxval=1.0, group=grpW)
+r4Max   = input.float(0.618, "wave4 retrace max", minval=0.0, maxval=1.0, group=grpW)
+needW3Long = input.bool(true,"require W3 > W1",                              group=grpW)
+
+grpG = "Trade geometry"
+entryBufFrac = input.float(0.20, "entry buffer (xW4)",  step=0.05, group=grpG)
+stopBufFrac  = input.float(0.50, "stop buffer (xW4)",   step=0.05, group=grpG)
+targetW1Mult = input.float(1.00, "TP = pivot4 + (xW1)", step=0.1,  group=grpG)
+allowShort   = input.bool(true,  "allow short setups",             group=grpG)
+
+grpD = "Display"
+showPivots = input.bool(true, "show ZigZag pivots", group=grpD)
+showLevels = input.bool(true, "show entry/SL/TP",   group=grpD)
+showLabel  = input.bool(true, "show wave label",    group=grpD)
+
+// -----------------------------------------------------------------------------
+// Causal ATR ZigZag (identical to strategy.pine)
+// -----------------------------------------------------------------------------
+atrV = ta.atr(atrLen)
+
+var int   extKind  = 1
+var float extPrice = high
+var int   extIdx   = bar_index
+var float altPrice = low
+var int   altIdx   = bar_index
+
+var array<float> pP = array.new_float(5, na)
+var array<int>   pI = array.new_int  (5, 0)
+var array<int>   pK = array.new_int  (5, 0)
+
+confirmedThisBar = false
+newPivotPrice    = float(na)
+newPivotIdx      = 0
+newPivotKind     = 0
+
+if bar_index > atrLen and not na(atrV) and atrV > 0
+    thr = zzThr * atrV
+    if extKind == 1
+        if high > extPrice
+            extPrice := high
+            extIdx   := bar_index
+            altPrice := low
+            altIdx   := bar_index
+        else
+            if low < altPrice
+                altPrice := low
+                altIdx   := bar_index
+            if extPrice - low >= thr
+                newPivotPrice := extPrice
+                newPivotIdx   := extIdx
+                newPivotKind  := 1
+                confirmedThisBar := true
+                extKind  := -1
+                extPrice := altPrice
+                extIdx   := altIdx
+                altPrice := high
+                altIdx   := bar_index
+    else
+        if low < extPrice
+            extPrice := low
+            extIdx   := bar_index
+            altPrice := high
+            altIdx   := bar_index
+        else
+            if high > altPrice
+                altPrice := high
+                altIdx   := bar_index
+            if high - extPrice >= thr
+                newPivotPrice := extPrice
+                newPivotIdx   := extIdx
+                newPivotKind  := -1
+                confirmedThisBar := true
+                extKind  := 1
+                extPrice := altPrice
+                extIdx   := altIdx
+                altPrice := low
+                altIdx   := bar_index
+
+if confirmedThisBar
+    array.shift(pP)
+    array.shift(pI)
+    array.shift(pK)
+    array.push(pP, newPivotPrice)
+    array.push(pI, newPivotIdx)
+    array.push(pK, newPivotKind)
+
+// -----------------------------------------------------------------------------
+// Wave 4 -> 5 rule check (mirror of elliott.py)
+// -----------------------------------------------------------------------------
+P0p = array.get(pP, 0)
+P1p = array.get(pP, 1)
+P2p = array.get(pP, 2)
+P3p = array.get(pP, 3)
+P4p = array.get(pP, 4)
+P0k = array.get(pK, 0)
+P1k = array.get(pK, 1)
+P2k = array.get(pK, 2)
+P3k = array.get(pK, 3)
+P4k = array.get(pK, 4)
+
+isLongSeq  = P0k == -1 and P1k == 1 and P2k == -1 and P3k == 1 and P4k == -1
+isShortSeq = P0k == 1  and P1k == -1 and P2k == 1  and P3k == -1 and P4k == 1
+
+setupLong  = false
+setupShort = false
+trigPrice  = float(na)
+stopPrice  = float(na)
+tgtPrice   = float(na)
+w1Len = float(na)
+w3Len = float(na)
+w2Retr = float(na)
+w4Retr = float(na)
+
+if confirmedThisBar and not na(P0p) and (isLongSeq or isShortSeq)
+    if isLongSeq
+        ok = P1p > P0p and P2p < P1p and P3p > P2p and P4p < P3p
+             and P2p > P0p and P4p > P1p
+        w1 = P1p - P0p
+        w3 = P3p - P2p
+        if ok and w1 > 0 and w3 > 0 and (not needW3Long or w3 > w1)
+            r2 = (P1p - P2p) / w1
+            r4 = (P3p - P4p) / w3
+            if r2 >= r2Min and r2 <= r2Max and r4 >= r4Min and r4 <= r4Max
+                w4l = P3p - P4p
+                trigPrice := P4p + entryBufFrac * w4l
+                stopPrice := P4p - stopBufFrac  * w4l
+                tgtPrice  := P4p + targetW1Mult * w1
+                w1Len := w1
+                w3Len := w3
+                w2Retr := r2
+                w4Retr := r4
+                setupLong := true
+    if isShortSeq and allowShort
+        ok = P1p < P0p and P2p > P1p and P3p < P2p and P4p > P3p
+             and P2p < P0p and P4p < P1p
+        w1 = P0p - P1p
+        w3 = P2p - P3p
+        if ok and w1 > 0 and w3 > 0 and (not needW3Long or w3 > w1)
+            r2 = (P2p - P1p) / w1
+            r4 = (P4p - P3p) / w3
+            if r2 >= r2Min and r2 <= r2Max and r4 >= r4Min and r4 <= r4Max
+                w4l = P4p - P3p
+                trigPrice := P4p - entryBufFrac * w4l
+                stopPrice := P4p + stopBufFrac  * w4l
+                tgtPrice  := P4p - targetW1Mult * w1
+                w1Len := w1
+                w3Len := w3
+                w2Retr := r2
+                w4Retr := r4
+                setupShort := true
+
+// -----------------------------------------------------------------------------
+// Visualization
+// -----------------------------------------------------------------------------
+plotshape(showPivots and confirmedThisBar and newPivotKind == 1,
+     title="pivot H", style=shape.triangledown, location=location.abovebar,
+     color=color.new(color.red, 0), size=size.tiny)
+plotshape(showPivots and confirmedThisBar and newPivotKind == -1,
+     title="pivot L", style=shape.triangleup,   location=location.belowbar,
+     color=color.new(color.green, 0), size=size.tiny)
+
+var line lnE = na
+var line lnS = na
+var line lnT = na
+var label lb = na
+
+if showLevels and (setupLong or setupShort)
+    if not na(lnE)
+        line.delete(lnE), line.delete(lnS), line.delete(lnT)
+    col = setupLong ? color.new(color.green, 0) : color.new(color.red, 0)
+    lnE := line.new(bar_index, trigPrice, bar_index + 50, trigPrice, color=col,
+         width=1, style=line.style_dashed)
+    lnS := line.new(bar_index, stopPrice, bar_index + 50, stopPrice,
+         color=color.new(color.red, 30), width=1)
+    lnT := line.new(bar_index, tgtPrice,  bar_index + 50, tgtPrice,
+         color=color.new(color.green, 30), width=1)
+
+if showLabel and (setupLong or setupShort)
+    if not na(lb)
+        label.delete(lb)
+    txt = (setupLong ? "LONG W4->5\n" : "SHORT W4->5\n")
+         + "trig=" + str.tostring(trigPrice, "#.#####") + "\n"
+         + "sl="   + str.tostring(stopPrice, "#.#####") + "\n"
+         + "tp="   + str.tostring(tgtPrice,  "#.#####") + "\n"
+         + "w2R="  + str.tostring(w2Retr, "#.###")
+         + " w4R=" + str.tostring(w4Retr, "#.###")
+    lb := label.new(bar_index, setupLong ? low : high, txt,
+         style = setupLong ? label.style_label_up : label.style_label_down,
+         color = setupLong ? color.new(color.green, 20) : color.new(color.red, 20),
+         textcolor = color.white, size = size.small)
+
+bgcolor(setupLong  ? color.new(color.green, 92) : na, title="bg long")
+bgcolor(setupShort ? color.new(color.red,   92) : na, title="bg short")
+
+// -----------------------------------------------------------------------------
+// Alerts - rich + simple variants
+// -----------------------------------------------------------------------------
+alertcondition(setupLong,  title="LONG (rich)",
+     message="LONG {{ticker}} {{interval}}  trig={{plot_0}}  sl={{plot_1}}  tp={{plot_2}}")
+alertcondition(setupShort, title="SHORT (rich)",
+     message="SHORT {{ticker}} {{interval}}  trig={{plot_0}}  sl={{plot_1}}  tp={{plot_2}}")
+alertcondition(setupLong  or setupShort, title="Any setup (simple)",
+     message="Wave4->5 setup on {{ticker}} {{interval}}")
+
+plot(trigPrice, "trigger", display=display.none)
+plot(stopPrice, "stop",    display=display.none)
+plot(tgtPrice,  "target",  display=display.none)

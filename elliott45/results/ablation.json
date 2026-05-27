@@ -1,0 +1,1778 @@
+[
+  {
+    "variant": "baseline",
+    "mean_win_rate": 0.6358,
+    "mean_pf": 2.993,
+    "mean_exp_R": 0.71,
+    "mean_total_ret_pct": 138.96,
+    "mean_max_dd_pct": -3.52,
+    "mean_sharpe": 1.68,
+    "total_trades": 1772,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 218,
+        "trades": 217,
+        "win_rate": 0.6267,
+        "profit_factor": 2.736,
+        "expectancy_r": 0.633,
+        "total_return_pct": 137.26,
+        "max_dd_pct": -2.83,
+        "sharpe": 1.65
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 214,
+        "trades": 214,
+        "win_rate": 0.6542,
+        "profit_factor": 3.055,
+        "expectancy_r": 0.711,
+        "total_return_pct": 152.07,
+        "max_dd_pct": -4.43,
+        "sharpe": 1.81
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 160,
+        "trades": 160,
+        "win_rate": 0.6875,
+        "profit_factor": 3.845,
+        "expectancy_r": 0.873,
+        "total_return_pct": 139.64,
+        "max_dd_pct": -2.95,
+        "sharpe": 1.81
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 159,
+        "trades": 159,
+        "win_rate": 0.6164,
+        "profit_factor": 2.977,
+        "expectancy_r": 0.759,
+        "total_return_pct": 120.62,
+        "max_dd_pct": -3.69,
+        "sharpe": 1.52
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 238,
+        "trades": 235,
+        "win_rate": 0.6255,
+        "profit_factor": 2.9,
+        "expectancy_r": 0.708,
+        "total_return_pct": 166.28,
+        "max_dd_pct": -3.28,
+        "sharpe": 1.67
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 222,
+        "trades": 220,
+        "win_rate": 0.6273,
+        "profit_factor": 2.726,
+        "expectancy_r": 0.643,
+        "total_return_pct": 141.55,
+        "max_dd_pct": -3.55,
+        "sharpe": 1.69
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.6369,
+        "profit_factor": 2.742,
+        "expectancy_r": 0.618,
+        "total_return_pct": 110.71,
+        "max_dd_pct": -4.82,
+        "sharpe": 1.49
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 205,
+        "trades": 205,
+        "win_rate": 0.6683,
+        "profit_factor": 3.483,
+        "expectancy_r": 0.824,
+        "total_return_pct": 168.82,
+        "max_dd_pct": -2.36,
+        "sharpe": 2.02
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 183,
+        "trades": 183,
+        "win_rate": 0.5792,
+        "profit_factor": 2.477,
+        "expectancy_r": 0.621,
+        "total_return_pct": 113.7,
+        "max_dd_pct": -3.76,
+        "sharpe": 1.42
+      }
+    }
+  },
+  {
+    "variant": "F: trend (EMA200)",
+    "mean_win_rate": 0.6363,
+    "mean_pf": 3.001,
+    "mean_exp_R": 0.71,
+    "mean_total_ret_pct": 135.48,
+    "mean_max_dd_pct": -3.43,
+    "mean_sharpe": 1.66,
+    "total_trades": 1733,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 217,
+        "trades": 216,
+        "win_rate": 0.6296,
+        "profit_factor": 2.771,
+        "expectancy_r": 0.64,
+        "total_return_pct": 138.26,
+        "max_dd_pct": -2.83,
+        "sharpe": 1.66
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 212,
+        "trades": 212,
+        "win_rate": 0.6509,
+        "profit_factor": 3.009,
+        "expectancy_r": 0.701,
+        "total_return_pct": 148.7,
+        "max_dd_pct": -4.43,
+        "sharpe": 1.78
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 155,
+        "trades": 155,
+        "win_rate": 0.6968,
+        "profit_factor": 3.992,
+        "expectancy_r": 0.889,
+        "total_return_pct": 137.86,
+        "max_dd_pct": -2.92,
+        "sharpe": 1.84
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 158,
+        "trades": 158,
+        "win_rate": 0.6203,
+        "profit_factor": 3.027,
+        "expectancy_r": 0.77,
+        "total_return_pct": 121.62,
+        "max_dd_pct": -3.68,
+        "sharpe": 1.53
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 232,
+        "trades": 231,
+        "win_rate": 0.619,
+        "profit_factor": 2.743,
+        "expectancy_r": 0.66,
+        "total_return_pct": 152.56,
+        "max_dd_pct": -3.35,
+        "sharpe": 1.63
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 216,
+        "trades": 214,
+        "win_rate": 0.6262,
+        "profit_factor": 2.711,
+        "expectancy_r": 0.64,
+        "total_return_pct": 136.87,
+        "max_dd_pct": -3.57,
+        "sharpe": 1.66
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 173,
+        "trades": 173,
+        "win_rate": 0.6416,
+        "profit_factor": 2.816,
+        "expectancy_r": 0.636,
+        "total_return_pct": 109.96,
+        "max_dd_pct": -3.97,
+        "sharpe": 1.5
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 195,
+        "trades": 195,
+        "win_rate": 0.6615,
+        "profit_factor": 3.437,
+        "expectancy_r": 0.825,
+        "total_return_pct": 160.87,
+        "max_dd_pct": -2.4,
+        "sharpe": 1.95
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.581,
+        "profit_factor": 2.502,
+        "expectancy_r": 0.629,
+        "total_return_pct": 112.64,
+        "max_dd_pct": -3.76,
+        "sharpe": 1.41
+      }
+    }
+  },
+  {
+    "variant": "F: atr-regime",
+    "mean_win_rate": 0.6728,
+    "mean_pf": 3.444,
+    "mean_exp_R": 0.784,
+    "mean_total_ret_pct": 104.03,
+    "mean_max_dd_pct": -3.34,
+    "mean_sharpe": 1.55,
+    "total_trades": 1198,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 154,
+        "trades": 153,
+        "win_rate": 0.6536,
+        "profit_factor": 2.995,
+        "expectancy_r": 0.678,
+        "total_return_pct": 103.79,
+        "max_dd_pct": -2.66,
+        "sharpe": 1.51
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 144,
+        "trades": 144,
+        "win_rate": 0.6667,
+        "profit_factor": 3.178,
+        "expectancy_r": 0.726,
+        "total_return_pct": 104.56,
+        "max_dd_pct": -4.0,
+        "sharpe": 1.54
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 118,
+        "trades": 118,
+        "win_rate": 0.6695,
+        "profit_factor": 3.505,
+        "expectancy_r": 0.808,
+        "total_return_pct": 95.37,
+        "max_dd_pct": -2.71,
+        "sharpe": 1.53
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 106,
+        "trades": 106,
+        "win_rate": 0.6321,
+        "profit_factor": 3.132,
+        "expectancy_r": 0.785,
+        "total_return_pct": 83.16,
+        "max_dd_pct": -4.59,
+        "sharpe": 1.33
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 164,
+        "trades": 161,
+        "win_rate": 0.6832,
+        "profit_factor": 3.641,
+        "expectancy_r": 0.828,
+        "total_return_pct": 133.38,
+        "max_dd_pct": -2.94,
+        "sharpe": 1.61
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 145,
+        "trades": 143,
+        "win_rate": 0.6783,
+        "profit_factor": 3.229,
+        "expectancy_r": 0.717,
+        "total_return_pct": 102.53,
+        "max_dd_pct": -3.05,
+        "sharpe": 1.56
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 124,
+        "trades": 124,
+        "win_rate": 0.6613,
+        "profit_factor": 3.05,
+        "expectancy_r": 0.68,
+        "total_return_pct": 84.38,
+        "max_dd_pct": -3.04,
+        "sharpe": 1.4
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 134,
+        "trades": 134,
+        "win_rate": 0.7239,
+        "profit_factor": 4.543,
+        "expectancy_r": 0.978,
+        "total_return_pct": 131.08,
+        "max_dd_pct": -2.32,
+        "sharpe": 1.9
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 115,
+        "trades": 115,
+        "win_rate": 0.687,
+        "profit_factor": 3.724,
+        "expectancy_r": 0.853,
+        "total_return_pct": 98.05,
+        "max_dd_pct": -4.72,
+        "sharpe": 1.53
+      }
+    }
+  },
+  {
+    "variant": "F: w3-strength",
+    "mean_win_rate": 0.6611,
+    "mean_pf": 3.099,
+    "mean_exp_R": 0.693,
+    "mean_total_ret_pct": 117.1,
+    "mean_max_dd_pct": -3.2,
+    "mean_sharpe": 1.62,
+    "total_trades": 1524,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 189,
+        "trades": 189,
+        "win_rate": 0.6614,
+        "profit_factor": 2.918,
+        "expectancy_r": 0.63,
+        "total_return_pct": 119.06,
+        "max_dd_pct": -3.05,
+        "sharpe": 1.69
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 178,
+        "trades": 178,
+        "win_rate": 0.6685,
+        "profit_factor": 2.916,
+        "expectancy_r": 0.635,
+        "total_return_pct": 113.02,
+        "max_dd_pct": -3.14,
+        "sharpe": 1.61
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 133,
+        "trades": 133,
+        "win_rate": 0.7068,
+        "profit_factor": 3.988,
+        "expectancy_r": 0.855,
+        "total_return_pct": 113.78,
+        "max_dd_pct": -3.12,
+        "sharpe": 1.71
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 132,
+        "trades": 132,
+        "win_rate": 0.6288,
+        "profit_factor": 2.84,
+        "expectancy_r": 0.683,
+        "total_return_pct": 90.15,
+        "max_dd_pct": -3.15,
+        "sharpe": 1.35
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 201,
+        "trades": 200,
+        "win_rate": 0.67,
+        "profit_factor": 3.205,
+        "expectancy_r": 0.722,
+        "total_return_pct": 144.41,
+        "max_dd_pct": -3.38,
+        "sharpe": 1.71
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 196,
+        "trades": 196,
+        "win_rate": 0.6684,
+        "profit_factor": 3.061,
+        "expectancy_r": 0.683,
+        "total_return_pct": 133.96,
+        "max_dd_pct": -2.87,
+        "sharpe": 1.78
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 162,
+        "trades": 162,
+        "win_rate": 0.6358,
+        "profit_factor": 2.456,
+        "expectancy_r": 0.525,
+        "total_return_pct": 85.06,
+        "max_dd_pct": -4.02,
+        "sharpe": 1.33
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 181,
+        "trades": 181,
+        "win_rate": 0.6961,
+        "profit_factor": 3.853,
+        "expectancy_r": 0.867,
+        "total_return_pct": 156.93,
+        "max_dd_pct": -2.31,
+        "sharpe": 2.02
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 153,
+        "trades": 153,
+        "win_rate": 0.6144,
+        "profit_factor": 2.653,
+        "expectancy_r": 0.637,
+        "total_return_pct": 97.5,
+        "max_dd_pct": -3.79,
+        "sharpe": 1.41
+      }
+    }
+  },
+  {
+    "variant": "F: alternation",
+    "mean_win_rate": 0.6507,
+    "mean_pf": 3.219,
+    "mean_exp_R": 0.761,
+    "mean_total_ret_pct": 88.97,
+    "mean_max_dd_pct": -3.08,
+    "mean_sharpe": 1.37,
+    "total_trades": 1056,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 132,
+        "trades": 132,
+        "win_rate": 0.6364,
+        "profit_factor": 2.978,
+        "expectancy_r": 0.705,
+        "total_return_pct": 93.06,
+        "max_dd_pct": -2.48,
+        "sharpe": 1.36
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 114,
+        "trades": 114,
+        "win_rate": 0.6579,
+        "profit_factor": 3.072,
+        "expectancy_r": 0.709,
+        "total_return_pct": 80.83,
+        "max_dd_pct": -2.68,
+        "sharpe": 1.32
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 83,
+        "trades": 83,
+        "win_rate": 0.6988,
+        "profit_factor": 4.154,
+        "expectancy_r": 0.95,
+        "total_return_pct": 78.84,
+        "max_dd_pct": -2.75,
+        "sharpe": 1.42
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 97,
+        "trades": 97,
+        "win_rate": 0.6289,
+        "profit_factor": 3.125,
+        "expectancy_r": 0.789,
+        "total_return_pct": 76.51,
+        "max_dd_pct": -3.65,
+        "sharpe": 1.23
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 144,
+        "trades": 141,
+        "win_rate": 0.6383,
+        "profit_factor": 3.281,
+        "expectancy_r": 0.817,
+        "total_return_pct": 115.2,
+        "max_dd_pct": -4.55,
+        "sharpe": 1.36
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 139,
+        "trades": 139,
+        "win_rate": 0.6691,
+        "profit_factor": 3.242,
+        "expectancy_r": 0.742,
+        "total_return_pct": 103.13,
+        "max_dd_pct": -2.3,
+        "sharpe": 1.56
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 103,
+        "trades": 103,
+        "win_rate": 0.6408,
+        "profit_factor": 2.627,
+        "expectancy_r": 0.584,
+        "total_return_pct": 60.19,
+        "max_dd_pct": -4.0,
+        "sharpe": 1.14
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 126,
+        "trades": 126,
+        "win_rate": 0.6825,
+        "profit_factor": 3.855,
+        "expectancy_r": 0.906,
+        "total_return_pct": 114.21,
+        "max_dd_pct": -2.6,
+        "sharpe": 1.66
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 121,
+        "trades": 121,
+        "win_rate": 0.6033,
+        "profit_factor": 2.641,
+        "expectancy_r": 0.651,
+        "total_return_pct": 78.75,
+        "max_dd_pct": -2.74,
+        "sharpe": 1.26
+      }
+    }
+  },
+  {
+    "variant": "F: min-RR 1.5",
+    "mean_win_rate": 0.5327,
+    "mean_pf": 2.71,
+    "mean_exp_R": 0.781,
+    "mean_total_ret_pct": 93.48,
+    "mean_max_dd_pct": -4.52,
+    "mean_sharpe": 1.25,
+    "total_trades": 1080,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 121,
+        "trades": 120,
+        "win_rate": 0.5,
+        "profit_factor": 2.317,
+        "expectancy_r": 0.658,
+        "total_return_pct": 79.0,
+        "max_dd_pct": -3.58,
+        "sharpe": 1.07
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 120,
+        "trades": 120,
+        "win_rate": 0.55,
+        "profit_factor": 2.888,
+        "expectancy_r": 0.849,
+        "total_return_pct": 101.93,
+        "max_dd_pct": -5.56,
+        "sharpe": 1.33
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 105,
+        "trades": 105,
+        "win_rate": 0.6,
+        "profit_factor": 3.394,
+        "expectancy_r": 0.937,
+        "total_return_pct": 98.35,
+        "max_dd_pct": -4.66,
+        "sharpe": 1.4
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 108,
+        "trades": 108,
+        "win_rate": 0.537,
+        "profit_factor": 2.832,
+        "expectancy_r": 0.848,
+        "total_return_pct": 91.61,
+        "max_dd_pct": -5.0,
+        "sharpe": 1.24
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 145,
+        "trades": 143,
+        "win_rate": 0.5315,
+        "profit_factor": 2.742,
+        "expectancy_r": 0.81,
+        "total_return_pct": 115.83,
+        "max_dd_pct": -4.09,
+        "sharpe": 1.3
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 126,
+        "trades": 125,
+        "win_rate": 0.496,
+        "profit_factor": 2.323,
+        "expectancy_r": 0.667,
+        "total_return_pct": 83.35,
+        "max_dd_pct": -3.82,
+        "sharpe": 1.15
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 99,
+        "trades": 99,
+        "win_rate": 0.5455,
+        "profit_factor": 2.777,
+        "expectancy_r": 0.782,
+        "total_return_pct": 77.43,
+        "max_dd_pct": -4.5,
+        "sharpe": 1.17
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 137,
+        "trades": 137,
+        "win_rate": 0.5547,
+        "profit_factor": 2.878,
+        "expectancy_r": 0.836,
+        "total_return_pct": 114.53,
+        "max_dd_pct": -5.64,
+        "sharpe": 1.51
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 123,
+        "trades": 123,
+        "win_rate": 0.4797,
+        "profit_factor": 2.239,
+        "expectancy_r": 0.645,
+        "total_return_pct": 79.28,
+        "max_dd_pct": -3.82,
+        "sharpe": 1.1
+      }
+    }
+  },
+  {
+    "variant": "F: min-RR 2.0",
+    "mean_win_rate": 0.478,
+    "mean_pf": 2.6,
+    "mean_exp_R": 0.817,
+    "mean_total_ret_pct": 62.43,
+    "mean_max_dd_pct": -4.85,
+    "mean_sharpe": 0.95,
+    "total_trades": 696,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 75,
+        "trades": 74,
+        "win_rate": 0.473,
+        "profit_factor": 2.458,
+        "expectancy_r": 0.769,
+        "total_return_pct": 56.88,
+        "max_dd_pct": -4.08,
+        "sharpe": 0.89
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 86,
+        "trades": 86,
+        "win_rate": 0.4884,
+        "profit_factor": 2.61,
+        "expectancy_r": 0.824,
+        "total_return_pct": 70.83,
+        "max_dd_pct": -5.79,
+        "sharpe": 1.04
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 62,
+        "trades": 62,
+        "win_rate": 0.5484,
+        "profit_factor": 3.154,
+        "expectancy_r": 0.973,
+        "total_return_pct": 60.32,
+        "max_dd_pct": -2.94,
+        "sharpe": 1.02
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 70,
+        "trades": 70,
+        "win_rate": 0.4857,
+        "profit_factor": 2.787,
+        "expectancy_r": 0.919,
+        "total_return_pct": 64.33,
+        "max_dd_pct": -5.76,
+        "sharpe": 0.94
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 89,
+        "trades": 88,
+        "win_rate": 0.4773,
+        "profit_factor": 2.729,
+        "expectancy_r": 0.894,
+        "total_return_pct": 78.68,
+        "max_dd_pct": -4.88,
+        "sharpe": 1.0
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 78,
+        "trades": 78,
+        "win_rate": 0.4359,
+        "profit_factor": 2.29,
+        "expectancy_r": 0.728,
+        "total_return_pct": 56.76,
+        "max_dd_pct": -5.25,
+        "sharpe": 0.87
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 60,
+        "trades": 60,
+        "win_rate": 0.5167,
+        "profit_factor": 2.918,
+        "expectancy_r": 0.9,
+        "total_return_pct": 54.01,
+        "max_dd_pct": -3.0,
+        "sharpe": 0.96
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 89,
+        "trades": 89,
+        "win_rate": 0.4831,
+        "profit_factor": 2.567,
+        "expectancy_r": 0.81,
+        "total_return_pct": 72.08,
+        "max_dd_pct": -6.49,
+        "sharpe": 1.08
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 89,
+        "trades": 89,
+        "win_rate": 0.3933,
+        "profit_factor": 1.888,
+        "expectancy_r": 0.539,
+        "total_return_pct": 47.96,
+        "max_dd_pct": -5.49,
+        "sharpe": 0.76
+      }
+    }
+  },
+  {
+    "variant": "X: partial 1R + BE",
+    "mean_win_rate": 0.8263,
+    "mean_pf": 5.08,
+    "mean_exp_R": 0.666,
+    "mean_total_ret_pct": 130.35,
+    "mean_max_dd_pct": -2.2,
+    "mean_sharpe": 2.29,
+    "total_trades": 1775,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 218,
+        "trades": 218,
+        "win_rate": 0.8165,
+        "profit_factor": 4.591,
+        "expectancy_r": 0.643,
+        "total_return_pct": 140.14,
+        "max_dd_pct": -2.71,
+        "sharpe": 2.33
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 214,
+        "trades": 214,
+        "win_rate": 0.8224,
+        "profit_factor": 4.849,
+        "expectancy_r": 0.683,
+        "total_return_pct": 146.27,
+        "max_dd_pct": -1.88,
+        "sharpe": 2.42
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 160,
+        "trades": 160,
+        "win_rate": 0.8812,
+        "profit_factor": 7.853,
+        "expectancy_r": 0.814,
+        "total_return_pct": 130.2,
+        "max_dd_pct": -1.37,
+        "sharpe": 2.53
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 159,
+        "trades": 159,
+        "win_rate": 0.8428,
+        "profit_factor": 5.48,
+        "expectancy_r": 0.704,
+        "total_return_pct": 112.0,
+        "max_dd_pct": -1.54,
+        "sharpe": 2.12
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 238,
+        "trades": 237,
+        "win_rate": 0.8017,
+        "profit_factor": 3.854,
+        "expectancy_r": 0.566,
+        "total_return_pct": 134.15,
+        "max_dd_pct": -2.69,
+        "sharpe": 2.16
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 222,
+        "trades": 220,
+        "win_rate": 0.7909,
+        "profit_factor": 3.836,
+        "expectancy_r": 0.593,
+        "total_return_pct": 130.47,
+        "max_dd_pct": -2.59,
+        "sharpe": 2.21
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.7933,
+        "profit_factor": 3.655,
+        "expectancy_r": 0.549,
+        "total_return_pct": 98.25,
+        "max_dd_pct": -2.88,
+        "sharpe": 1.93
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 205,
+        "trades": 205,
+        "win_rate": 0.8683,
+        "profit_factor": 6.885,
+        "expectancy_r": 0.775,
+        "total_return_pct": 158.9,
+        "max_dd_pct": -1.88,
+        "sharpe": 2.71
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 183,
+        "trades": 183,
+        "win_rate": 0.8197,
+        "profit_factor": 4.72,
+        "expectancy_r": 0.671,
+        "total_return_pct": 122.75,
+        "max_dd_pct": -2.3,
+        "sharpe": 2.19
+      }
+    }
+  },
+  {
+    "variant": "X: partial 0.6R + BE",
+    "mean_win_rate": 0.9187,
+    "mean_pf": 8.73,
+    "mean_exp_R": 0.585,
+    "mean_total_ret_pct": 114.72,
+    "mean_max_dd_pct": -1.46,
+    "mean_sharpe": 2.53,
+    "total_trades": 1776,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 218,
+        "trades": 218,
+        "win_rate": 0.8991,
+        "profit_factor": 6.726,
+        "expectancy_r": 0.552,
+        "total_return_pct": 120.37,
+        "max_dd_pct": -1.63,
+        "sharpe": 2.56
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 214,
+        "trades": 214,
+        "win_rate": 0.9159,
+        "profit_factor": 8.376,
+        "expectancy_r": 0.62,
+        "total_return_pct": 132.78,
+        "max_dd_pct": -1.37,
+        "sharpe": 2.75
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 160,
+        "trades": 160,
+        "win_rate": 0.95,
+        "profit_factor": 14.793,
+        "expectancy_r": 0.69,
+        "total_return_pct": 110.34,
+        "max_dd_pct": -0.98,
+        "sharpe": 2.59
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 159,
+        "trades": 159,
+        "win_rate": 0.9371,
+        "profit_factor": 10.761,
+        "expectancy_r": 0.614,
+        "total_return_pct": 97.61,
+        "max_dd_pct": -0.94,
+        "sharpe": 2.35
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 238,
+        "trades": 237,
+        "win_rate": 0.9198,
+        "profit_factor": 7.653,
+        "expectancy_r": 0.533,
+        "total_return_pct": 126.4,
+        "max_dd_pct": -1.83,
+        "sharpe": 2.58
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 222,
+        "trades": 221,
+        "win_rate": 0.9186,
+        "profit_factor": 7.602,
+        "expectancy_r": 0.538,
+        "total_return_pct": 118.83,
+        "max_dd_pct": -1.3,
+        "sharpe": 2.67
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.8939,
+        "profit_factor": 5.655,
+        "expectancy_r": 0.494,
+        "total_return_pct": 88.45,
+        "max_dd_pct": -1.67,
+        "sharpe": 2.17
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 205,
+        "trades": 205,
+        "win_rate": 0.9268,
+        "profit_factor": 9.653,
+        "expectancy_r": 0.633,
+        "total_return_pct": 129.79,
+        "max_dd_pct": -1.91,
+        "sharpe": 2.74
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 183,
+        "trades": 183,
+        "win_rate": 0.9071,
+        "profit_factor": 7.348,
+        "expectancy_r": 0.59,
+        "total_return_pct": 107.92,
+        "max_dd_pct": -1.53,
+        "sharpe": 2.39
+      }
+    }
+  },
+  {
+    "variant": "X: trail 3xATR",
+    "mean_win_rate": 0.7433,
+    "mean_pf": 12.648,
+    "mean_exp_R": 0.711,
+    "mean_total_ret_pct": 139.37,
+    "mean_max_dd_pct": -0.92,
+    "mean_sharpe": 2.37,
+    "total_trades": 1778,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 218,
+        "trades": 218,
+        "win_rate": 0.7477,
+        "profit_factor": 13.535,
+        "expectancy_r": 0.709,
+        "total_return_pct": 154.65,
+        "max_dd_pct": -1.31,
+        "sharpe": 2.6
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 214,
+        "trades": 214,
+        "win_rate": 0.7477,
+        "profit_factor": 12.569,
+        "expectancy_r": 0.767,
+        "total_return_pct": 164.11,
+        "max_dd_pct": -0.63,
+        "sharpe": 2.52
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 160,
+        "trades": 160,
+        "win_rate": 0.7937,
+        "profit_factor": 18.822,
+        "expectancy_r": 0.903,
+        "total_return_pct": 144.55,
+        "max_dd_pct": -0.66,
+        "sharpe": 2.36
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 159,
+        "trades": 159,
+        "win_rate": 0.7862,
+        "profit_factor": 17.295,
+        "expectancy_r": 0.8,
+        "total_return_pct": 127.24,
+        "max_dd_pct": -0.57,
+        "sharpe": 2.21
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 238,
+        "trades": 238,
+        "win_rate": 0.7227,
+        "profit_factor": 11.944,
+        "expectancy_r": 0.671,
+        "total_return_pct": 159.77,
+        "max_dd_pct": -1.24,
+        "sharpe": 2.42
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 222,
+        "trades": 222,
+        "win_rate": 0.7072,
+        "profit_factor": 9.266,
+        "expectancy_r": 0.611,
+        "total_return_pct": 135.54,
+        "max_dd_pct": -1.0,
+        "sharpe": 2.35
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.7039,
+        "profit_factor": 7.681,
+        "expectancy_r": 0.5,
+        "total_return_pct": 89.43,
+        "max_dd_pct": -0.87,
+        "sharpe": 2.22
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 205,
+        "trades": 205,
+        "win_rate": 0.7317,
+        "profit_factor": 10.663,
+        "expectancy_r": 0.708,
+        "total_return_pct": 145.12,
+        "max_dd_pct": -0.94,
+        "sharpe": 2.39
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 183,
+        "trades": 183,
+        "win_rate": 0.7486,
+        "profit_factor": 12.059,
+        "expectancy_r": 0.732,
+        "total_return_pct": 133.96,
+        "max_dd_pct": -1.05,
+        "sharpe": 2.26
+      }
+    }
+  },
+  {
+    "variant": "X: trail 4xATR after part",
+    "mean_win_rate": 0.8261,
+    "mean_pf": 5.081,
+    "mean_exp_R": 0.667,
+    "mean_total_ret_pct": 130.72,
+    "mean_max_dd_pct": -2.2,
+    "mean_sharpe": 2.33,
+    "total_trades": 1778,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 218,
+        "trades": 218,
+        "win_rate": 0.8165,
+        "profit_factor": 4.606,
+        "expectancy_r": 0.645,
+        "total_return_pct": 140.72,
+        "max_dd_pct": -2.72,
+        "sharpe": 2.39
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 214,
+        "trades": 214,
+        "win_rate": 0.8224,
+        "profit_factor": 4.874,
+        "expectancy_r": 0.688,
+        "total_return_pct": 147.2,
+        "max_dd_pct": -1.87,
+        "sharpe": 2.47
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 160,
+        "trades": 160,
+        "win_rate": 0.8812,
+        "profit_factor": 7.932,
+        "expectancy_r": 0.823,
+        "total_return_pct": 131.71,
+        "max_dd_pct": -1.35,
+        "sharpe": 2.57
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 159,
+        "trades": 159,
+        "win_rate": 0.8428,
+        "profit_factor": 5.523,
+        "expectancy_r": 0.711,
+        "total_return_pct": 113.09,
+        "max_dd_pct": -1.53,
+        "sharpe": 2.17
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 238,
+        "trades": 238,
+        "win_rate": 0.8025,
+        "profit_factor": 3.928,
+        "expectancy_r": 0.578,
+        "total_return_pct": 137.63,
+        "max_dd_pct": -2.69,
+        "sharpe": 2.22
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 222,
+        "trades": 222,
+        "win_rate": 0.7883,
+        "profit_factor": 3.821,
+        "expectancy_r": 0.597,
+        "total_return_pct": 132.59,
+        "max_dd_pct": -2.58,
+        "sharpe": 2.27
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.7933,
+        "profit_factor": 3.548,
+        "expectancy_r": 0.527,
+        "total_return_pct": 94.27,
+        "max_dd_pct": -2.94,
+        "sharpe": 1.94
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 205,
+        "trades": 205,
+        "win_rate": 0.8683,
+        "profit_factor": 6.678,
+        "expectancy_r": 0.748,
+        "total_return_pct": 153.29,
+        "max_dd_pct": -1.88,
+        "sharpe": 2.73
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 183,
+        "trades": 183,
+        "win_rate": 0.8197,
+        "profit_factor": 4.819,
+        "expectancy_r": 0.689,
+        "total_return_pct": 126.02,
+        "max_dd_pct": -2.25,
+        "sharpe": 2.25
+      }
+    }
+  },
+  {
+    "variant": "C: trend + min-RR1.5",
+    "mean_win_rate": 0.5319,
+    "mean_pf": 2.693,
+    "mean_exp_R": 0.774,
+    "mean_total_ret_pct": 90.62,
+    "mean_max_dd_pct": -4.6,
+    "mean_sharpe": 1.24,
+    "total_trades": 1060,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 121,
+        "trades": 120,
+        "win_rate": 0.5,
+        "profit_factor": 2.317,
+        "expectancy_r": 0.658,
+        "total_return_pct": 79.0,
+        "max_dd_pct": -3.58,
+        "sharpe": 1.07
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 119,
+        "trades": 119,
+        "win_rate": 0.5462,
+        "profit_factor": 2.847,
+        "expectancy_r": 0.838,
+        "total_return_pct": 99.76,
+        "max_dd_pct": -5.56,
+        "sharpe": 1.31
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 103,
+        "trades": 103,
+        "win_rate": 0.6019,
+        "profit_factor": 3.39,
+        "expectancy_r": 0.93,
+        "total_return_pct": 95.77,
+        "max_dd_pct": -4.62,
+        "sharpe": 1.4
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 107,
+        "trades": 107,
+        "win_rate": 0.5421,
+        "profit_factor": 2.89,
+        "expectancy_r": 0.865,
+        "total_return_pct": 92.61,
+        "max_dd_pct": -4.97,
+        "sharpe": 1.25
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 141,
+        "trades": 140,
+        "win_rate": 0.5214,
+        "profit_factor": 2.544,
+        "expectancy_r": 0.734,
+        "total_return_pct": 102.71,
+        "max_dd_pct": -4.35,
+        "sharpe": 1.24
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 122,
+        "trades": 121,
+        "win_rate": 0.4876,
+        "profit_factor": 2.27,
+        "expectancy_r": 0.651,
+        "total_return_pct": 78.71,
+        "max_dd_pct": -3.91,
+        "sharpe": 1.1
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 96,
+        "trades": 96,
+        "win_rate": 0.5521,
+        "profit_factor": 2.865,
+        "expectancy_r": 0.807,
+        "total_return_pct": 77.5,
+        "max_dd_pct": -4.5,
+        "sharpe": 1.18
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 134,
+        "trades": 134,
+        "win_rate": 0.5522,
+        "profit_factor": 2.831,
+        "expectancy_r": 0.82,
+        "total_return_pct": 109.88,
+        "max_dd_pct": -5.79,
+        "sharpe": 1.47
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 120,
+        "trades": 120,
+        "win_rate": 0.4833,
+        "profit_factor": 2.285,
+        "expectancy_r": 0.664,
+        "total_return_pct": 79.66,
+        "max_dd_pct": -4.12,
+        "sharpe": 1.11
+      }
+    }
+  },
+  {
+    "variant": "C: trend + alternation + min-RR1.5",
+    "mean_win_rate": 0.5408,
+    "mean_pf": 2.853,
+    "mean_exp_R": 0.841,
+    "mean_total_ret_pct": 57.76,
+    "mean_max_dd_pct": -4.18,
+    "mean_sharpe": 1.0,
+    "total_trades": 619,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 71,
+        "trades": 71,
+        "win_rate": 0.507,
+        "profit_factor": 2.53,
+        "expectancy_r": 0.754,
+        "total_return_pct": 53.56,
+        "max_dd_pct": -4.4,
+        "sharpe": 0.9
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 62,
+        "trades": 62,
+        "win_rate": 0.5323,
+        "profit_factor": 2.793,
+        "expectancy_r": 0.839,
+        "total_return_pct": 52.01,
+        "max_dd_pct": -3.49,
+        "sharpe": 0.93
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 54,
+        "trades": 54,
+        "win_rate": 0.5556,
+        "profit_factor": 2.915,
+        "expectancy_r": 0.851,
+        "total_return_pct": 45.95,
+        "max_dd_pct": -3.72,
+        "sharpe": 0.93
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 63,
+        "trades": 63,
+        "win_rate": 0.5397,
+        "profit_factor": 2.977,
+        "expectancy_r": 0.91,
+        "total_return_pct": 57.32,
+        "max_dd_pct": -4.84,
+        "sharpe": 0.98
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 85,
+        "trades": 84,
+        "win_rate": 0.5476,
+        "profit_factor": 2.98,
+        "expectancy_r": 0.884,
+        "total_return_pct": 74.27,
+        "max_dd_pct": -5.35,
+        "sharpe": 1.06
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 76,
+        "trades": 76,
+        "win_rate": 0.5526,
+        "profit_factor": 2.85,
+        "expectancy_r": 0.828,
+        "total_return_pct": 62.9,
+        "max_dd_pct": -2.62,
+        "sharpe": 1.1
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 51,
+        "trades": 51,
+        "win_rate": 0.5882,
+        "profit_factor": 3.195,
+        "expectancy_r": 0.904,
+        "total_return_pct": 46.1,
+        "max_dd_pct": -3.04,
+        "sharpe": 0.98
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 84,
+        "trades": 84,
+        "win_rate": 0.5714,
+        "profit_factor": 3.125,
+        "expectancy_r": 0.911,
+        "total_return_pct": 76.51,
+        "max_dd_pct": -5.27,
+        "sharpe": 1.22
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 74,
+        "trades": 74,
+        "win_rate": 0.473,
+        "profit_factor": 2.312,
+        "expectancy_r": 0.692,
+        "total_return_pct": 51.19,
+        "max_dd_pct": -4.92,
+        "sharpe": 0.9
+      }
+    }
+  },
+  {
+    "variant": "C: trend + partial1R+BE",
+    "mean_win_rate": 0.8292,
+    "mean_pf": 5.231,
+    "mean_exp_R": 0.673,
+    "mean_total_ret_pct": 128.39,
+    "mean_max_dd_pct": -2.19,
+    "mean_sharpe": 2.28,
+    "total_trades": 1734,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 217,
+        "trades": 217,
+        "win_rate": 0.8203,
+        "profit_factor": 4.712,
+        "expectancy_r": 0.65,
+        "total_return_pct": 141.14,
+        "max_dd_pct": -2.71,
+        "sharpe": 2.34
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 212,
+        "trades": 212,
+        "win_rate": 0.8208,
+        "profit_factor": 4.778,
+        "expectancy_r": 0.677,
+        "total_return_pct": 143.58,
+        "max_dd_pct": -1.88,
+        "sharpe": 2.39
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 155,
+        "trades": 155,
+        "win_rate": 0.8903,
+        "profit_factor": 8.653,
+        "expectancy_r": 0.839,
+        "total_return_pct": 130.1,
+        "max_dd_pct": -1.37,
+        "sharpe": 2.54
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 158,
+        "trades": 158,
+        "win_rate": 0.8481,
+        "profit_factor": 5.708,
+        "expectancy_r": 0.715,
+        "total_return_pct": 113.0,
+        "max_dd_pct": -1.54,
+        "sharpe": 2.13
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 232,
+        "trades": 231,
+        "win_rate": 0.8009,
+        "profit_factor": 3.812,
+        "expectancy_r": 0.56,
+        "total_return_pct": 129.33,
+        "max_dd_pct": -2.69,
+        "sharpe": 2.12
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 216,
+        "trades": 214,
+        "win_rate": 0.785,
+        "profit_factor": 3.741,
+        "expectancy_r": 0.589,
+        "total_return_pct": 126.06,
+        "max_dd_pct": -2.6,
+        "sharpe": 2.15
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 173,
+        "trades": 173,
+        "win_rate": 0.8035,
+        "profit_factor": 3.883,
+        "expectancy_r": 0.567,
+        "total_return_pct": 98.01,
+        "max_dd_pct": -2.7,
+        "sharpe": 1.96
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 195,
+        "trades": 195,
+        "win_rate": 0.8667,
+        "profit_factor": 6.849,
+        "expectancy_r": 0.78,
+        "total_return_pct": 152.06,
+        "max_dd_pct": -1.91,
+        "sharpe": 2.65
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.8268,
+        "profit_factor": 4.943,
+        "expectancy_r": 0.683,
+        "total_return_pct": 122.23,
+        "max_dd_pct": -2.32,
+        "sharpe": 2.2
+      }
+    }
+  },
+  {
+    "variant": "C: trend + partial1R+BE + trail3xATR",
+    "mean_win_rate": 0.8295,
+    "mean_pf": 5.222,
+    "mean_exp_R": 0.67,
+    "mean_total_ret_pct": 127.98,
+    "mean_max_dd_pct": -2.19,
+    "mean_sharpe": 2.35,
+    "total_trades": 1737,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 217,
+        "trades": 217,
+        "win_rate": 0.8203,
+        "profit_factor": 4.741,
+        "expectancy_r": 0.656,
+        "total_return_pct": 142.26,
+        "max_dd_pct": -2.71,
+        "sharpe": 2.44
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 212,
+        "trades": 212,
+        "win_rate": 0.8208,
+        "profit_factor": 4.714,
+        "expectancy_r": 0.666,
+        "total_return_pct": 141.14,
+        "max_dd_pct": -1.87,
+        "sharpe": 2.44
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 155,
+        "trades": 155,
+        "win_rate": 0.8903,
+        "profit_factor": 8.948,
+        "expectancy_r": 0.872,
+        "total_return_pct": 135.11,
+        "max_dd_pct": -1.34,
+        "sharpe": 2.61
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 158,
+        "trades": 158,
+        "win_rate": 0.8481,
+        "profit_factor": 5.715,
+        "expectancy_r": 0.716,
+        "total_return_pct": 113.15,
+        "max_dd_pct": -1.52,
+        "sharpe": 2.22
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 232,
+        "trades": 232,
+        "win_rate": 0.8017,
+        "profit_factor": 3.983,
+        "expectancy_r": 0.591,
+        "total_return_pct": 137.2,
+        "max_dd_pct": -2.67,
+        "sharpe": 2.23
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 216,
+        "trades": 216,
+        "win_rate": 0.787,
+        "profit_factor": 3.725,
+        "expectancy_r": 0.58,
+        "total_return_pct": 125.35,
+        "max_dd_pct": -2.61,
+        "sharpe": 2.24
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 173,
+        "trades": 173,
+        "win_rate": 0.8035,
+        "profit_factor": 3.706,
+        "expectancy_r": 0.532,
+        "total_return_pct": 92.01,
+        "max_dd_pct": -2.78,
+        "sharpe": 2.01
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 195,
+        "trades": 195,
+        "win_rate": 0.8667,
+        "profit_factor": 6.58,
+        "expectancy_r": 0.744,
+        "total_return_pct": 145.07,
+        "max_dd_pct": -1.91,
+        "sharpe": 2.7
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 179,
+        "trades": 179,
+        "win_rate": 0.8268,
+        "profit_factor": 4.888,
+        "expectancy_r": 0.673,
+        "total_return_pct": 120.52,
+        "max_dd_pct": -2.31,
+        "sharpe": 2.28
+      }
+    }
+  },
+  {
+    "variant": "C: ALL filters + partial1R+BE",
+    "mean_win_rate": 0.8577,
+    "mean_pf": 7.912,
+    "mean_exp_R": 0.847,
+    "mean_total_ret_pct": 32.19,
+    "mean_max_dd_pct": -1.32,
+    "mean_sharpe": 1.18,
+    "total_trades": 342,
+    "per_symbol": {
+      "USDJPY": {
+        "raw_setups": 218,
+        "kept_setups": 35,
+        "trades": 35,
+        "win_rate": 0.9429,
+        "profit_factor": 16.663,
+        "expectancy_r": 0.895,
+        "total_return_pct": 31.33,
+        "max_dd_pct": -0.92,
+        "sharpe": 1.3
+      },
+      "EURJPY": {
+        "raw_setups": 214,
+        "kept_setups": 37,
+        "trades": 37,
+        "win_rate": 0.8378,
+        "profit_factor": 6.023,
+        "expectancy_r": 0.815,
+        "total_return_pct": 30.14,
+        "max_dd_pct": -1.47,
+        "sharpe": 1.11
+      },
+      "AUDJPY": {
+        "raw_setups": 160,
+        "kept_setups": 33,
+        "trades": 33,
+        "win_rate": 0.8182,
+        "profit_factor": 5.135,
+        "expectancy_r": 0.752,
+        "total_return_pct": 24.81,
+        "max_dd_pct": -1.96,
+        "sharpe": 1.03
+      },
+      "CHFJPY": {
+        "raw_setups": 159,
+        "kept_setups": 39,
+        "trades": 39,
+        "win_rate": 0.8462,
+        "profit_factor": 6.484,
+        "expectancy_r": 0.844,
+        "total_return_pct": 32.9,
+        "max_dd_pct": -1.14,
+        "sharpe": 1.12
+      },
+      "GBPJPY": {
+        "raw_setups": 238,
+        "kept_setups": 47,
+        "trades": 47,
+        "win_rate": 0.8298,
+        "profit_factor": 5.256,
+        "expectancy_r": 0.724,
+        "total_return_pct": 34.05,
+        "max_dd_pct": -2.0,
+        "sharpe": 1.12
+      },
+      "XAUUSD": {
+        "raw_setups": 222,
+        "kept_setups": 38,
+        "trades": 38,
+        "win_rate": 0.8158,
+        "profit_factor": 5.288,
+        "expectancy_r": 0.79,
+        "total_return_pct": 30.02,
+        "max_dd_pct": -0.96,
+        "sharpe": 1.1
+      },
+      "XAGUSD": {
+        "raw_setups": 179,
+        "kept_setups": 34,
+        "trades": 34,
+        "win_rate": 0.8529,
+        "profit_factor": 6.201,
+        "expectancy_r": 0.765,
+        "total_return_pct": 26.01,
+        "max_dd_pct": -0.99,
+        "sharpe": 1.1
+      },
+      "NAS100": {
+        "raw_setups": 205,
+        "kept_setups": 51,
+        "trades": 51,
+        "win_rate": 0.8824,
+        "profit_factor": 9.668,
+        "expectancy_r": 1.02,
+        "total_return_pct": 52.01,
+        "max_dd_pct": -1.47,
+        "sharpe": 1.53
+      },
+      "SPX500": {
+        "raw_setups": 183,
+        "kept_setups": 28,
+        "trades": 28,
+        "win_rate": 0.8929,
+        "profit_factor": 10.49,
+        "expectancy_r": 1.017,
+        "total_return_pct": 28.47,
+        "max_dd_pct": -0.96,
+        "sharpe": 1.19
+      }
+    }
+  }
+]
