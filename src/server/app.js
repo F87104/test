@@ -10,11 +10,14 @@ import {
   buildWeeklyReview,
   createMissionTeamForUser,
   getDashboardMetrics,
+  getLearningProgressForUser,
   getLiveState,
   getMissionMatchesForUser,
   getMissionProfile,
   getMissionTeamsForUser,
   getUserRole,
+  resetLearningProgressForUser,
+  saveLearningProgressForUser,
   saveMissionProfile,
 } from "./services.js";
 
@@ -42,6 +45,13 @@ const missionTeamSchema = z.object({
   teamName: z.string().min(1).max(80),
   missionTitle: z.string().min(1).max(120),
   teammateUserIds: z.array(z.number().int().positive()).min(1).max(3),
+});
+
+const learningProgressSchema = z.object({
+  lectureId: z.string().min(1).max(80),
+  completed: z.boolean(),
+  completedAt: z.number().int().positive().optional(),
+  points: z.number().int().min(0).max(500).default(0),
 });
 
 export function createApp(io = null) {
@@ -89,6 +99,25 @@ export function createApp(io = null) {
 
   app.get("/api/reviews/:memberName", authenticateToken, (req, res) => {
     res.json({ review: buildWeeklyReview(req.params.memberName) });
+  });
+
+  app.get("/api/learning/progress", authenticateToken, (req, res) => {
+    const progress = getLearningProgressForUser(req.user.id);
+    res.json({ progress });
+  });
+
+  app.put("/api/learning/progress", authenticateToken, (req, res) => {
+    const parsed = learningProgressSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "学習進捗の入力形式が不正です。" });
+    }
+    const record = saveLearningProgressForUser(req.user.id, parsed.data);
+    return res.json({ progress: record });
+  });
+
+  app.delete("/api/learning/progress", authenticateToken, (req, res) => {
+    resetLearningProgressForUser(req.user.id);
+    return res.status(204).send();
   });
 
   app.get("/api/mission/profile", authenticateToken, (req, res) => {

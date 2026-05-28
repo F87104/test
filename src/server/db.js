@@ -113,6 +113,18 @@ export function initDb() {
       FOREIGN KEY(team_id) REFERENCES mission_teams(id),
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS learning_progress (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      lecture_id TEXT NOT NULL,
+      completed INTEGER NOT NULL DEFAULT 0 CHECK(completed IN (0, 1)),
+      completed_at INTEGER,
+      points INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL,
+      UNIQUE(user_id, lecture_id),
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    );
   `);
 
   const userCount = database.prepare("SELECT COUNT(*) AS count FROM users").get().count;
@@ -536,4 +548,76 @@ export function getMissionTeamsByUserId(userId) {
     )
     .all(userId);
   return teamRows.map((row) => getMissionTeamById(row.id)).filter(Boolean);
+}
+
+export function getLearningProgressByUserId(userId) {
+  const database = getDb();
+  return database
+    .prepare(
+      `
+      SELECT
+        lecture_id AS lectureId,
+        completed,
+        completed_at AS completedAt,
+        points,
+        updated_at AS updatedAt
+      FROM learning_progress
+      WHERE user_id = ?
+      ORDER BY updated_at DESC
+    `
+    )
+    .all(userId)
+    .map((record) => ({
+      ...record,
+      completed: Boolean(record.completed),
+    }));
+}
+
+export function getLearningProgressRecord(userId, lectureId) {
+  const database = getDb();
+  const found =
+    database
+      .prepare(
+        `
+      SELECT
+        lecture_id AS lectureId,
+        completed,
+        completed_at AS completedAt,
+        points,
+        updated_at AS updatedAt
+      FROM learning_progress
+      WHERE user_id = ? AND lecture_id = ?
+    `
+      )
+      .get(userId, lectureId) ?? null;
+  if (!found) return null;
+  return {
+    ...found,
+    completed: Boolean(found.completed),
+  };
+}
+
+export function upsertLearningProgress({ userId, lectureId, completed, completedAt = null, points = 0 }) {
+  const database = getDb();
+  const updatedAt = Date.now();
+  database
+    .prepare(
+      `
+      INSERT INTO learning_progress (
+        user_id, lecture_id, completed, completed_at, points, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(user_id, lecture_id) DO UPDATE SET
+        completed = excluded.completed,
+        completed_at = excluded.completed_at,
+        points = excluded.points,
+        updated_at = excluded.updated_at
+    `
+    )
+    .run(userId, lectureId, completed ? 1 : 0, completedAt, points, updatedAt);
+  return getLearningProgressRecord(userId, lectureId);
+}
+
+export function clearLearningProgressByUserId(userId) {
+  const database = getDb();
+  database.prepare("DELETE FROM learning_progress WHERE user_id = ?").run(userId);
 }

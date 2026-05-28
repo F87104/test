@@ -52,6 +52,9 @@ npm run dev
 - `GET /api/mission/matches`
 - `GET /api/mission/teams`
 - `POST /api/mission/teams`
+- `GET /api/learning/progress`
+- `PUT /api/learning/progress`
+- `DELETE /api/learning/progress`
 
 ## 補足
 

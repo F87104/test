@@ -104,3 +104,20 @@ export async function createMissionTeam(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export async function fetchLearningProgress() {
+  return request("/learning/progress");
+}
+
+export async function saveLearningProgress(payload) {
+  return request("/learning/progress", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function resetLearningProgress() {
+  return request("/learning/progress", {
+    method: "DELETE",
+  });
+}

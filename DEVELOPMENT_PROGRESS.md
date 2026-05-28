@@ -40,7 +40,7 @@
 - ロビー中心UI（モバイル寄り）
 
 ### 現在残っている主要不足
-1. 学習進捗/報酬のサーバー永続化不足（localStorage依存）
+1. 報酬交換のサーバー永続化不足（現在はlocalStorage依存）
 2. Mission Matchの申請/承認フロー未実装（チーム化導線の不足）
 3. Socket認証の強化不足（HTTP認証との一貫性）
 
@@ -65,4 +65,5 @@
 - 2026-05-28 | BLK-02 | チュートリアル開始ボタンIDを `tutorialStartButton` に統一 | `app-client.js` | 「使い方」導線の配線復旧
 - 2026-05-28 | BLK-03 | Mission Matchセクションに `id="missionPanel"` を追加 | `index.html` | ロビー導線からのスクロール先整合
 - 2026-05-28 | BLK-04 | `weeklyReviewUpdatedAt` の重複IDを解消（片方を `insightUpdatedAt` へ変更） | `index.html` | DOM一意性確保
+- 2026-05-28 | CORE-01 | 学習進捗をDB/APIで永続化（取得/保存/リセット） | `db.js`, `app.js`, `services.js`, `client.js`, `app-client.js`, `tests` | 端末を跨いでも講義完了状態を再現可能
 

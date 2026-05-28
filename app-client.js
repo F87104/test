@@ -1,6 +1,7 @@
 import {
   awardPoints,
   createMissionTeam,
+  fetchLearningProgress,
   fetchMissionMatches,
   fetchMissionProfile,
   fetchMissionTeams,
@@ -8,6 +9,8 @@ import {
   fetchState,
   getAuthToken,
   login,
+  resetLearningProgress as resetLearningProgressApi,
+  saveLearningProgress as saveLearningProgressApi,
   saveMissionProfile,
 } from "./src/shared/client.js";
 import { connectRealtime, disconnectRealtime } from "./src/shared/realtime.js";
@@ -294,6 +297,43 @@ function persistLearningProgress() {
   localStorage.setItem("ui-learning-progress", JSON.stringify(localUi.learningProgress));
 }
 
+function normalizeLearningProgressFromServer(progressRows = []) {
+  const next = {};
+  progressRows.forEach((row) => {
+    if (!row?.lectureId || !row.completed) return;
+    next[row.lectureId] = {
+      completed: true,
+      completedAt: Number(row.completedAt ?? Date.now()),
+      points: Number(row.points ?? 0),
+    };
+  });
+  return next;
+}
+
+async function migrateLocalLearningProgressIfNeeded(serverRows = []) {
+  if ((serverRows?.length ?? 0) > 0) return serverRows;
+  const localRows = Object.entries(localUi.learningProgress)
+    .filter(([, record]) => Boolean(record?.completed))
+    .map(([lectureId, record]) => ({
+      lectureId,
+      completed: true,
+      completedAt: Number(record.completedAt ?? Date.now()),
+      points: Number(record.points ?? 0),
+    }));
+  if (!localRows.length) return serverRows;
+  await Promise.all(localRows.map((row) => saveLearningProgressApi(row)));
+  const refreshed = await fetchLearningProgress();
+  return refreshed?.progress ?? [];
+}
+
+async function refreshLearningProgress() {
+  if (!authToken) return;
+  const response = await fetchLearningProgress();
+  const migratedRows = await migrateLocalLearningProgressIfNeeded(response?.progress ?? []);
+  localUi.learningProgress = normalizeLearningProgressFromServer(migratedRows);
+  persistLearningProgress();
+}
+
 function updateLearningCardState(lecture) {
   if (!els.lectureList) return;
   const card = els.lectureList.querySelector(`[data-lecture-id="${lecture.id}"]`);
@@ -316,11 +356,23 @@ function updateLearningCardState(lecture) {
 async function markLectureCompleted(lecture) {
   if (!isLectureUnlocked(lecture)) return;
   if (isLectureCompleted(lecture.id)) return;
-  localUi.learningProgress[lecture.id] = {
-    completed: true,
-    completedAt: Date.now(),
-    points: lecture.points,
-  };
+  const completedAt = Date.now();
+  try {
+    const result = await saveLearningProgressApi({
+      lectureId: lecture.id,
+      completed: true,
+      completedAt,
+      points: lecture.points,
+    });
+    localUi.learningProgress[lecture.id] = {
+      completed: Boolean(result?.progress?.completed ?? true),
+      completedAt: Number(result?.progress?.completedAt ?? completedAt),
+      points: Number(result?.progress?.points ?? lecture.points),
+    };
+  } catch (error) {
+    showAwardToast(`学習進捗の保存に失敗: ${error.message}`);
+    return;
+  }
   persistLearningProgress();
   updateLearningCardState(lecture);
   renderLearningSummary();
@@ -864,6 +916,7 @@ async function bootstrap() {
       me = result.user;
     }
     syncPermissions();
+    await refreshLearningProgress();
     await refreshState();
     await refreshMissionData();
     connectRealtimeBridge();
@@ -964,7 +1017,13 @@ function bindLearningUi() {
     showAwardToast(`学習者名を「${nextName}」へ更新しました`);
   });
 
-  els.resetLearningButton?.addEventListener("click", () => {
+  els.resetLearningButton?.addEventListener("click", async () => {
+    try {
+      await resetLearningProgressApi();
+    } catch (error) {
+      showAwardToast(`学習進捗のリセット失敗: ${error.message}`);
+      return;
+    }
     localUi.learningProgress = {};
     persistLearningProgress();
     lectureCatalog.forEach(updateLearningCardState);

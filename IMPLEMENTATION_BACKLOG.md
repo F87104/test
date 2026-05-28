@@ -21,7 +21,7 @@
 
 | ID | タイトル | 優先度 | 状態 | 依存 | 変更対象（予定） | DoD |
 |---|---|---:|---|---|---|---|
-| CORE-01 | 学習進捗のサーバー永続化 | P1 | todo | BLK-01 | `src/server/db.js`, `src/server/app.js`, `src/shared/client.js`, `app-client.js`, `tests/server.test.js` | 端末を変えても講義完了状態が保持される |
+| CORE-01 | 学習進捗のサーバー永続化 | P1 | done | BLK-01 | `src/server/db.js`, `src/server/app.js`, `src/shared/client.js`, `app-client.js`, `tests/server.test.js` | 端末を変えても講義完了状態が保持される |
 | CORE-02 | 報酬交換のサーバー永続化・検証 | P1 | todo | CORE-01 | 同上 + `services.js` | 不正なポイント消費がサーバー側で防止される |
 | CORE-03 | Mission Match申請/承認フロー追加 | P1 | todo | BLK-03 | `db.js`, `services.js`, `app.js`, `app-client.js`, `tests/server.test.js` | 申請→承認→チーム化が成立する |
 | CORE-04 | チームミッション完了時のボーナス付与 | P1 | todo | CORE-03 | `services.js`, `app.js`, `app-client.js`, `tests/server.test.js` | 完了イベントでpoint_eventsに記録される |

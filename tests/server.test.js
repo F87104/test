@@ -130,3 +130,39 @@ describe("mission match endpoints", () => {
     expect(teamsRes.body.teams.length).toBeGreaterThan(0);
   });
 });
+
+describe("learning progress endpoints", () => {
+  it("gets and upserts learning progress for authenticated member", async () => {
+    const initialRes = await request(app).get("/api/learning/progress").set("Authorization", `Bearer ${memberToken}`);
+    expect(initialRes.status).toBe(200);
+    expect(Array.isArray(initialRes.body.progress)).toBe(true);
+
+    const putRes = await request(app)
+      .put("/api/learning/progress")
+      .set("Authorization", `Bearer ${memberToken}`)
+      .send({
+        lectureId: "lecture-note-01",
+        completed: true,
+        completedAt: Date.now(),
+        points: 15,
+      });
+    expect(putRes.status).toBe(200);
+    expect(putRes.body.progress.lectureId).toBe("lecture-note-01");
+    expect(putRes.body.progress.completed).toBe(true);
+
+    const afterRes = await request(app).get("/api/learning/progress").set("Authorization", `Bearer ${memberToken}`);
+    expect(afterRes.status).toBe(200);
+    expect(afterRes.body.progress.some((row) => row.lectureId === "lecture-note-01" && row.completed)).toBe(true);
+  });
+
+  it("clears learning progress records", async () => {
+    const deleteRes = await request(app)
+      .delete("/api/learning/progress")
+      .set("Authorization", `Bearer ${memberToken}`);
+    expect(deleteRes.status).toBe(204);
+
+    const afterDeleteRes = await request(app).get("/api/learning/progress").set("Authorization", `Bearer ${memberToken}`);
+    expect(afterDeleteRes.status).toBe(200);
+    expect(afterDeleteRes.body.progress).toEqual([]);
+  });
+});

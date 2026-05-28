@@ -1,8 +1,10 @@
 import {
   addEvent,
+  clearLearningProgressByUserId,
   createMissionTeam,
   getAllMissionProfiles,
   getEvents,
+  getLearningProgressByUserId,
   getMemberByName,
   getMembers,
   getMissionProfileByUserId,
@@ -10,6 +12,7 @@ import {
   getRoleByUserId,
   getWeeklyReviews,
   setMemberPoints,
+  upsertLearningProgress,
   upsertMissionProfile,
   upsertWeeklyReview,
 } from "./db.js";
@@ -290,4 +293,23 @@ export function createMissionTeamForUser({ ownerUserId, teammateUserIds, teamNam
 
 export function getMissionTeamsForUser(userId) {
   return getMissionTeamsByUserId(userId);
+}
+
+export function getLearningProgressForUser(userId) {
+  return getLearningProgressByUserId(userId);
+}
+
+export function saveLearningProgressForUser(userId, payload) {
+  return upsertLearningProgress({
+    userId,
+    lectureId: payload.lectureId,
+    completed: payload.completed,
+    completedAt: payload.completed ? payload.completedAt ?? Date.now() : null,
+    points: payload.completed ? Number(payload.points ?? 0) : 0,
+  });
+}
+
+export function resetLearningProgressForUser(userId) {
+  clearLearningProgressByUserId(userId);
+  return [];
 }
