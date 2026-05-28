@@ -66,4 +66,5 @@
 - 2026-05-28 | BLK-03 | Mission Matchセクションに `id="missionPanel"` を追加 | `index.html` | ロビー導線からのスクロール先整合
 - 2026-05-28 | BLK-04 | `weeklyReviewUpdatedAt` の重複IDを解消（片方を `insightUpdatedAt` へ変更） | `index.html` | DOM一意性確保
 - 2026-05-28 | CORE-01 | 学習進捗をDB/APIで永続化（取得/保存/リセット） | `db.js`, `app.js`, `services.js`, `client.js`, `app-client.js`, `tests` | 端末を跨いでも講義完了状態を再現可能
+- 2026-05-28 | CORE-01-VERIFY | 依存導入後にテスト実行（`npm test`） | CI相当のローカル検証 | 11 tests passed / カバレッジ出力確認
 
