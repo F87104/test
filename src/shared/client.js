@@ -50,6 +50,11 @@ export async function fetchState() {
   return request("/state");
 }
 
+export async function fetchReview(memberName) {
+  const safeName = encodeURIComponent(String(memberName ?? "").trim());
+  return request(`/reviews/${safeName}`);
+}
+
 export async function awardPoints(memberName, points, reason) {
   return request("/points/award", {
     method: "POST",
@@ -67,6 +72,10 @@ export async function fetchOpsAudit() {
 
 export function hasToken() {
   return Boolean(getToken());
+}
+
+export function getAuthToken() {
+  return getToken();
 }
 
 export async function fetchMissionProfile() {

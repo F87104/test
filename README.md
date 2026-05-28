@@ -56,3 +56,17 @@ npm run dev
 ## 補足
 
 フロントエンドは `app-client.js` から API と Socket.IO に接続します。
+
+## 開発途中経過の確認方法（新規）
+
+改善フローと進捗を追いやすくするため、以下を運用します。
+
+- `DEVELOPMENT_PROGRESS.md`
+  - 時系列の改善履歴、現在地、進捗ログ
+- `IMPLEMENTATION_BACKLOG.md`
+  - 優先度つき実装チケット（todo/in_progress/blocked/done）
+
+運用ルール:
+1. 実装着手時にバックログを `in_progress` へ更新
+2. 完了時に `done` へ更新し、`DEVELOPMENT_PROGRESS.md` に1行追記
+3. 新課題はバックログに優先度つきで追加

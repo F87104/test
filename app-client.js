@@ -158,7 +158,7 @@ const els = {
   tutorialSkipButton: document.getElementById("tutorialSkipButton"),
   tutorialPrevButton: document.getElementById("tutorialPrevButton"),
   tutorialNextButton: document.getElementById("tutorialNextButton"),
-  openTutorialButton: document.getElementById("openTutorialButton"),
+  tutorialStartButton: document.getElementById("tutorialStartButton"),
 };
 
 const localUi = {
@@ -1095,7 +1095,7 @@ function bindNavigation() {
 }
 
 function bindTutorialUi() {
-  els.openTutorialButton?.addEventListener("click", () => {
+  els.tutorialStartButton?.addEventListener("click", () => {
     tutorialStepIndex = 0;
     openTutorial();
   });
