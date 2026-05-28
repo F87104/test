@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ed"/>
+      <stop offset="100%" stop-color="#f4efe6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <text x="80" y="110" fill="#6e5a3c" font-size="44" font-family="Arial, sans-serif" font-weight="700">&#12513;&#12514;&#39764;&#22613; 2.0</text>
+  <text x="80" y="150" fill="#9a8a73" font-size="28" font-family="Arial, sans-serif">&#12507;&#12540;&#12512;</text>
+
+  <rect x="60" y="190" width="960" height="210" rx="30" fill="#fffdf8" stroke="#d9c9af"/>
+  <text x="95" y="245" fill="#7d6645" font-size="28" font-family="Arial, sans-serif">&#12354;&#12394;&#12383;&#12398;&#29694;&#22312;&#22320;</text>
+  <text x="95" y="290" fill="#2f3a4a" font-size="40" font-family="Arial, sans-serif" font-weight="700">Lv.7</text>
+  <text x="260" y="290" fill="#2f3a4a" font-size="30" font-family="Arial, sans-serif">&#12473;&#12488;&#12522;&#12540;&#12463; 12&#26085;</text>
+  <text x="95" y="330" fill="#7c8898" font-size="26" font-family="Arial, sans-serif">XP 72 / 100</text>
+  <rect x="95" y="350" width="860" height="18" rx="9" fill="#ece7de"/>
+  <rect x="95" y="350" width="620" height="18" rx="9" fill="#7193d1"/>
+
+  <rect x="60" y="430" width="960" height="220" rx="30" fill="#fffdf8" stroke="#d9c9af"/>
+  <text x="95" y="485" fill="#7d6645" font-size="28" font-family="Arial, sans-serif">&#20170;&#26085;&#12398;&#26368;&#37325;&#35201;&#12479;&#12473;&#12463;</text>
+  <text x="95" y="530" fill="#2f3a4a" font-size="34" font-family="Arial, sans-serif" font-weight="700">&#36895;&#22577;&#25237;&#31295;&#12434;1&#20214;&#23436;&#20102;&#12377;&#12427;</text>
+  <text x="95" y="570" fill="#7c8898" font-size="24" font-family="Arial, sans-serif">&#12524;&#12499;&#12517;&#12540;&#12392;&#12521;&#12531;&#12461;&#12531;&#12464;&#12395;&#21363;&#26178;&#21453;&#26144;</text>
+  <rect x="95" y="595" width="230" height="40" rx="20" fill="#f1e9db"/>
+  <text x="125" y="622" fill="#8a6b3d" font-size="22" font-family="Arial, sans-serif">&#25512;&#22888;&#22577;&#37228; +20pt</text>
+  <rect x="760" y="575" width="195" height="54" rx="24" fill="#8a6b3d"/>
+  <text x="804" y="610" fill="#fffaf1" font-size="24" font-family="Arial, sans-serif">&#23455;&#34892;</text>
+
+  <rect x="60" y="680" width="960" height="250" rx="30" fill="#fffdf8" stroke="#d9c9af"/>
+  <text x="95" y="735" fill="#7d6645" font-size="28" font-family="Arial, sans-serif">&#24535;&#12510;&#12483;&#12481;&#20505;&#35036; TOP3</text>
+  <rect x="95" y="760" width="850" height="52" rx="18" fill="#f8f3ea"/>
+  <text x="120" y="794" fill="#2f3a4a" font-size="24" font-family="Arial, sans-serif">&#12415;&#12540;&#12385;&#12419;&#12435; / AI&#12539;&#25945;&#32946;</text>
+  <rect x="820" y="772" width="100" height="30" rx="14" fill="#dde8fb"/>
+  <text x="848" y="793" fill="#4d6ea8" font-size="20" font-family="Arial, sans-serif">92%</text>
+  <rect x="95" y="820" width="850" height="52" rx="18" fill="#f8f3ea"/>
+  <text x="120" y="854" fill="#2f3a4a" font-size="24" font-family="Arial, sans-serif">&#12418;&#12418;&#12385;&#12419;&#12435; / &#30330;&#20449;&#12539;&#12510;&#12540;&#12465;</text>
+  <rect x="820" y="832" width="100" height="30" rx="14" fill="#dde8fb"/>
+  <text x="848" y="853" fill="#4d6ea8" font-size="20" font-family="Arial, sans-serif">88%</text>
+  <rect x="95" y="880" width="850" height="52" rx="18" fill="#f8f3ea"/>
+  <text x="120" y="914" fill="#2f3a4a" font-size="24" font-family="Arial, sans-serif">&#12394;&#12387;&#12385;&#12419;&#12435; / &#21830;&#21697;&#35373;&#35336;</text>
+  <rect x="820" y="892" width="100" height="30" rx="14" fill="#dde8fb"/>
+  <text x="848" y="913" fill="#4d6ea8" font-size="20" font-family="Arial, sans-serif">85%</text>
+
+  <rect x="60" y="960" width="960" height="210" rx="30" fill="#fffdf8" stroke="#d9c9af"/>
+  <text x="95" y="1015" fill="#7d6645" font-size="28" font-family="Arial, sans-serif">&#22577;&#37228;&#20132;&#25563;&#25152;</text>
+  <text x="95" y="1055" fill="#2f3a4a" font-size="26" font-family="Arial, sans-serif">&#38480;&#23450;&#12486;&#12531;&#12503;&#12524;&#35299;&#25918;</text>
+  <text x="95" y="1090" fill="#7c8898" font-size="22" font-family="Arial, sans-serif">&#24517;&#35201;: 70pt / &#25152;&#25345;: 1&#20491;</text>
+  <rect x="760" y="1040" width="195" height="56" rx="24" fill="#d8ccb8"/>
+  <text x="805" y="1076" fill="#fffaf1" font-size="24" font-family="Arial, sans-serif">&#20132;&#25563;&#28168;</text>
+
+  <rect x="60" y="1200" width="960" height="250" rx="30" fill="#fffdf8" stroke="#d9c9af"/>
+  <text x="95" y="1255" fill="#7d6645" font-size="28" font-family="Arial, sans-serif">&#23398;&#32722;&#36914;&#25431;</text>
+  <rect x="95" y="1278" width="850" height="18" rx="9" fill="#ece7de"/>
+  <rect x="95" y="1278" width="530" height="18" rx="9" fill="#7193d1"/>
+  <text x="95" y="1328" fill="#2f3a4a" font-size="26" font-family="Arial, sans-serif">&#29305;&#21029;&#35611;&#32681;: &#25104;&#26524;&#23566;&#32218;&#12398;&#35373;&#35336; &#35299;&#25918;&#28168;&#12415;</text>
+  <text x="95" y="1365" fill="#7c8898" font-size="22" font-family="Arial, sans-serif">Vimeo / 95%&#35222;&#32884;&#12391;&#23436;&#20102;&#25277;&#35937;</text>
+
+  <rect x="0" y="1810" width="1080" height="110" fill="#fffdf8" stroke="#dbcdb9"/>
+  <text x="120" y="1878" fill="#8a6b3d" font-size="24" font-family="Arial, sans-serif" font-weight="700">&#12507;&#12540;&#12512;</text>
+  <text x="370" y="1878" fill="#9f9587" font-size="24" font-family="Arial, sans-serif">&#12510;&#12483;&#12481;</text>
+  <text x="610" y="1878" fill="#9f9587" font-size="24" font-family="Arial, sans-serif">&#22577;&#37228;</text>
+  <text x="850" y="1878" fill="#9f9587" font-size="24" font-family="Arial, sans-serif">&#35611;&#32681;</text>
+</svg>
